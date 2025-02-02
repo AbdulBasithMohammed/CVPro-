@@ -1,10 +1,6 @@
 import React, { useState } from "react";
-import "../styles/signup.css"
-
-import { auth, googleProvider } from "../firebaseConfig";
-import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import "../styles/signup.css";
 import { Link, useNavigate } from "react-router-dom";
-
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -20,86 +16,78 @@ const Signup = () => {
     setError("");
     setSuccess("");
 
-    if (!name || !email || !password || !confirmPassword) {
-      setError("All fields are required.");
+    if (!name) {
+      setError("Name is required.");
+      return;
+    }
+    if (!email) {
+      setError("Email is required.");
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError("Invalid email format.");
       return;
     }
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+    if (!password) {
+      setError("Password is required.");
       return;
     }
     if (password.length < 6) {
       setError("Password must be at least 6 characters long.");
       return;
     }
-
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      setSuccess("Signup successful!");
-      navigate("/dashboard");
-    } catch (error) {
-      setError(error.message);
+    if (!confirmPassword) {
+      setError("Confirm Password is required.");
+      return;
     }
-  };
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
 
-  const handleGoogleSignup = async () => {
+
     try {
-      await signInWithPopup(auth, googleProvider);
-      setSuccess("Google Signup successful!");
-      navigate("/dashboard");
+      const response = await fetch("https://your-api-url.com/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setSuccess("Signup successful!");
+        navigate("/dashboard");
+      } else {
+        setError(data.message || "Signup failed.");
+      }
     } catch (error) {
-      setError(error.message);
+      setError("An error occurred. Please try again later.");
     }
   };
 
   return (
     <div className="signup-container">
-      <div className="signup-box">
-        <h2>Sign Up</h2>
+      {/* <p>{navbar}</p> */}
+  <div className="signup-box">
+    <div className="signup-form">
+      <h2>Sign Up Here!</h2>      
+      <form className="signup-form1" onSubmit={handleSignup}>
+        <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        <input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} /><br/>
         {error && <p className="error-message">{error}</p>}
-        {success && <p className="success-message">{success}</p>}
-        <form onSubmit={handleSignup}>
-          <input
-            type="text"
-            placeholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-          <button type="submit">Sign Up</button>
-        </form>
-        <button onClick={handleGoogleSignup} className="google-button">
-          Sign Up with Google
-        </button>
-        <p>
-          Already have an account?{" "}
-          <Link to="/login" className="text-blue-500">
-            Login
-          </Link>
-        </p>
-      </div>
+        {success && <p className="success-message">{success}</p>} 
+        <button type="submit">Sign Up</button>
+      </form>
+      <p>Already have an account? <Link to="/login" className="text-blue-500">Login</Link></p>
     </div>
+    <div className="signup-image"></div>
+  </div>
+
+</div>
   );
 };
 
