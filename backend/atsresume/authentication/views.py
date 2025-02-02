@@ -9,45 +9,6 @@ from django.contrib.auth.hashers import check_password
 import jwt, datetime
 from django.conf import settings
 
-class LoginView(APIView):
-    def post(self, request, *args, **kwargs):
-        serializer = LoginSerializer(data=request.data)
-        if serializer.is_valid():
-            email = serializer.validated_data['email']
-            password = serializer.validated_data['password']
-            
-            # Check if user exists in MongoDB
-            user = user_collection.find_one({'email': email})
-            if not user:
-                return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
-            
-            # Check password
-            if not check_password(password, user['password']):
-                return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
-            
-            # Generate JWT token
-            payload = {
-                'id': str(user['_id']),  # MongoDB stores _id as ObjectId
-                'email': user['email'],
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),  # Token expires in 1 day
-                'iat': datetime.datetime.utcnow()
-            }
-            token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-
-            # Remove sensitive fields before sending user data
-            user.pop('_id')  # Remove MongoDB ObjectID
-            user.pop('password')  # Remove password for security
-
-            return Response({
-                "token": token,
-                "user": user  # Send all user data except password
-            }, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-
 def generate_unique_username(first_name, last_name):
     """Generate a unique username by combining first name, last name, and a random number."""
     base_username = f"{first_name.lower()}{last_name.lower()}"
@@ -87,6 +48,49 @@ class RegisterUserView(APIView):
             return Response({"message": "User registered successfully.", "username": username}, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class LoginView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            password = serializer.validated_data['password']
+            
+            # Check if user exists in MongoDB
+            user = user_collection.find_one({'email': email})
+            if not user:
+                return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
+            
+            # Check password
+            if not check_password(password, user['password']):
+                return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
+            
+            # Generate JWT token
+            payload = {
+                'id': str(user['_id']),  # MongoDB stores _id as ObjectId
+                'email': user['email'],
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),  # Token expires in 1 day
+                'iat': datetime.datetime.utcnow()
+            }
+            token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+
+            # Remove sensitive fields before sending user data
+            user.pop('_id')  # Remove MongoDB ObjectID
+            user.pop('password')  # Remove password for security
+
+            return Response({
+                "token": token,
+                "user": user  # Send all user data except password
+            }, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
+
 
 
 class ForgotPasswordView(APIView):

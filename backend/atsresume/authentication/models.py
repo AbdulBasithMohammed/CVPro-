@@ -1,4 +1,6 @@
 from django.db import models
-from db_connection import db
+from db_connection import get_mongo_connection
 # Create your models here.
-user_collection=db['User']
+
+db=get_mongo_connection()
+user_collection=db['users']

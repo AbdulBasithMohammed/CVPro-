@@ -9,7 +9,6 @@ class UserRegisterSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True, required=True)
 
     def validate_email(self, value):
-        # Check if the email already exists in MongoDB
         from .models import user_collection
         if user_collection.find_one({'email': value}):
             raise serializers.ValidationError("Email is already registered.")
@@ -19,8 +18,6 @@ class UserRegisterSerializer(serializers.Serializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(write_only=True, required=True)
-
-
 
 class ForgotPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)

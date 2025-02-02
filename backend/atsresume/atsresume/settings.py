@@ -82,6 +82,19 @@ WSGI_APPLICATION = 'atsresume.wsgi.application'
 #     }
 # }
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'djongo',
+        'NAME': 'ats_resume',  # Replace with your MongoDB database name
+        'EN host': 'mongodb+srv://group6asdc:G06asdc@@@cluster0.mongodb.net',  # Replace with your MongoDB Atlas URI
+        'EN': 'test',  # Optionally, specify a test database
+    }
+}
+from urllib.parse import quote_plus
+escaped_username = quote_plus("group6asdc")
+escaped_password = quote_plus("G06asdc@@")
+MONGO_URI=f'mongodb+srv://{escaped_username}:{escaped_password}@g6user-db.7hzwm.mongodb.net/?retryWrites=true&w=majority&appName=g6user-db'
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
