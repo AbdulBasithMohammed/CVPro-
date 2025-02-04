@@ -12,10 +12,13 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 import os
 from pathlib import Path
 from urllib.parse import quote_plus
+from django.conf import settings
 from dotenv import load_dotenv
+from datetime import timedelta
 
 def get_creds_from_env():
-    load_dotenv("cred.env") # This must be removed along with cred.env file once environment variables are set in gitlab.
+     # This must be removed along with cred.env file once environment variables are set in gitlab.
+    load_dotenv(".env")
 
     # Retrieve credentials from environment variables
     username = os.getenv("MONGO_USERNAME")
@@ -59,6 +62,17 @@ INSTALLED_APPS = [
     'authentication',
     'rest_framework'
 ]
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),  # Access token expires in 30 mins
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),  # Refresh token expires in 7 days
+    "ROTATE_REFRESH_TOKENS": True,  # Generates a new refresh token on refresh
+    "BLACKLIST_AFTER_ROTATION": True,  # Blacklist old refresh tokens
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

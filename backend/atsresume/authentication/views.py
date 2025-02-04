@@ -2,22 +2,32 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import UserRegisterSerializer,LoginSerializer,ForgotPasswordSerializer,ResetPasswordSerializer
-from .models import user_collection
+from .serializers import UserRegisterSerializer,LoginSerializer,ForgotPasswordSerializer,ResetPasswordSerializer,ContactSerializer
+from .models import user_collection,contact_collection
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 import jwt, datetime
 from django.conf import settings
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from types import SimpleNamespace 
+import random
+import string
 
 def generate_unique_username(first_name, last_name):
-    """Generate a unique username by combining first name, last name, and a random number."""
+    """Generate a unique username by combining first name, last name, and a random 4-digit number."""
     base_username = f"{first_name.lower()}{last_name.lower()}"
     username = base_username
-    counter = 1
 
-    while user_collection.find_one({'username': username}):
-        username = f"{base_username}{random.randint(1000, 9999)}"  # Append a random number
+    for _ in range(10):  # Limit attempts to avoid infinite loop
+        random_suffix = ''.join(random.choices(string.digits, k=4))  # Generate a 4-digit suffix
+        username = f"{base_username}{random_suffix}"
 
+        # Check if username already exists in MongoDB
+        if not user_collection.find_one({'username': username}):
+            return username  # Return if it's unique
+
+    # Fallback: If somehow all 10 attempts failed, append a very unique random string
+    username = f"{base_username}{random.randint(10000, 99999)}"
     return username
 
 class RegisterUserView(APIView):
@@ -52,46 +62,39 @@ class RegisterUserView(APIView):
 class LoginView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = LoginSerializer(data=request.data)
+        
         if serializer.is_valid():
             email = serializer.validated_data['email']
             password = serializer.validated_data['password']
             
-            # Check if user exists in MongoDB
-            user = user_collection.find_one({'email': email})
-            if not user:
+            # Find user in MongoDB
+            user_data = user_collection.find_one({'email': email})
+            if not user_data:
                 return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
             
             # Check password
-            if not check_password(password, user['password']):
+            if not check_password(password, user_data['password']):
                 return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
-            
-            # Generate JWT token
-            payload = {
-                'id': str(user['_id']),  # MongoDB stores _id as ObjectId
-                'email': user['email'],
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),  # Token expires in 1 day
-                'iat': datetime.datetime.utcnow()
-            }
-            token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
 
-            # Remove sensitive fields before sending user data
-            user.pop('_id')  # Remove MongoDB ObjectID
-            user.pop('password')  # Remove password for security
+            # Convert MongoDB dict to an object with an 'id' attribute
+            user_obj = SimpleNamespace(id=str(user_data['_id']))  # SimpleNamespace allows attribute access
+            
+            # Generate JWT tokens using Simple JWT
+            refresh = RefreshToken.for_user(user_obj)  # Now `user_obj` has an `id`
+            access_token = str(refresh.access_token)
+            refresh_token = str(refresh)
+
+            # Remove sensitive data before returning
+            user_data.pop('_id')
+            user_data.pop('password')
 
             return Response({
-                "token": token,
-                "user": user  # Send all user data except password
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "user": user_data
             }, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-
-
-
-
-
 
 class ForgotPasswordView(APIView):
     """
@@ -109,8 +112,7 @@ class ForgotPasswordView(APIView):
             return Response({"message": "Password reset request received. Check your email for reset instructions."}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
+    
 class ResetPasswordView(APIView):
     """
     Step 2: User resets password by providing email & new password.
@@ -137,5 +139,19 @@ class ResetPasswordView(APIView):
                 return Response({"message": "Password reset successfully. Authentication successful."}, status=status.HTTP_200_OK)
             else:
                 return Response({"error": "Password reset successful but authentication failed."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ContactUsView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = ContactSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            contact_data = serializer.validated_data
+
+            # Insert message into MongoDB
+            contact_collection.insert_one(contact_data)
+
+            return Response({"message": "Your message has been sent successfully!"}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

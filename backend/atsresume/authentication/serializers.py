@@ -1,6 +1,7 @@
 # serializers.py
 from rest_framework import serializers
 import re
+from .models import user_collection
 
 class UserRegisterSerializer(serializers.Serializer):
     first_name = serializers.CharField(max_length=150, required=True)
@@ -8,12 +9,41 @@ class UserRegisterSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(write_only=True, required=True)
 
+    def validate_first_name(self, value):
+        """Ensure first name contains only letters and spaces."""
+        if not re.match(r'^[a-zA-Z\s]+$', value):
+            raise serializers.ValidationError("First name should only contain letters and spaces.")
+        
+        return value
+
+    def validate_last_name(self, value):
+        """Ensure last name contains only letters and spaces."""
+        if not re.match(r'^[a-zA-Z\s]+$', value):
+            raise serializers.ValidationError("Last name should only contain letters and spaces.")
+        
+        return value
+
     def validate_email(self, value):
-        from .models import user_collection
+        """Check if the email is already registered."""
         if user_collection.find_one({'email': value}):
             raise serializers.ValidationError("Email is already registered.")
         return value
 
+    def validate_password(self, value):
+        """Ensure password meets security requirements."""
+        if len(value) < 8:
+            raise serializers.ValidationError("Password must be at least 8 characters long.")
+        
+        if not re.search(r'[A-Z]', value):
+            raise serializers.ValidationError("Password must contain at least one uppercase letter.")
+        
+        if not re.search(r'\d', value):
+            raise serializers.ValidationError("Password must contain at least one digit.")
+        
+        if not re.search(r'[@$!%*?&]', value):
+            raise serializers.ValidationError("Password must contain at least one special character (@$!%*?&).")
+        
+        return value
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
@@ -33,8 +63,43 @@ class ResetPasswordSerializer(serializers.Serializer):
         - Contains at least one number
         - Contains at least one uppercase letter
         """
-        if not re.search(r'\d', value):
-            raise serializers.ValidationError("Password must contain at least one digit.")
+        if len(value) < 8:
+            raise serializers.ValidationError("Password must be at least 8 characters long.")
+        
         if not re.search(r'[A-Z]', value):
             raise serializers.ValidationError("Password must contain at least one uppercase letter.")
+        
+        if not re.search(r'\d', value):
+            raise serializers.ValidationError("Password must contain at least one digit.")
+        
+        if not re.search(r'[@$!%*?&]', value):
+            raise serializers.ValidationError("Password must contain at least one special character (@$!%*?&).")
+        
+        return value
+
+class ContactSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=150, required=True)
+    email = serializers.EmailField(required=True)
+    subject = serializers.CharField(max_length=255, required=True)
+    message = serializers.CharField(required=True)
+
+    def validate_name(self, value):
+        """Ensure the name contains only letters and spaces."""
+        if not re.match(r'^[a-zA-Z\s]+$', value):
+            raise serializers.ValidationError("Name should only contain letters and spaces.")
+        
+        return value
+
+    def validate_subject(self, value):
+        """Ensure subject is not empty or just spaces."""
+        if not value.strip():
+            raise serializers.ValidationError("Subject cannot be empty.")
+        
+        return value
+
+    def validate_message(self, value):
+        """Ensure message is not empty or just spaces."""
+        if not value.strip():
+            raise serializers.ValidationError("Message cannot be empty.")
+        
         return value
