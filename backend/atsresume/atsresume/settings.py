@@ -16,10 +16,10 @@ from django.conf import settings
 from dotenv import load_dotenv
 from datetime import timedelta
 
+load_dotenv(".env")
+
 def get_creds_from_env():
      # This must be removed along with cred.env file once environment variables are set in gitlab.
-    load_dotenv(".env")
-
     # Retrieve credentials from environment variables
     username = os.getenv("MONGO_USERNAME")
     password = os.getenv("MONGO_PASSWORD")
@@ -60,12 +60,19 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'authentication',
-    'rest_framework'
+    'rest_framework',
+    'rest_framework_simplejwt',
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),  # Access token expires in 30 mins
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),  # Refresh token expires in 7 days
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),  # Access token expires in 30 mins
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=90),  # Refresh token expires in 7 days
     "ROTATE_REFRESH_TOKENS": True,  # Generates a new refresh token on refresh
     "BLACKLIST_AFTER_ROTATION": True,  # Blacklist old refresh tokens
     "ALGORITHM": "HS256",
@@ -83,6 +90,14 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
+
 
 ROOT_URLCONF = 'atsresume.urls'
 

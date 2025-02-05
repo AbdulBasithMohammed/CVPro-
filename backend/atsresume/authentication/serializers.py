@@ -52,10 +52,15 @@ class LoginSerializer(serializers.Serializer):
 class ForgotPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
 
+class VerifyTokenSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    token = serializers.CharField(min_length=6, max_length=6, required=True)
+
 class ResetPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
-    new_password = serializers.CharField(write_only=True, required=True, min_length=8)
-
+    token = serializers.CharField(min_length=6, max_length=6, required=True)
+    new_password = serializers.CharField(min_length=6, required=True)
+    
     def validate_new_password(self, value):
         """
         Validate password strength:

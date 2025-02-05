@@ -2,7 +2,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import UserRegisterSerializer,LoginSerializer,ForgotPasswordSerializer,ResetPasswordSerializer,ContactSerializer
+from .serializers import UserRegisterSerializer,LoginSerializer,ForgotPasswordSerializer,ResetPasswordSerializer,ContactSerializer,VerifyTokenSerializer
 from .models import user_collection,contact_collection
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
@@ -10,8 +10,8 @@ import jwt, datetime
 from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from types import SimpleNamespace 
-import random
-import string
+import random,string
+from django.core.mail import send_mail
 
 def generate_unique_username(first_name, last_name):
     """Generate a unique username by combining first name, last name, and a random 4-digit number."""
@@ -109,39 +109,101 @@ class ForgotPasswordView(APIView):
             if not user:
                 return Response({"error": "Invalid email. No user found."}, status=status.HTTP_404_NOT_FOUND)
 
-            return Response({"message": "Password reset request received. Check your email for reset instructions."}, status=status.HTTP_200_OK)
+            # Generate a 6-digit token
+            reset_token = str(random.randint(100000, 999999))
+            expiry_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)  # Token expires in 5 min
+
+            # Save token and expiry time in MongoDB
+            user_collection.update_one({'email': email}, {'$set': {'reset_token': reset_token, 'token_expiry': expiry_time}})
+
+            # Send email with the token
+            self.send_reset_email(email, reset_token)
+
+            return Response({"message": "Password reset token sent to your email."}, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def send_reset_email(self, email, token):
+        subject = "Password Reset Request"
+        message = f"Your password reset code is: {token}\nThis code is valid for 5 minutes."
+        from_email =  settings.EMAIL_HOST_USER  # Replace with your email
+        recipient_list = [email]
+
+        send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+
+class VerifyTokenView(APIView):
+    """
+    Step 2: User enters the 6-digit token to verify identity.
+    """
+    def post(self, request):
+        serializer = VerifyTokenSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            token = serializer.validated_data['token']
+
+            # Find user in MongoDB
+            user = user_collection.find_one({'email': email})
+            if not user:
+                return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+            # Check if token exists
+            stored_token = user.get('reset_token')
+            token_expiry = user.get('token_expiry')
+
+            if not stored_token or not token_expiry:
+                return Response({"error": "No token found. Please request a new one."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # ✅ Fix: `token_expiry` is already a `datetime.datetime` object
+            if token != stored_token:
+                return Response({"error": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
+
+            if datetime.datetime.utcnow() > token_expiry:
+                user_collection.update_one({'email': email}, {'$unset': {'reset_token': "", 'token_expiry': ""}})
+                return Response({"error": "Token has expired. Please request a new one."}, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response({"message": "Token verified successfully. You can now reset your password."}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class ResetPasswordView(APIView):
     """
-    Step 2: User resets password by providing email & new password.
-    Authenticates user immediately after resetting password.
+    Step 3: User resets the password after verifying the token.
     """
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
         if serializer.is_valid():
             email = serializer.validated_data['email']
+            token = serializer.validated_data['token']
             new_password = serializer.validated_data['new_password']
 
+            # Find user in MongoDB
             user = user_collection.find_one({'email': email})
             if not user:
-                return Response({"error": "Invalid email. No user found."}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
-            # Hash the new password
+            # Check if token matches and is not expired
+            stored_token = user.get('reset_token')
+            token_expiry = user.get('token_expiry')
+
+            if not stored_token or not token_expiry:
+                return Response({"error": "No valid reset token found. Please request a new one."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # ✅ Fix: `token_expiry` is already a `datetime.datetime` object
+            if token != stored_token:
+                return Response({"error": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
+
+            if datetime.datetime.utcnow() > token_expiry:
+                return Response({"error": "Token has expired. Please request a new one."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Hash the new password before saving
             hashed_password = make_password(new_password)
 
-            # Update password in MongoDB
-            user_collection.update_one({'email': email}, {"$set": {'password': hashed_password}})
+            # Update the password and remove the reset token
+            user_collection.update_one({'email': email}, {'$set': {'password': hashed_password}, '$unset': {'reset_token': "", 'token_expiry': ""}})
 
-            # Authenticate user with the new password
-            if check_password(new_password, hashed_password):
-                return Response({"message": "Password reset successfully. Authentication successful."}, status=status.HTTP_200_OK)
-            else:
-                return Response({"error": "Password reset successful but authentication failed."}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"message": "Password reset successfully."}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 class ContactUsView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = ContactSerializer(data=request.data)
