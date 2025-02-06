@@ -1,65 +1,79 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import backgroundImage from "../assets/signupbg2.jpg";
+import googlelogo from "../assets/google.png";
 
-const SignIn = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+const Login = () => {
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [message, setMessage] = useState("");
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle form submission logic here
-    if (!email || !password) {
-      setError('Please fill in both fields');
-    } else {
-      setError('');
-      // Continue with your login logic
-      console.log('Logging in...');
-    }
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.email || !formData.password) {
+      setMessage("Email and password are required!");
+      return;
+    }
+    setMessage("Login successful! (Waiting for backend integration)");
+  };
+
+  
   return (
-    <div className="flex justify-center items-center min-h-screen bg-black">
-      <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold text-center text-black mb-6">Sign In</h2>
-        <form onSubmit={handleSubmit}>
-          {error && <div className="mb-4 text-red-500 text-center">{error}</div>}
-          <div className="mb-4">
-            <label htmlFor="email" className="block text-sm font-semibold text-black">Email</label>
+      <div
+          className="min-h-screen bg-cover bg-center flex items-center justify-center"
+          style={{ backgroundImage: `url(${backgroundImage})` }}
+      >
+        <div className="w-full max-w-md p-8 bg-black bg-opacity-80 rounded-xl shadow-2xl">
+          <h2 className="text-3xl font-extrabold text-white text-center mb-6">Login</h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
             <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
-              placeholder="Enter your email"
-              required
+                type="email"
+                name="email"
+                placeholder="Email"
+                onChange={handleChange}
+                required
+                className="w-full p-3 border border-gray-500 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
             />
-          </div>
-          <div className="mb-6">
-            <label htmlFor="password" className="block text-sm font-semibold text-black">Password</label>
             <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
-              placeholder="Enter your password"
-              required
+                type="password"
+                name="password"
+                placeholder="Password"
+                onChange={handleChange}
+                required
+                className="w-full p-3 border border-gray-500 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
             />
-          </div>
+
+            <div className="flex items-center justify-between text-sm text-gray-300">
+              <label className="flex items-center">
+                <input type="checkbox" className="mr-2" /> Remember Me
+              </label>
+              <a href={"/forgotpassword"} className="hover:underline">Forgot Password?</a>
+            </div>
+
+            <button
+                type="submit"
+                className="w-full p-3 bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-600 transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-500"
+            >
+              Log In
+            </button>
+          </form>
+
+          <p className="text-center text-white mt-4">OR</p>
+
           <button
-            type="submit"
-            className="w-full p-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-600"
+              type="button"
+              className="w-full p-3 bg-white text-gray-800 font-semibold rounded-lg hover:bg-gray-200 transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-400 flex items-center justify-center"
           >
-            Sign In
+            <img src={googlelogo} alt="Google" className="w-5 h-5 mr-2" />
+            Sign Up with Google
           </button>
-        </form>
-        <div className="mt-4 text-center">
-          <a href="/forgetpas" className="text-sm text-gray-600 hover:underline">Forgot your password?</a>
+
+          {message && <p className="text-center text-red-500 mt-4">{message}</p>}
         </div>
       </div>
-    </div>
   );
 };
 
-export default SignIn;
+export default Login;
