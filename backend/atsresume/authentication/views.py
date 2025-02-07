@@ -126,6 +126,7 @@ class ForgotPasswordView(APIView):
     def send_reset_email(self, email, token):
         subject = "Password Reset Request"
         message = f"Your password reset code is: {token}\nThis code is valid for 5 minutes."
+        print("flag : ",settings.EMAIL_HOST_USER)
         from_email =  settings.EMAIL_HOST_USER  # Replace with your email
         recipient_list = [email]
 
