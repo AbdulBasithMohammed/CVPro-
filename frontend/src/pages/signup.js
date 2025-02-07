@@ -11,10 +11,12 @@ const Signup = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSignup = async (e) => {
     e.preventDefault();
+   
     setError("");
     setSuccess("");
 
@@ -63,6 +65,7 @@ const Signup = () => {
       return;
     }
 
+    setLoading(true);
     try {
       const response = await fetch("http://127.0.0.1:8000/auth/register/", {
         method: "POST",
@@ -81,7 +84,7 @@ const Signup = () => {
       }
     } catch (error) {
       setError("An error occurred. Please try again later.");
-    }
+    }setLoading(false);
   };
 
   return (
@@ -140,8 +143,9 @@ const Signup = () => {
           <button
             type="submit"
             className="w-full p-3 bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-600 transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-500"
+            disabled={loading}
           >
-            Sign Up
+            {loading ? "Signing Up..." : "Sign Up"}
           </button>
           <p className="text-center text-gray-400">OR</p>
           <button
