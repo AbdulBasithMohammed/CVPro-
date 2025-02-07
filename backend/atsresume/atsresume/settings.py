@@ -49,6 +49,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Application definition
 
@@ -62,6 +63,7 @@ INSTALLED_APPS = [
     'authentication',
     'rest_framework',
     'rest_framework_simplejwt',
+    'corsheaders',
 ]
 
 REST_FRAMEWORK = {
@@ -82,6 +84,7 @@ SIMPLE_JWT = {
 
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware', 
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -130,14 +133,23 @@ WSGI_APPLICATION = 'atsresume.wsgi.application'
 #     }
 # }
 
+mongo_user = os.getenv("MONGO_USERNAME")
+mongo_password = os.getenv("MONGO_PASSWORD")
+
+escaped_username = quote_plus(mongo_user)
+escaped_password = quote_plus(mongo_password)
+
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
-        'NAME': 'ats_resume',  # Replace with your MongoDB database name
-        'EN host': f'mongodb+srv://{mongo_user}:{mongo_pass}@cluster0.mongodb.net',  # Replace with your MongoDB Atlas URI
-        'EN': 'test',  # Optionally, specify a test database
+        'NAME': os.getenv("MONGO_DB_NAME"),
+        'CLIENT': {
+            'host': f'mongodb+srv://{escaped_username}:{escaped_password}@g6user-db.7hzwm.mongodb.net/{os.getenv("MONGO_DB_NAME")}?retryWrites=true&w=majority',
+        }
     }
 }
+
+
 
 escaped_username = quote_plus(mongo_user)
 escaped_password = quote_plus(mongo_pass)

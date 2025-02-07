@@ -89,13 +89,10 @@ const Signup = () => {
       setSuccess("Signup successful!");
       navigate("/login"); // Redirect to dashboard after successful signup
     } catch (error) {
-<<<<<<< HEAD
+
       setError("An error occurred. Please try again later.");
     }setLoading(false);
-=======
-      setError(error.response?.data?.message || "Signup failed.");
-    }
->>>>>>> 950e1ff59f9febe9a1c55564bfef9c544e970110
+
   };
 
   return (

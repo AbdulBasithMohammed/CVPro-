@@ -9,6 +9,8 @@ const ResetPassword = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // State for password visibility toggle
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // State for confirm password visibility toggle
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -75,24 +77,43 @@ const ResetPassword = () => {
       <div className="w-full max-w-md p-8 bg-black bg-opacity-80 rounded-xl shadow-2xl">
         <h2 className="text-3xl font-extrabold text-white text-center mb-6">Reset Your Password</h2>
         {error && <p className="text-red-500 text-center">{error}</p>}
-        {message && <p className="text-green-500 text-center">{message}</p>}
 
         <form onSubmit={handlePasswordReset} className="space-y-4">
-          <input
-            type="password"
-            name="new_password"
-            placeholder="Enter new password"
-            value={passdata.new_password}
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-500 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
-          />
-          <input
-            type="password"
-            placeholder="Confirm new password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full p-3 border border-gray-500 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"} // Toggle between text and password
+              name="new_password"
+              placeholder="Enter new password"
+              value={passdata.new_password}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-500 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)} // Toggle password visibility
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
+
+          <div className="relative">
+            <input
+              type={showConfirmPassword ? "text" : "password"} // Toggle between text and password
+              placeholder="Confirm new password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full p-3 border border-gray-500 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)} // Toggle confirm password visibility
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            >
+              {showConfirmPassword ? "Hide" : "Show"}
+            </button>
+          </div>
+
           <button
             type="submit"
             className="w-full p-3 bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-600 transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-500"
