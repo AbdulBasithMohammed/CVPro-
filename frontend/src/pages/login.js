@@ -1,11 +1,14 @@
 import React, { useState } from "react";
+import {useNavigate} from "react-router-dom";
 import backgroundImage from "../assets/signupbg2.jpg";
 import googlelogo from "../assets/google.png";
+import axios from "axios";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -51,25 +54,20 @@ const Login = () => {
     setMessage("");
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/auth/login/", {
-        method: "POST",
+      const response = await axios.post("http://127.0.0.1:8000/auth/login/", formData, {
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage("Login successful!");
-        // Handle successful login (e.g., store token, redirect, etc.)
-      } else {
-        setMessage(data.message || "Login failed. Please try again.");
-      }
+  
+      setMessage("Login successful!");
+      localStorage.setItem("token", response.data.access_token); // Store JWT token for authentication
+      navigate("/"); 
+  
+      // Handle successful login (e.g., redirect user)
     } catch (error) {
-      setMessage("Error connecting to server. Please try again later.");
+      setMessage(error.response?.data?.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   return (

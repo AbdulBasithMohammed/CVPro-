@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import backgroundImage from "../assets/signupbg2.jpg";
-import googlelogo from "../assets/google.png"
+import googlelogo from "../assets/google.png";
+import axios from "axios"; // Make sure axios is imported
 
 const Signup = () => {
-  const [Fname, setFName] = useState("");
-  const [Lname, setLName] = useState("");
+  const [first_name, setFirstName] = useState("");
+  const [last_name, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -18,11 +19,12 @@ const Signup = () => {
     setError("");
     setSuccess("");
 
-    if (!Fname) {
+    // Validation checks
+    if (!first_name) {
       setError("First Name is required.");
       return;
     }
-    if (!Lname) {
+    if (!last_name) {
       setError("Last Name is required.");
       return;
     }
@@ -64,23 +66,27 @@ const Signup = () => {
     }
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/auth/register/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ Fname, Lname, email, password }),
-      });
+      // Using FormData to collect form data
+      const formData = new FormData();
+      formData.append("first_name", first_name);
+      formData.append("last_name", last_name);
+      formData.append("email", email);
+      formData.append("password", password);
 
-      const data = await response.json();
-      if (response.ok) {
-        setSuccess("Signup successful!");
-        navigate("/dashboard");
-      } else {
-        setError(data.message || "Signup failed.");
-      }
+      const response = await axios.post(
+        "http://127.0.0.1:8000/auth/register/",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data", // Make sure to set the correct content type for FormData
+          },
+        }
+      );
+
+      setSuccess("Signup successful!");
+      navigate("/login"); // Redirect to dashboard after successful signup
     } catch (error) {
-      setError("An error occurred. Please try again later.");
+      setError(error.response?.data?.message || "Signup failed.");
     }
   };
 
@@ -95,15 +101,15 @@ const Signup = () => {
           <input
             type="text"
             placeholder="First Name"
-            value={Fname}
-            onChange={(e) => setFName(e.target.value)}
+            value={first_name}
+            onChange={(e) => setFirstName(e.target.value)}
             className="w-full p-3 border border-gray-500 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
           />
           <input
             type="text"
             placeholder="Last Name"
-            value={Lname}
-            onChange={(e) => setLName(e.target.value)}
+            value={last_name}
+            onChange={(e) => setLastName(e.target.value)}
             className="w-full p-3 border border-gray-500 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
           />
           <input
@@ -128,14 +134,10 @@ const Signup = () => {
             className="w-full p-3 border border-gray-500 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
           />
           {error && (
-            <p className="text-red-500 text-center">
-              {error}
-            </p>
+            <p className="text-red-500 text-center">{error}</p>
           )}
           {success && (
-            <p className="text-green-500 text-center">
-              {success}
-            </p>
+            <p className="text-green-500 text-center">{success}</p>
           )}
           <button
             type="submit"
