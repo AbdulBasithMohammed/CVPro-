@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import backgroundImage from "../assets/signupbg2.jpg";
 import googlelogo from "../assets/google.png";
-import axios from "axios"; // Make sure axios is imported
+import axios from "axios";
 
 const Signup = () => {
   const [first_name, setFirstName] = useState("");
@@ -13,11 +13,13 @@ const Signup = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // State for showing/hiding password
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // State for showing/hiding confirm password
   const navigate = useNavigate();
 
   const handleSignup = async (e) => {
     e.preventDefault();
-   
+
     setError("");
     setSuccess("");
 
@@ -69,7 +71,6 @@ const Signup = () => {
 
     setLoading(true);
     try {
-      // Using FormData to collect form data
       const formData = new FormData();
       formData.append("first_name", first_name);
       formData.append("last_name", last_name);
@@ -81,18 +82,17 @@ const Signup = () => {
         formData,
         {
           headers: {
-            "Content-Type": "multipart/form-data", // Make sure to set the correct content type for FormData
+            "Content-Type": "multipart/form-data",
           },
         }
       );
 
       setSuccess("Signup successful!");
-      navigate("/login"); // Redirect to dashboard after successful signup
+      navigate("/login");
     } catch (error) {
-
       setError("An error occurred. Please try again later.");
-    }setLoading(false);
-
+    }
+    setLoading(false);
   };
 
   return (
@@ -124,26 +124,40 @@ const Signup = () => {
             onChange={(e) => setEmail(e.target.value)}
             className="w-full p-3 border border-gray-500 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
           />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 border border-gray-500 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
-          />
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full p-3 border border-gray-500 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
-          />
-          {error && (
-            <p className="text-red-500 text-center">{error}</p>
-          )}
-          {success && (
-            <p className="text-green-500 text-center">{success}</p>
-          )}
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-3 border border-gray-500 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-3 text-gray-400 focus:outline-none"
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
+          <div className="relative">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full p-3 border border-gray-500 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-3 top-3 text-gray-400 focus:outline-none"
+            >
+              {showConfirmPassword ? "Hide" : "Show"}
+            </button>
+          </div>
+          {error && <p className="text-red-500 text-center">{error}</p>}
+          {success && <p className="text-green-500 text-center">{success}</p>}
           <button
             type="submit"
             className="w-full p-3 bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-600 transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-500"
