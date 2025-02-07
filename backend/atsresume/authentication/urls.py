@@ -23,7 +23,7 @@ urlpatterns = [
     # path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     # path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('forgot-password/', ForgotPasswordView.as_view(), name='forgot-password'),
-    path('verify-token/', VerifyTokenView.as_view(), name='verify-token'),
+    path('verify-otp/', VerifyTokenView.as_view(), name='verify-token'),
     path('reset-password/', ResetPasswordView.as_view(), name='reset-password'),
     path('contact-us/', ContactUsView.as_view(), name='contact-us'),
 ]
