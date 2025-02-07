@@ -15,6 +15,9 @@ const Home = () => {
           <div className="space-x-6">
             <Link to="/login" className="text-white hover:text-gray-300 font-medium transition duration-300">Login</Link>
             <Link to="/signup" className="text-white hover:text-gray-300 font-medium transition duration-300">Sign Up</Link>
+            <Link to="/aboutus" className="text-white hover:text-gray-300 font-medium transition duration-300">About Us </Link>
+            <Link to="/contactus" className="text-white hover:text-gray-300 font-medium transition duration-300">Contact Us</Link>
+
           </div>
         </nav>
 
