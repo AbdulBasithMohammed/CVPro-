@@ -70,7 +70,7 @@ const ForgotPassword = () => {
       className="min-h-screen bg-cover bg-center flex items-center justify-center" 
       style={{ backgroundImage: `url(${backgroundImage})` }}
     >
-      <div className="w-full max-w-md p-8 bg-black bg-opacity-80 rounded-xl shadow-2xl">
+      <div className="w-full max-w-md p-8 bg-black bg-opacity-90 rounded-xl shadow-2xl">
         <h2 className="text-3xl font-extrabold text-white text-center mb-6">Forgot Password</h2>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         {message && <p className="text-green-500 text-center mb-4">{message}</p>}

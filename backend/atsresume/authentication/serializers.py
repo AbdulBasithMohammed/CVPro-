@@ -83,28 +83,32 @@ class ResetPasswordSerializer(serializers.Serializer):
         return value
 
 class ContactSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=150, required=True)
-    email = serializers.EmailField(required=True)
-    subject = serializers.CharField(max_length=255, required=True)
-    message = serializers.CharField(required=True)
-
+    name = serializers.CharField(max_length=150, required=True, allow_blank=True)
+    email = serializers.EmailField(required=True, allow_blank=True)
+    subject = serializers.CharField(max_length=255, required=True, allow_blank=True)
+    message = serializers.CharField(required=True, allow_blank=True)
+ 
     def validate_name(self, value):
         """Ensure the name contains only letters and spaces."""
+        if not value.strip():
+            raise serializers.ValidationError("Name cannot be empty.")
         if not re.match(r'^[a-zA-Z\s]+$', value):
             raise serializers.ValidationError("Name should only contain letters and spaces.")
-        
         return value
-
+ 
+    def validate_email(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Email cannot be empty.")
+        return value
+ 
     def validate_subject(self, value):
         """Ensure subject is not empty or just spaces."""
         if not value.strip():
             raise serializers.ValidationError("Subject cannot be empty.")
-        
         return value
-
+ 
     def validate_message(self, value):
         """Ensure message is not empty or just spaces."""
         if not value.strip():
             raise serializers.ValidationError("Message cannot be empty.")
-        
         return value

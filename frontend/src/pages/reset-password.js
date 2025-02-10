@@ -60,7 +60,7 @@ const ResetPassword = () => {
       const response = await axios.post("http://127.0.0.1:8000/auth/reset-password/", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
+      console.log(response.data);
       setMessage("Password reset successful! Redirecting to login...");
       setIsModalOpen(true);
       setTimeout(() => navigate("/login"), 2000);
@@ -74,7 +74,7 @@ const ResetPassword = () => {
       className="min-h-screen bg-cover bg-center flex items-center justify-center"
       style={{ backgroundImage: `url(${backgroundImage})` }}
     >
-      <div className="w-full max-w-md p-8 bg-black bg-opacity-80 rounded-xl shadow-2xl">
+      <div className="w-full max-w-md p-8 bg-black bg-opacity-90 rounded-xl shadow-2xl">
         <h2 className="text-3xl font-extrabold text-white text-center mb-6">Reset Your Password</h2>
         {error && <p className="text-red-500 text-center">{error}</p>}
 

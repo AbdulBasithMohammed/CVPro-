@@ -86,7 +86,7 @@ const Signup = () => {
           },
         }
       );
-
+console.log(response.data);
       setSuccess("Signup successful!");
       navigate("/login");
     } catch (error) {
