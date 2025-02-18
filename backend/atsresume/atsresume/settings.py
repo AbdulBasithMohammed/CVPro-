@@ -193,3 +193,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+GOOGLE_CLIENT_ID = "1020835081770-vq18tvgqbcr1u1dc76cea0u1k9crop91.apps.googleusercontent.com"

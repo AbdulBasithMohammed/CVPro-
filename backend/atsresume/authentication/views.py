@@ -12,6 +12,8 @@ from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from types import SimpleNamespace 
 import random,string
 from django.core.mail import send_mail
+from google.auth.transport import requests
+from google.oauth2 import id_token
 
 def generate_unique_username(first_name, last_name):
     """Generate a unique username by combining first name, last name, and a random 4-digit number."""
@@ -218,3 +220,47 @@ class ContactUsView(APIView):
             return Response({"message": "Your message has been sent successfully!"}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class GoogleLoginView(APIView):
+    def post(self, request):
+        token = request.data.get("token")
+
+        try:
+            # Verify Google token
+            google_data = id_token.verify_oauth2_token(token, requests.Request(), settings.GOOGLE_CLIENT_ID)
+            email = google_data.get("email")
+            first_name = google_data.get("given_name", "")
+            last_name = google_data.get("family_name", "")
+
+            if not email:
+                return Response({"error": "Email not provided by Google"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Check if user exists
+            user = user_collection.find_one({"email": email})
+
+            if not user:
+                username = (first_name + last_name).lower()
+                user_data = {
+                    "email": email,
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "username": username,
+                    "password": make_password(None),  # No password required for Google login
+                }
+                inserted_user = user_collection.insert_one(user_data)
+                user_data["_id"] = str(inserted_user.inserted_id)  # Convert ObjectId to string
+                user = user_data
+            else:
+                user["_id"] = str(user["_id"])  # Convert ObjectId to string
+
+            # Generate JWT token
+            payload = {
+                "email": user["email"],
+                "exp": datetime.datetime.utcnow() + datetime.timedelta(days=1),
+                "iat": datetime.datetime.utcnow(),
+            }
+            access_token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+            return Response({"token": access_token, "user": user}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"error": "Invalid Google token", "details": str(e)}, status=status.HTTP_400_BAD_REQUEST)
