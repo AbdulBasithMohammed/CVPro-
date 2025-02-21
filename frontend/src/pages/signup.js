@@ -80,7 +80,7 @@ const Signup = () => {
       localStorage.setItem("refresh_token", refresh_token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       setErrors({ general: "Google signup failed. Please try again." });
     }
