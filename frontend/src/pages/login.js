@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import backgroundImage from "../assets/signupbg2.jpg";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
-import googlelogo from "../assets/google.png";
+// import googlelogo from "../assets/google.png";
 import axios from "axios";
 
 const Login = () => {
@@ -145,7 +145,7 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-full p-3 bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-600"
+              className="w-full p-3 bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-600 transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-500"
               disabled={loading}
             >
               {loading ? "Logging in..." : "Log In"}
@@ -154,11 +154,11 @@ const Login = () => {
             <p className="text-center text-white mt-4">OR</p>
 
             <GoogleLogin onSuccess={handleGoogleSignupSuccess} onError={() => setMessage("Google login failed.")} />
-
+            <br/>
             <Link to="/signup">
               <button
                 type="button"
-                className="w-full p-3 bg-white text-gray-800 font-semibold rounded-lg hover:bg-gray-200 mt-2"
+                className="w-full p-3 bg-white text-grey-100 font-semibold rounded-lg hover:bg-gray-100 transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-500"
               >
                 Sign Up with Email
               </button>

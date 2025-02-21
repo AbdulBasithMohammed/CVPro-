@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import backgroundImage from "../assets/signupbg2.jpg";
-import googlelogo from "../assets/google.png";
+// import googlelogo from "../assets/google.png";
 import axios from "axios";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 
@@ -167,7 +167,7 @@ const Signup = () => {
 
             <button
               type="submit"
-              className="w-full p-3 bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-600"
+              className="w-full p-3 bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-600 transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-500"
             >
               Sign Up
             </button>
