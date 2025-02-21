@@ -1,105 +1,188 @@
 import React, { useState } from "react";
-import "../styles/signup.css"
-
-import { auth, googleProvider } from "../firebaseConfig";
-import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { Link, useNavigate } from "react-router-dom";
-
+import backgroundImage from "../assets/signupbg2.jpg";
+// import googlelogo from "../assets/google.png";
+import axios from "axios";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 
 const Signup = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [formData, setFormData] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
+  // Validation function - runs WHILE TYPING
+  const validateField = (name, value) => {
+    let error = "";
+
+    if (name === "first_name" && value.trim() === "") error = "First Name is required.";
+    if (name === "last_name" && value.trim() === "") error = "Last Name is required.";
+    if (name === "email") {
+      if (!value.trim()) error = "Email is required.";
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) error = "Invalid email format.";
+    }
+    if (name === "password") {
+      if (value.length < 8) error = "Password must be at least 8 characters.";
+      else if (!/[A-Z]/.test(value)) error = "Must contain at least one uppercase letter.";
+      else if (!/[!@#$%^&*]/.test(value)) error = "Must contain at least one special character.";
+      else if (!/\d/.test(value)) error = "Must contain at least one digit.";
+    }
+    if (name === "confirmPassword" && value !== formData.password)
+      error = "Passwords do not match.";
+
+    setErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
+  };
+
+  // Handle input change and validate WHILE TYPING
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    validateField(name, value);
+  };
+
+  // Handle form submission
   const handleSignup = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
 
-    if (!name || !email || !password || !confirmPassword) {
-      setError("All fields are required.");
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError("Invalid email format.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters long.");
-      return;
-    }
+    // Validate all fields before submission
+    Object.keys(formData).forEach((key) => validateField(key, formData[key]));
+
+    // If any errors exist, prevent submission
+    if (Object.values(errors).some((error) => error)) return;
 
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      setSuccess("Signup successful!");
-      navigate("/dashboard");
+      await axios.post("http://127.0.0.1:8000/auth/register/", formData, {
+        headers: { "Content-Type": "application/json" },
+      });
+      navigate("/login");
     } catch (error) {
-      setError(error.message);
+      setErrors({ general: "An error occurred. Please try again later." });
     }
   };
 
-  const handleGoogleSignup = async () => {
+  // ✅ Handle Google Signup Success
+  const handleGoogleSignupSuccess = async (credentialResponse) => {
     try {
-      await signInWithPopup(auth, googleProvider);
-      setSuccess("Google Signup successful!");
-      navigate("/dashboard");
+      const response = await axios.post("http://127.0.0.1:8000/auth/google-login/", {
+        token: credentialResponse.credential,
+      });
+
+      const { access_token, refresh_token, user } = response.data;
+      localStorage.setItem("access_token", access_token);
+      localStorage.setItem("refresh_token", refresh_token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      navigate("/");
     } catch (error) {
-      setError(error.message);
+      setErrors({ general: "Google signup failed. Please try again." });
     }
   };
 
   return (
-    <div className="signup-container">
-      <div className="signup-box">
-        <h2>Sign Up</h2>
-        {error && <p className="error-message">{error}</p>}
-        {success && <p className="success-message">{success}</p>}
-        <form onSubmit={handleSignup}>
-          <input
-            type="text"
-            placeholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-          <button type="submit">Sign Up</button>
-        </form>
-        <button onClick={handleGoogleSignup} className="google-button">
-          Sign Up with Google
-        </button>
-        <p>
-          Already have an account?{" "}
-          <Link to="/login" className="text-blue-500">
-            Login
-          </Link>
-        </p>
+    <GoogleOAuthProvider clientId="1020835081770-vq18tvgqbcr1u1dc76cea0u1k9crop91.apps.googleusercontent.com">
+      <div
+        className="min-h-screen bg-cover bg-center flex items-center justify-center"
+        style={{ backgroundImage: `url(${backgroundImage})` }}
+      >
+        <div className="w-full max-w-md p-8 bg-black bg-opacity-90 rounded-xl shadow-2xl">
+          <h2 className="text-3xl font-extrabold text-white text-center mb-6">Sign Up</h2>
+          <form onSubmit={handleSignup} className="space-y-4">
+            <input
+              type="text"
+              name="first_name"
+              placeholder="First Name"
+              value={formData.first_name}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-500 rounded-lg bg-gray-800 text-white"
+            />
+            {errors.first_name && <p className="text-red-500">{errors.first_name}</p>}
+
+            <input
+              type="text"
+              name="last_name"
+              placeholder="Last Name"
+              value={formData.last_name}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-500 rounded-lg bg-gray-800 text-white"
+            />
+            {errors.last_name && <p className="text-red-500">{errors.last_name}</p>}
+
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-500 rounded-lg bg-gray-800 text-white"
+            />
+            {errors.email && <p className="text-red-500">{errors.email}</p>}
+
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full p-3 border border-gray-500 rounded-lg bg-gray-800 text-white"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 text-gray-400"
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+            {errors.password && <p className="text-red-500">{errors.password}</p>}
+
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                placeholder="Confirm Password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className="w-full p-3 border border-gray-500 rounded-lg bg-gray-800 text-white"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-3 text-gray-400"
+              >
+                {showConfirmPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+            {errors.confirmPassword && <p className="text-red-500">{errors.confirmPassword}</p>}
+
+            {errors.general && <p className="text-red-500 text-center">{errors.general}</p>}
+
+            <button
+              type="submit"
+              className="w-full p-3 bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-600 transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-500"
+            >
+              Sign Up
+            </button>
+
+            <p className="text-center text-gray-400 mt-4">OR</p>
+
+            <GoogleLogin onSuccess={handleGoogleSignupSuccess} onError={() => setErrors({ general: "Google signup failed." })} />
+
+            <p className="text-center text-gray-400 mt-4">
+              Already have an account? <Link to="/login" className="text-blue-400 hover:text-white">Login</Link>
+            </p>
+          </form>
+        </div>
       </div>
-    </div>
+    </GoogleOAuthProvider>
   );
 };
 
