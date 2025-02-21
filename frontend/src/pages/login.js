@@ -84,7 +84,7 @@ const Login = () => {
       localStorage.setItem("refresh_token", refresh_token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       setMessage("Google login failed.");
     }
