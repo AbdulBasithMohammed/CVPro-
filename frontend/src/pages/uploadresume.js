@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { FiUpload, FiEdit, FiArrowDown } from "react-icons/fi";
 import axios from "axios";
 import Navbar from "../components/navbar";
@@ -12,6 +13,14 @@ const ResumeUpload = () => {
     const [success, setSuccess] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);  // To control modal visibility
     const [selectedTemplate, setSelectedTemplate] = useState(null); // To store the selected template
+    const navigate = useNavigate();
+  useEffect(() => {
+    // Check if user is logged in
+    const accessToken = localStorage.getItem("access_token");
+
+    if (!accessToken) {
+      navigate("/login");
+    }},[navigate]);
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
