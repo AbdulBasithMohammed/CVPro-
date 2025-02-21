@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Navbar from "../components/navbar"; // Assuming Navbar is in the same folder
 import axios from "axios";
+import Footer from "../components/footer";
 
 const Dashboard = () => {
   const [userResumes, setUserResumes] = useState([]);
@@ -55,7 +56,7 @@ const Dashboard = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-gray-900 text-white flex flex-col justify-between">
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -105,7 +106,7 @@ const Dashboard = () => {
             {/* Upload New Resume Button */}
             <div className="mt-8 text-center">
               <Link
-                to="/upload"
+                to="/createresume"
                 className="inline-block bg-black text-white text-lg py-3 px-6 rounded-full shadow-lg hover:bg-gray-800 transform hover:scale-110 transition-all duration-300"
               >
                 Upload New Resume
@@ -114,6 +115,7 @@ const Dashboard = () => {
           </>
         )}
       </div>
+      <Footer/>
     </div>
   );
 };
