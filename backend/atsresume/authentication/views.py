@@ -226,7 +226,7 @@ class GoogleLoginView(APIView):
 
         try:
             # Verify Google token
-            google_data = id_token.verify_oauth2_token(token, requests.Request(), settings.GOOGLE_CLIENT_ID)
+            google_data = id_token.verify_oauth2_token(token, requests.Request(), settings.GOOGLE_CLIENT_ID ,clock_skew_in_seconds=5)
             email = google_data.get("email")
             first_name = google_data.get("given_name", "")
             last_name = google_data.get("family_name", "")

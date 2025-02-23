@@ -1,0 +1,64 @@
+/* Export Button Container */
+.export-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between select and button */
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f8f9fa; /* Light gray background */
+    border-radius: 6px;
+  }
+  
+  /* Dropdown Styling */
+  .export-controls select {
+    padding: 8px 12px;
+    font-size: 1rem;
+    border: 1px solid #bbb;
+    border-radius: 5px;
+    background-color: #fff;
+    cursor: pointer;
+  }
+  
+  /* Button Styling */
+.export-button {
+    background-color: #007bff; /* Primary blue */
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: -5px; /* Adjust this value to move the button upwards */
+  }
+
+  .export-button-container {
+    width: 100%;
+    display: flex;
+    justify-content: center; /* Centers the buttons */
+    margin-top: 20px; /* Ensures spacing from the editor */
+  }
+  
+  /* Hover & Active Effects */
+  .export-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .export-button:active {
+    background-color: #004494;
+  }  
+  
+  /* Responsive Design */
+  @media (max-width: 480px) {
+    .export-controls {
+      flex-direction: column;
+      gap: 8px;
+      align-items: stretch;
+    }
+  
+    .export-controls select,
+    .export-button {
+      width: 100%;
+    }
+  }

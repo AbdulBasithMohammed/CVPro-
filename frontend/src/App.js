@@ -9,6 +9,7 @@ import ForgotPassword from "./pages/forgot-password";
 import ResetPass from "./pages/reset-password"
 import Dashboard from "./pages/dashboard";
 import Uploadresume from "./pages/uploadresume"
+import ResumeBuilder from "./pages/ResumeBuilder";
 
 const App = () => {
   return (
@@ -23,6 +24,7 @@ const App = () => {
         <Route path="/resetpassword" element={<ResetPass />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/createresume" element={<Uploadresume />} />
+        <Route path="/resumebuilder" element={<ResumeBuilder />} />
       </Routes>
     </Router>
   );

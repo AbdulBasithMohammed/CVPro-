@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, Navigate } from "react-router-dom";
 import { FiUpload, FiEdit, FiArrowDown } from "react-icons/fi";
 import axios from "axios";
 import Navbar from "../components/navbar";
@@ -63,7 +63,9 @@ const ResumeUpload = () => {
         localStorage.setItem("selectedTemplate", template);
         setSelectedTemplate(template);
         setIsModalOpen(false); // Close modal after selection
+        navigate("/resumebuilder");
     };
+
 
     const handleCreateResume = () => {
         setIsModalOpen(true);
