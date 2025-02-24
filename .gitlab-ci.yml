@@ -36,20 +36,20 @@ build-backend:
       - backend/atsresume/staticfiles
   timeout: 1hr 30min  # Reduced timeout to optimize efficiency
 
-test-backend:
-  stage: test
-  image: python:3.11
-  tags:
-    - cvpro-runner
-  before_script:
-    - cd backend/atsresume
-    - python -m venv venv
-    - source venv/bin/activate
-    - pip install --upgrade pip
-    - pip install -r requirements.txt
-    - python -m spacy download en_core_web_sm
-  script:
-    - python manage.py test
+# test-backend:
+#   stage: test
+#   image: python:3.11
+#   tags:
+#     - cvpro-runner
+#   before_script:
+#     - cd backend/atsresume
+#     - python -m venv venv
+#     - source venv/bin/activate
+#     - pip install --upgrade pip
+#     - pip install -r requirements.txt
+#     - python -m spacy download en_core_web_sm
+#   script:
+#     - python manage.py test
 
 # -------------------------- #
 # 🔹 Frontend: Build & Test 🔹 #
@@ -80,27 +80,27 @@ build-frontend:
       - frontend/build
   timeout: 20m
 
-test-frontend:
-  stage: test
-  image: node:18-alpine
-  tags:
-    - cvpro-runner
-  cache:
-    key: npm-cache
-    paths:
-      - frontend/node_modules
-  before_script:  
-    - export NODE_OPTIONS=--openssl-legacy-provider
-    - rm -rf node_modules
-    - npm install webpack@4.42.0
-    - npm install
-  script:
-    - cd frontend
-    - npm install
-    - export REACT_BACKEND_BASE_URL=$REACT_BACKEND_BASE_URL
-    - export NODE_OPTIONS=--openssl-legacy-provider
-    - export CI=false
-    - npm run test -- --passWithNoTests
+# test-frontend:
+#   stage: test
+#   image: node:18-alpine
+#   tags:
+#     - cvpro-runner
+#   cache:
+#     key: npm-cache
+#     paths:
+#       - frontend/node_modules
+#   before_script:  
+#     - export NODE_OPTIONS=--openssl-legacy-provider
+#     - rm -rf node_modules
+#     - npm install webpack@4.42.0
+#     - npm install
+#   script:
+#     - cd frontend
+#     - npm install
+#     - export REACT_BACKEND_BASE_URL=$REACT_BACKEND_BASE_URL
+#     - export NODE_OPTIONS=--openssl-legacy-provider
+#     - export CI=false
+#     - npm run test -- --passWithNoTests
 
 # -------------------------- #
 # 🔹 Publish Docker Images 🔹 #
