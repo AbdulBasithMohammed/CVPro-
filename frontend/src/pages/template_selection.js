@@ -7,6 +7,7 @@ import '../template-resume.css';
 import html2canvas from "html2canvas";
 import Navbar from '../components/navbar';
 import Footer from '../components/footer'
+import { BASE_URL } from "../Constant";
 
 function TemplateSelection() {
   const [resumeData, setResumeData] = useState({
@@ -84,7 +85,7 @@ function TemplateSelection() {
     formData.append("user_id", userId);  // Send user ID
 
     try {
-        const response = await fetch("http://localhost:8000/resume/create/", {
+        const response = await fetch(BASE_URL+"/resume/create/", {
             method: "POST",
             body: formData,
         });

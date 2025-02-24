@@ -106,7 +106,7 @@ const Dashboard = () => {
                       <img
                         src={imageSrc}
                         alt={resume.title || "Resume Thumbnail"}
-                        className="w-full h-full object-cover rounded-lg shadow-md border border-gray-600"
+                        className="w-full h-full object-cover object-top rounded-lg shadow-md border border-gray-600"
                         onError={(e) => {
                           e.target.src = "https://via.placeholder.com/250";
                         }}

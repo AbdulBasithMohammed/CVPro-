@@ -21,20 +21,20 @@ build-backend:
   image: python:3.11
   tags:
     - cvpro-runner
-  script:
+  before_script:
     - cd backend/atsresume
     - python -m venv venv
     - source venv/bin/activate
+    - pip install --upgrade pip
     - pip install -r requirements.txt
     - python -m spacy download en_core_web_sm
-    - mkdir -p staticfiles
+  script:
     - python manage.py collectstatic --noinput
     - python manage.py migrate
   artifacts:
     paths:
-      - backend/atsresume
       - backend/atsresume/staticfiles
-  timeout: 2hr
+  timeout: 1hr 30min  # Reduced timeout to optimize efficiency
 
 test-backend:
   stage: test
