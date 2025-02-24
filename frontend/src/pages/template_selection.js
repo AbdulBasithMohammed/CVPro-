@@ -89,6 +89,8 @@ function TemplateSelection() {
             body: formData,
         });
 
+        console.log(formData);
+
         if (response.ok) {
             const result = await response.json();
             console.log("Resume saved:", result);
