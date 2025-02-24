@@ -9,7 +9,7 @@ import ForgotPassword from "./pages/forgot-password";
 import ResetPass from "./pages/reset-password"
 import Dashboard from "./pages/dashboard";
 import Uploadresume from "./pages/uploadresume"
-import ResumeBuilder from "./pages/ResumeBuilder";
+import TemplateSelection from "./pages/template_selection";
 
 const App = () => {
   return (
@@ -24,7 +24,7 @@ const App = () => {
         <Route path="/resetpassword" element={<ResetPass />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/createresume" element={<Uploadresume />} />
-        <Route path="/resumebuilder" element={<ResumeBuilder />} />
+        <Route path="/template_selection" element={<TemplateSelection />} />
       </Routes>
     </Router>
   );

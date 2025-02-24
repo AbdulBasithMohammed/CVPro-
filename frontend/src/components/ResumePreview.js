@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react';  
 import { memo, forwardRef } from 'react';
 import '../ResumePreview.css';
 

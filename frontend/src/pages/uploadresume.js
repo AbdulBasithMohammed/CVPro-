@@ -63,7 +63,7 @@ const ResumeUpload = () => {
         localStorage.setItem("selectedTemplate", template);
         setSelectedTemplate(template);
         setIsModalOpen(false); // Close modal after selection
-        navigate("/resumebuilder");
+        navigate("/template_selection");
     };
 
 
@@ -163,3 +163,4 @@ const ResumeUpload = () => {
 };
 
 export default ResumeUpload;
+
