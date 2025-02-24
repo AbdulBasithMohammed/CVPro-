@@ -1,0 +1,205 @@
+.resume-preview {
+    width: 100%;
+    max-width: 750px;
+    margin: 0 auto;
+    font-family: 'Georgia', serif;
+    color: #222;
+    padding: 30px !important;
+    background: #fff;
+}
+
+.resume-name {
+    font-size: 26px; 
+    font-weight: bold;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+.resume-summary {
+    font-size: 14px; 
+    color: #555;
+    margin-top: 10px;
+}
+
+.resume-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    padding-bottom: 15px;
+}
+
+.header-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.resume-header h1 {
+    font-size: 26px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+.resume-location {
+    font-size: 14px;
+    color: #555;
+    margin-top: 3px;
+}
+
+.resume-contact {
+    font-size: 14px;
+    color: #555;
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+}
+
+.resume-email {
+    font-size: 14px;
+    color: #555;
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+}
+
+.resume-phone {
+    margin-bottom: 3px;
+    font-size: 14px;
+}
+
+.resume-section {
+    margin-bottom: 20px;
+    text-align: left;
+    font-size: 15px;
+    padding-top: 15px;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding-bottom: 5px;
+}
+
+.experience-item {
+    margin-bottom: 20px;
+    font-size: 15px;
+}
+
+.experience-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.job-title {
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 2px; 
+}
+
+.employment-dates {
+    font-size: 14px;
+    color: #555;
+    margin-left: 5px; 
+}
+
+.company-location {
+    font-size: 14px;
+    color: #555;
+    margin-top: 2px; 
+}
+
+.responsibilities-list {
+    padding-left: 20px; 
+    font-size: 14px;
+    line-height: 1;
+}
+
+.responsibilities-list li {
+    margin-bottom: 5px;
+}
+
+.skills-list {
+    list-style-type: disc; 
+    padding-left: 20px; 
+    display: grid; 
+    grid-template-columns: repeat(2, 1fr); 
+    font-size: 14px;
+    text-align: left;
+}
+
+.skills-list li {
+    padding: 3px 0; 
+}
+
+.education-item {
+    margin-bottom: 15px;
+}
+
+.education-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    padding-bottom: 5px;
+}
+
+.education-details {
+    font-size: 14px;
+    color: #555;
+    font-style: italic;
+    display: flex;
+    justify-content: space-between;
+}
+
+.course-name {
+    flex: 1;
+    text-align: left;
+}
+
+.education-location {
+    flex: 1;
+    text-align: right;
+}
+
+@media (max-width: 768px) {
+    .resume-preview {
+        padding: 15px;
+    }
+
+    .resume-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .resume-header h1 {
+        font-size: 20px;
+    }
+
+    .resume-contact {
+        text-align: left;
+    }
+
+    .section-title {
+        font-size: 14px;
+    }
+
+    .skills-list {
+        grid-template-columns: 1fr;
+    }
+
+    .education-header,
+    .education-details {
+        flex-direction: column;
+        text-align: left;
+    }
+}
