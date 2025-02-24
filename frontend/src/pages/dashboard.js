@@ -15,12 +15,12 @@ const Dashboard = () => {
   const accessToken = localStorage.getItem("access_token");
 
   // Function to generate a time-based greeting
-  const getTimeBasedGreeting = () => {
-    const currentHour = new Date().getHours();
-    if (currentHour >= 6 && currentHour < 12) return "Good Morning";
-    if (currentHour >= 12 && currentHour < 18) return "Good Afternoon";
-    return "Good Evening";
-  };
+  // const getTimeBasedGreeting = () => {
+  //   const currentHour = new Date().getHours();
+  //   if (currentHour >= 6 && currentHour < 12) return "Good Morning";
+  //   if (currentHour >= 12 && currentHour < 18) return "Good Afternoon";
+  //   return "Good Evening";
+  // };
 
   useEffect(() => {
     if (!accessToken || !user?._id) {
@@ -45,7 +45,7 @@ const Dashboard = () => {
     };
 
     fetchResumes();
-  }, []);
+  });
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col justify-between">

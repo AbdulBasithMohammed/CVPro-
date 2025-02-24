@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, Link, Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { FiUpload, FiEdit, FiArrowDown } from "react-icons/fi";
 import axios from "axios";
 import Navbar from "../components/navbar";
