@@ -2,6 +2,7 @@ import React from 'react';
 import { useState } from 'react';
 import '../EditorSection.css';
 
+
 const EditorSection = ({ data, updateSection }) => {
     const [summaryLength, setSummaryLength] = useState(data.personal.summary.length);
     const MAX_SUMMARY_LENGTH = 300;
@@ -100,6 +101,7 @@ const EditorSection = ({ data, updateSection }) => {
         updatedWorkExperience[index].tasks.splice(taskIndex, 1);
         updateSection('workExperience', updatedWorkExperience);
     };
+    
 
     return (
         <div className="editor-container">

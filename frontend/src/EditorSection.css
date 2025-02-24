@@ -1,589 +1,209 @@
+/* Updated EditorSection Styles to Match Dashboard Theme */
+
 /* General container settings */
 .editor-container {
   display: flex;
-  flex-direction: column; /* Stack all sections vertically */
-  background-color: #fbfafa1a;
-  padding: 20px;
-  border-radius: 8px;
-  max-width: 800px;
+  flex-direction: column;
+  background-color: #1a1a1a;
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 900px;
   margin: 0 auto;
   overflow: hidden;
-  position: relative;
-  box-sizing: border-box;
-  max-height: 700px; /* Set a max height for the entire editor */
-  overflow-y: auto; /* Make the whole editor container scrollable */
+  gap: 1.5rem;
+  border: 1px solid #2d3748;
 }
 
-/* Main Editor Section Box */
-.editor-main-box {
-  display: flex;
-  flex-direction: column; /* Stack content vertically */
-  gap: 20px;
-  max-height: 100%; /* Allow this to take up remaining space */
-  overflow-y: auto; /* Ensure scrolling for the inner sections */
-}
-
-/* Box style for each topic section */
+/* Box style for each section */
 .editor-section {
-  width: 100%; /* Full width */
-  padding: 20px;
-  background: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box;
-  margin-bottom: 5px;
+  width: 100%;
+  padding: 1.5rem;
+  background: #525457;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  border: 1px solid #4a5568;
+  transition: all 0.2s ease;
+}
+
+.editor-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
 }
 
 /* Headings */
 .editor-container h2 {
-  font-size: 1.75rem;
-  color: #333;
-  margin-bottom: 20px;
+  font-size: 1.5rem;
+  color: #f7fafc;
+  margin-bottom: 1.5rem;
   font-weight: 600;
+  letter-spacing: -0.025em;
+  border-bottom: 2px solid #4a5568;
+  padding-bottom: 0.75rem;
 }
 
-/* Form Group Styles */
+/* Form Group */
 .form-group {
-  margin-bottom: 15px;
-  display: block; /* Ensure each form field stacks vertically */
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .form-group label {
   font-size: 1rem;
   font-weight: bold;
-  color: #333;
-  display: block;
+  color: #cbd5e0;
   margin-bottom: 5px;
 }
 
+/* Form Input Styles */
 .form-group input,
 textarea {
   width: 100%;
   padding: 12px;
   font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 1px solid #444;
+  border-radius: 6px;
   box-sizing: border-box;
+  background-color: #333;
+  color: #fff;
 }
 
 textarea {
-  resize: vertical; /* Allows resizing vertically if needed */
-  min-height: 100px; /* Ensures a minimum height for the textarea */
-  max-height: 200px; /* Optional: control the maximum height */
+  resize: vertical;
+  min-height: 100px;
+  max-height: 200px;
 }
 
 textarea:focus,
 .form-group input:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: #1a8c4a; /* Darker green instead of blue */
+  background-color: #3a3a3a;
 }
 
-.form-group input {
-  transition: border-color 0.3s;
-}
-
-.form-group input:focus {
-  border-color: #007bff;
-}
-
-/* Form row adjustments */
-.form-row {
-  display: flex;
-  flex-wrap: wrap; /* Allows the rows to break */
-  gap: 20px;
-}
-
-.form-group.half-width {
-  width: 48%; /* Half width for certain fields */
-}
-
-/* Experience Section */
-.experience-group {
-  margin-bottom: 30px;
-}
-
-.experience-group .form-row .form-group {
-  width: 48%; /* Ensure inputs are evenly spaced */
-}
-
-.tasks-section {
-  margin-top: 10px;
-}
-
-.task-input {
-  display: flex;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.task-input input {
-  width: 90%;
-  padding: 10px;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.remove-task,
-.add-task {
-  background-color: #28a745;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  font-size: 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 10px;
-}
-
-.remove-task:hover,
-.add-task:hover {
-  background-color: #218838;
-}
-
-.remove-task {
-  background-color: transparent;
-  color: #e74c3c;
-  font-size: 1.5rem;
-  margin-left: 12px;
-}
-
-.remove-task:hover {
-  color: #c0392b;
-}
-
+/* Buttons */
 button {
+  padding: 10px 18px;
+  font-size: 1rem;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  font-weight: 600;
+  transition: all 0.3s;
+  border: 1px solid #777;
+  background-color: #444;
+  color: #fff;
 }
 
-button:disabled {
-  background-color: #dcdcdc;
-  cursor: not-allowed;
+button:hover {
+  background-color: #555;
 }
 
-button:focus {
-  outline: none;
-}
-
-/* Projects Section */
-.project-section {
-  width: 100%;
-  position: relative;
-  padding: 12px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Skills Section */
+/* Skill Section Updates */
 .skills-section {
   display: flex;
   flex-wrap: wrap;
-  margin-bottom: 20px;
+  gap: 15px; /* Increased gap */
+  align-items: center;
+  margin-top: 15px;
 }
 
 .skills-section .form-group {
-  width: calc(50% - 10px); /* Two columns with a gap */
+  width: 100%;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  flex-direction: row; /* Changed to row layout */
+  gap: 10px;
 }
 
 .skills-section input {
-  width: 100%;
-  padding: 12px;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
+  width: calc(100% - 50px); /* Adjusted for button spacing */
+  margin-right: 0;
 }
 
 .skills-section .remove-skill {
-  padding: 5px 10px;
-  background-color: transparent;
-  color: #e74c3c;
+  color: #FF9800;
+  font-size: 1.5rem;
+  background: none;
   border: none;
   cursor: pointer;
-  font-size: 1.5rem;
-  margin-top: 5px;
+  padding: 0;
+  margin-left: 10px; /* Added spacing between input and button */
 }
 
-.skills-section .remove-skill:hover {
-  color: #c0392b;
+/* Summary Counter */
+.char-count {
+  color: #fff !important; /* Changed from black to white */
+  font-size: 0.9rem;
+  margin-top: 8px;
 }
 
-/* Education Section */
-.education-section {
-  width: 100%;
-  padding: 20px;
-  background: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  margin-bottom: 5px;
-}
-
-.education-section h2 {
-  font-size: 1.75rem;
-  color: #333;
-  margin-bottom: 20px;
-  font-weight: 600;
-}
-
-.education-section .form-group {
-  margin-bottom: 15px;
-  display: block;
-}
-
-.education-section .form-group label {
-  font-size: 1rem;
-  font-weight: bold;
-  color: #333;
-  display: block;
-  margin-bottom: 5px;
-}
-
-.education-section .form-group input {
-  width: 100%;
-  padding: 12px;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-
-.education-section .form-group input:focus {
-  outline: none;
-  border-color: #007bff;
-}
-
-.education-section .form-group input[type="month"] {
-  padding-right: 35px; /* Add padding for the dropdown arrow in month input */
-}
-
-.education-section .form-group input[type="text"] {
-  width: 100%;
-}
-
-.education-section .education-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.education-section .education-item {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.education-section .remove-education {
-  background-color: transparent;
-  color: #e74c3c;
-  font-size: 1.5rem;
-  cursor: pointer;
-  align-self: flex-start;
-}
-
-.education-section .remove-education:hover {
-  color: #c0392b;
-}
-
-.education-section .add-education {
-  background-color: #28a745;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  font-size: 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 20px;
-}
-
-.education-section .add-education:hover {
-  background-color: #218838;
-}
-
-.education-section .education-item .form-group {
+/* Tasks Section */
+.tasks-section label {
+  color: #cbd5e0 !important; /* Changed from black to white */
   margin-bottom: 10px;
-}
-
-.education-section .form-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.education-section .form-group.half-width {
-  width: 48%;
-}
-
-.education-section .form-group.full-width {
-  width: 100%;
-}
-
-/* Dropdown for month and year */
-.dropdown-container {
-  position: relative;
-}
-
-.calendar-icon {
-  cursor: pointer;
-  position: absolute;
-  right: 10px;
-  top: 5px;
-}
-
-.dropdown {
-  position: absolute;
-  top: 30px;
-  left: 0;
-  background-color: white;
-  border: 1px solid #ccc;
-  padding: 10px;
-  z-index: 1000;
-  width: 180px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.month-dropdown,
-.year-dropdown {
-  margin-bottom: 10px;
-}
-
-.select {
-  width: 100%;
-}
-
-/* Experience Section */
-.experience-section {
-  width: 100%;
-  padding: 20px;
-  background: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  margin-bottom: 5px;
-}
-
-.experience-section h2 {
-  font-size: 1.75rem;
-  color: #333;
-  margin-bottom: 20px;
-  font-weight: 600;
-}
-
-.experience-section .form-group {
-  margin-bottom: 15px;
   display: block;
 }
 
-.experience-section .form-group label {
-  font-size: 1rem;
-  font-weight: bold;
-  color: #333;
-  display: block;
-  margin-bottom: 5px;
+/* Add Skill Button Spacing */
+button[onclick="addSkill()"] { /* This selector might need adjustment */
+  margin-top: 15px;
 }
 
-.experience-section .form-group input {
-  width: 100%;
-  padding: 12px;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-
-.experience-section .form-group input:focus {
-  outline: none;
-  border-color: #007bff;
-}
-
-.experience-section .form-group input[type="month"] {
-  padding-right: 35px; /* Add padding for the dropdown arrow in month input */
-}
-
-.experience-section .form-group input[type="text"] {
-  width: 100%;
-}
-
-.experience-section .experience-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.experience-section .experience-item {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.experience-section .remove-experience {
-  background-color: transparent;
-  color: #e74c3c;
-  font-size: 1.5rem;
-  cursor: pointer;
-  align-self: flex-start;
-}
-
-.experience-section .remove-experience:hover {
-  color: #c0392b;
-}
-
-.experience-section .add-experience {
-  background-color: #28a745;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  font-size: 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 20px;
-}
-
-.experience-section .add-experience:hover {
-  background-color: #218838;
-}
-
-.experience-section .experience-item .form-group {
-  margin-bottom: 10px;
-}
-
-.experience-section .form-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.experience-section .form-group.half-width {
-  width: 48%;
-}
-
-.experience-section .form-group.full-width {
-  width: 100%;
-}
-
+/* General Spacing Adjustments */
 .add-item, .add-skill, .add-task {
-  background-color: #28a745; /* Green color */
+  margin-top: 15px;
 }
 
-.add-item:hover, .add-skill:hover, .add-task:hover {
-  background-color: #218838; /* Darker green */
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .editor-container {
+    padding: 16px;
+  }
+  .skills-section .form-group {
+    width: 100%;
+  }
+  .skills-section input {
+    width: calc(100% - 40px);
+  }
+}
+.task-input {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Ensures spacing between input and remove button */
+  margin-bottom: 10px;
 }
 
-.add-item:active, .add-skill:active, .add-task:active {
-  background-color: #1e7e34; /* Even darker green */
+.task-input input {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  border: 1px solid #444;
+  border-radius: 6px;
+  box-sizing: border-box;
+  background-color: #333;
+  color: #fff;
 }
 
-/* Remove Item Button Styles */
-.remove-item {
-  background-color: #dc3545; /* Red color */
-  color: white;
-  padding: 8px 16px;
-  font-size: 12px;
+.task-input input:focus {
+  outline: none;
+  border-color: #1a8c4a;
+  background-color: #3a3a3a;
 }
 
-.remove-item:hover {
-  background-color: #c82333; /* Darker red */
-  transform: scale(1.05);
-}
 
-.remove-item:active {
-  background-color: #bd2130; /* Even darker red */
-  transform: scale(1);
-}
-
-/* Remove Task Button Styles */
 .remove-task {
-  background-color: #6c757d; /* Gray color */
-  color: white;
-  padding: 5px 12px;
-  font-size: 12px;
+  padding: 10px 18px;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+  border: 1px solid #777;
+  background-color: #444;
+  color: #fff;
 }
 
 .remove-task:hover {
-  background-color: #5a6268; /* Darker gray */
+  background-color: #555;
 }
 
-.remove-task:active {
-  background-color: #4e555b; /* Even darker gray */
-}
-
-/* Buttons in Group (Skill, Education, Work Experience) */
-.form-group button {
-  margin-top: 10px;
-  margin-right: 5px;
-  padding: 8px 15px;
-  font-size: 12px;
-}
-
-.form-group button.add-item,
-.form-group button.add-skill,
-.form-group button.add-task {
-  background-color: #007bff; /* Blue color for Add buttons */
-  color: white;
-}
-
-.form-group button.add-item:hover,
-.form-group button.add-skill:hover,
-.form-group button.add-task:hover {
-  background-color: #0056b3;
-}
-
-.form-group button.add-item:active,
-.form-group button.add-skill:active,
-.form-group button.add-task:active {
-  background-color: #004085;
-}
-
-.form-group button.remove-item {
-  background-color: #dc3545;
-  color: white;
-}
-
-.form-group button.remove-item:hover {
-  background-color: #c82333;
-}
-
-.form-group button.remove-item:active {
-  background-color: #bd2130;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .editor-container {
-    flex-direction: column; /* Stack editor section and preview on top of each other */
-    padding: 12px;
-  }
-
-  .editor-section {
-    width: 100%; /* Make editor section full width */
-    margin-bottom: 20px;
-    padding-right: 0;
-  }
-
-  .form-group input {
-    width: 100%; /* Ensure input fields are full-width */
-  }
-
-  .task-input input {
-    width: 100%;
-  }
-
-  .tasks-section button {
-    width: 100%; /* Make task buttons full width */
-  }
-
-  .add-task,
-  .remove-task {
-    width: 100%; /* Make buttons full width on small screens */
-  }
-
-  .skills-section .form-group {
-    width: 100%; /* Full-width on smaller screens */
-  }
-
-  .education-section .form-group.half-width {
-    width: 100%; /* Make input fields full width on small screens */
-  }
-}
