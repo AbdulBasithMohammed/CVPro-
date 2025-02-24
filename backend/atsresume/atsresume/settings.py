@@ -192,8 +192,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 GOOGLE_CLIENT_ID = "1020835081770-vq18tvgqbcr1u1dc76cea0u1k9crop91.apps.googleusercontent.com"
 
-import os
 
-STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  # ✅ Required for collectstatic
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]  # Optional (if you have extra static files)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # ✅ Ensure STATIC_ROOT is set
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  # ✅ Optional: Add static sources
