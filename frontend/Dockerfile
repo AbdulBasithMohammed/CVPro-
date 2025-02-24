@@ -3,7 +3,7 @@ FROM node:18-alpine
 WORKDIR /app
 
 COPY . /app
-
+RUN npm install webpack@4.42.0
 # Install dependencies
 RUN npm install
 
