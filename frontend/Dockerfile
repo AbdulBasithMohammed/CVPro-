@@ -12,9 +12,6 @@ RUN npm install webpack@4.42.0
 # Install dependencies
 RUN npm install
 
-# Build the React application
-RUN NODE_OPTIONS="--openssl-legacy-provider" npm run build
-
 # Define build arguments
 ARG PORT=3000
 ARG REACT_APP_BACKEND_BASE_URL
@@ -22,6 +19,9 @@ ARG REACT_APP_BACKEND_BASE_URL
 # Set environment variables
 ENV PORT=$PORT
 ENV REACT_APP_BACKEND_BASE_URL=$REACT_APP_BACKEND_BASE_URL
+
+# Build the React application with the backend URL
+RUN NODE_OPTIONS="--openssl-legacy-provider" REACT_APP_BACKEND_BASE_URL=$REACT_APP_BACKEND_BASE_URL npm run build
 
 # Install 'serve' to serve the built application
 RUN npm install -g serve
