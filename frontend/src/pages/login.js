@@ -4,6 +4,7 @@ import backgroundImage from "../assets/signupbg2.jpg";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 // import googlelogo from "../assets/google.png";
 import axios from "axios";
+import { BASE_URL } from "../Constant";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -48,7 +49,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/auth/login/", formData, {
+      const response = await axios.post(BASE_URL+"/auth/login/", formData, {
         headers: { "Content-Type": "application/json" },
       });
 
@@ -75,7 +76,7 @@ const Login = () => {
 
   const handleGoogleSignupSuccess = async (credentialResponse) => {
     try {
-      const response = await axios.post("http://127.0.0.1:8000/auth/google-login/", {
+      const response = await axios.post(BASE_URL+"/auth/google-login/", {
         token: credentialResponse.credential,
       });
 

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import backgroundImage from "../assets/signupbg2.jpg";
+import { BASE_URL } from "../Constant";
 
 const ForgotPassword = () => {
   const [tokendata, setTokenData] = useState({ email: "", token: "" }); // Stores email and token
@@ -31,7 +32,7 @@ const ForgotPassword = () => {
     }
 
     try {
-      await axios.post("http://127.0.0.1:8000/auth/forgot-password/", {
+      await axios.post(BASE_URL+"/auth/forgot-password/", {
         email: tokendata.email,
       });
 
@@ -54,7 +55,7 @@ const ForgotPassword = () => {
     }
 
     try {
-      await axios.post("http://127.0.0.1:8000/auth/verify-otp/", tokendata);
+      await axios.post(BASE_URL+"/auth/verify-otp/", tokendata);
 
       setMessage("OTP verified successfully! Redirecting to reset password page...");
       setTimeout(() => {
