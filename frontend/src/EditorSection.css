@@ -82,7 +82,7 @@ textarea:focus,
 }
 
 /* Buttons */
-button {
+.remove-item button {
   padding: 10px 18px;
   font-size: 1rem;
   border-radius: 6px;
