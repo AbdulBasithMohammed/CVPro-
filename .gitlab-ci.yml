@@ -101,7 +101,7 @@ publish-backend:
   only:
     - main
     - Developer
-    - issue32_CICD_impl
+    - feature/#34_resumebackend
 
 publish-frontend:
   stage: publish
@@ -118,7 +118,7 @@ publish-frontend:
   only:
     - main
     - Developer
-    - issue32_CICD_impl
+    - feature/#34_resumebackend
 
 # -------------------------- #
 # 🔹 Deploy on VM 🔹 #
@@ -150,7 +150,7 @@ deploy-backend:
   only:
     - main
     - Developer
-    - issue32_CICD_impl
+    - feature/#34_resumebackend
 
 deploy-frontend:
   image: alpine:latest
@@ -179,4 +179,4 @@ deploy-frontend:
   only:
     - develop
     - main  
-    - issue32_CICD_impl
+    - feature/#34_resumebackend
