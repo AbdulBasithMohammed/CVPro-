@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react';
-import '@progress/kendo-theme-default/dist/all.css';
 import EditorSection from '../components/EditorSection';
 import ResumePreview from '../components/ResumePreview';
 import SaveButton from '../components/SaveButton';
