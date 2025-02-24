@@ -8,8 +8,7 @@ RUN npm install webpack@4.42.0
 RUN npm install
 
 # Build the React application
-RUN export NODE_OPTIONS=--openssl-legacy-provider
-RUN npm run build
+RUN NODE_OPTIONS="--openssl-legacy-provider" npm run build
 
 
 ARG PORT=3000
