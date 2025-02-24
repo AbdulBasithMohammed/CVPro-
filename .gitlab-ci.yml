@@ -41,11 +41,14 @@ test-backend:
   image: python:3.11
   tags:
     - cvpro-runner
-  script:
+  before_script:
     - cd backend/atsresume
     - python -m venv venv
     - source venv/bin/activate
+    - pip install --upgrade pip
     - pip install -r requirements.txt
+    - python -m spacy download en_core_web_sm
+  script:
     - python manage.py test
 
 # -------------------------- #
@@ -86,9 +89,17 @@ test-frontend:
     key: npm-cache
     paths:
       - frontend/node_modules
+  before_script:  
+    - export NODE_OPTIONS=--openssl-legacy-provider
+    - rm -rf node_modules
+    - npm install webpack@4.42.0
+    - npm install
   script:
     - cd frontend
     - npm install
+    - export REACT_BACKEND_BASE_URL=$REACT_BACKEND_BASE_URL
+    - export NODE_OPTIONS=--openssl-legacy-provider
+    - export CI=false
     - npm run test -- --passWithNoTests
 
 # -------------------------- #
