@@ -1,22 +1,36 @@
-import React from 'react';  
-import { memo, forwardRef } from 'react';
+import React, { memo, forwardRef } from 'react';
 import '../ResumePreview.css';
 
+// Section Component (Move this above ResumePreview)
+const Section = ({ title, children }) => (
+    <div className="resume-section">
+        <div className="section-lines">
+            <span className="section-title">{title}</span>
+        </div>
+        {children}
+    </div>
+);
+
+// ResumePreview Component
 const ResumePreview = memo(forwardRef(({ data }, ref) => {
     return (
         <div className="resume-preview" ref={ref}>
             <div className="resume-header">
-                <h1>{data.personal.name}</h1>
-                <p>{data.personal.email} | {data.personal.phone} | {data.personal.address}</p>
+                <h1>{data?.personal?.name || "Your Name"}</h1>
+                <p>
+                    {data?.personal?.email || "your.email@example.com"} | 
+                    {data?.personal?.phone || "000-000-0000"} | 
+                    {data?.personal?.address || "Your Address"}
+                </p>
             </div>
 
-            {data.personal.summary && (
+            {data?.personal?.summary && (
                 <Section title="Summary">
                     <p>{data.personal.summary}</p>
                 </Section>
             )}
 
-            {data.skills.length > 0 && (
+            {data?.skills?.length > 0 && (
                 <Section title="Skills">
                     <ul className="skills-list">
                         {data.skills.map((skill, index) => (
@@ -26,7 +40,7 @@ const ResumePreview = memo(forwardRef(({ data }, ref) => {
                 </Section>
             )}
 
-            {data.projects.length > 0 && (
+            {data?.projects?.length > 0 && (
                 <Section title="Projects">
                     {data.projects.map((project, index) => (
                         <div key={index} className="project-item">
@@ -41,17 +55,17 @@ const ResumePreview = memo(forwardRef(({ data }, ref) => {
                 </Section>
             )}
 
-            {data.education.length > 0 && (
+            {data?.education?.length > 0 && (
                 <Section title="Education">
                     {data.education.map((education, index) => (
                         <div key={index} className="education-item">
                             <div className="education-header">
-                                <span className="education-name">{education.university}</span>
-                                <span className="graduation-date">{education.graduationDate}</span>
+                                <span className="education-name">{education.institution || "Your Institution"}</span>
+                                <span className="graduation-date">{education.graduationDate || "Graduation Date"}</span>
                             </div>
                             <div className="education-details">
-                                <span className="course-name">{education.course}</span>
-                                <span className="education-location">{education.location}</span>
+                                <span className="course-name">{education.course || "Course Name"}</span>
+                                <span className="education-location">{education.location || "Location"}</span>
                             </div>
                         </div>
                     ))}
@@ -60,14 +74,5 @@ const ResumePreview = memo(forwardRef(({ data }, ref) => {
         </div>
     );
 }));
-
-const Section = ({ title, children }) => (
-    <div className="resume-section">
-        <div className="section-lines">
-            <span className="section-title">{title}</span>
-        </div>
-        {children}
-    </div>
-);
 
 export default ResumePreview;

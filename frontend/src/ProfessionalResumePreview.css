@@ -1,4 +1,4 @@
-.resume-preview {
+.resume-preview-prof {
     width: 100%;
     max-width: 750px;
     margin: 0 auto;
@@ -7,61 +7,61 @@
     padding: 30px !important;
     background: #fff;
 }
-
-.resume-name {
-    font-size: 26px; 
+ 
+.resume-name-prof {
+    font-size: 26px;
     font-weight: bold;
     text-transform: uppercase;
     margin: 0;
 }
-
-.resume-summary {
-    font-size: 14px; 
+ 
+.resume-summary-prof {
+    font-size: 14px;
     color: #555;
     margin-top: 10px;
 }
-
-.resume-header {
+ 
+.resume-header-prof {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     flex-wrap: wrap;
     padding-bottom: 15px;
 }
-
-.header-left {
+ 
+.header-left-prof {
     display: flex;
     flex-direction: column;
 }
-
-.header-right {
+ 
+.header-right-prof {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
 }
-
-.resume-header h1 {
+ 
+.resume-header-prof h1 {
     font-size: 26px;
     font-weight: bold;
     text-transform: uppercase;
     margin: 0;
 }
-
-.resume-location {
+ 
+.resume-location-prof {
     font-size: 14px;
     color: #555;
     margin-top: 3px;
 }
-
-.resume-contact {
+ 
+.resume-contac-prof {
     font-size: 14px;
     color: #555;
     text-align: right;
     display: flex;
     flex-direction: column;
 }
-
-.resume-email {
+ 
+.resume-email-prof {
     font-size: 14px;
     color: #555;
     text-align: right;
@@ -69,136 +69,136 @@
     flex-direction: column;
     margin: 0;
 }
-
-.resume-phone {
+ 
+.resume-phone-prof {
     margin-bottom: 3px;
     font-size: 14px;
 }
-
-.resume-section {
+ 
+.resume-section-prof {
     margin-bottom: 20px;
     text-align: left;
     font-size: 15px;
     padding-top: 15px;
 }
-
-.section-title {
+ 
+.section-title-prof {
     font-size: 16px;
     font-weight: bold;
     text-transform: uppercase;
     padding-bottom: 5px;
 }
-
-.experience-item {
+ 
+.experience-item-prof {
     margin-bottom: 20px;
     font-size: 15px;
 }
-
-.experience-header {
+ 
+.experience-header-prof {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
 }
-
-.job-title {
+ 
+.job-title-prof {
     font-size: 15px;
     font-weight: bold;
-    margin-bottom: 2px; 
+    margin-bottom: 2px;
 }
-
-.employment-dates {
+ 
+.employment-dates-prof {
     font-size: 14px;
     color: #555;
-    margin-left: 5px; 
+    margin-left: 5px;
 }
-
-.company-location {
+ 
+.company-location-prof {
     font-size: 14px;
     color: #555;
-    margin-top: 2px; 
+    margin-top: 2px;
 }
-
-.responsibilities-list {
-    padding-left: 20px; 
+ 
+.responsibilities-list-prof {
+    padding-left: 20px;
     font-size: 14px;
     line-height: 1;
 }
-
-.responsibilities-list li {
+ 
+.responsibilities-list-prof li {
     margin-bottom: 5px;
 }
-
-.skills-list {
-    list-style-type: disc; 
-    padding-left: 20px; 
-    display: grid; 
-    grid-template-columns: repeat(2, 1fr); 
+ 
+.skills-list-prof {
+    list-style-type: disc;
+    padding-left: 20px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     font-size: 14px;
     text-align: left;
 }
-
-.skills-list li {
-    padding: 3px 0; 
+ 
+.skills-list-prof li {
+    padding: 3px 0;
 }
-
-.education-item {
+ 
+.education-item-prof {
     margin-bottom: 15px;
 }
-
-.education-header {
+ 
+.education-heade-prof {
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-weight: bold;
     padding-bottom: 5px;
 }
-
-.education-details {
+ 
+.education-details-prof {
     font-size: 14px;
     color: #555;
     font-style: italic;
     display: flex;
     justify-content: space-between;
 }
-
-.course-name {
+ 
+.course-name-prof {
     flex: 1;
     text-align: left;
 }
-
-.education-location {
+ 
+.education-location-prof {
     flex: 1;
     text-align: right;
 }
-
+ 
 @media (max-width: 768px) {
-    .resume-preview {
+    .resume-preview-prof {
         padding: 15px;
     }
-
-    .resume-header {
+ 
+    .resume-header-prof {
         flex-direction: column;
         align-items: flex-start;
     }
-
-    .resume-header h1 {
+ 
+    .resume-header-prof h1 {
         font-size: 20px;
     }
-
-    .resume-contact {
+ 
+    .resume-contact-prof {
         text-align: left;
     }
-
-    .section-title {
+ 
+    .section-title-prof {
         font-size: 14px;
     }
-
-    .skills-list {
+ 
+    .skills-list-prof {
         grid-template-columns: 1fr;
     }
-
-    .education-header,
-    .education-details {
+ 
+    .education-header-prof,
+    .education-details-prof {
         flex-direction: column;
         text-align: left;
     }

@@ -1,12 +1,15 @@
 import React, { useState, useRef } from 'react';
 import EditorSection from '../components/EditorSection';
-import ResumePreview from '../components/ResumePreview';
 import SaveButton from '../components/SaveButton';
 import '../template-resume.css';
 import html2canvas from "html2canvas";
 import Navbar from '../components/navbar';
-import Footer from '../components/footer'
 import { BASE_URL } from "../Constant";
+import Footer from '../components/footer';
+
+// Import both resume templates
+import ResumePreview from '../components/ResumePreview';
+import ProfessionalResumePreview from '../components/ProfessionalResumePreview';
 
 function TemplateSelection() {
   const [resumeData, setResumeData] = useState({
@@ -31,6 +34,14 @@ function TemplateSelection() {
   });
 
   const previewRef = useRef();
+  const selectedTemplate = localStorage.getItem("selectedTemplate") || "freshie"; 
+  console.log("Selected Template:", selectedTemplate);
+
+  // Choose the appropriate component dynamically
+  const SelectedResumePreview = selectedTemplate === "experienced" ? ProfessionalResumePreview : ResumePreview;
+
+  
+  
 
   const updateSection = (section, data, index = null) => {
     if (index !== null) {
@@ -49,8 +60,6 @@ function TemplateSelection() {
       }));
     }
   };
-
-
 
   const handleSave = async () => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -103,24 +112,30 @@ function TemplateSelection() {
         console.error("Error:", error);
         alert("Network error, please try again");
     }
-};
+  };
+
   
 
   return (
     <div className='Navbar'>
-      <Navbar/>
-      
-    
-    <div className="app-container">
-      <div className="editor-section">
-        <EditorSection data={resumeData} updateSection={updateSection} />
-        <SaveButton handleSave={handleSave} />
+      <Navbar />
+      <div className="app-container">
+        <div className="editor-section">
+          <EditorSection data={resumeData} updateSection={updateSection} />
+          <SaveButton handleSave={handleSave} />
+        </div>
+
+        {/* Dynamically render the selected resume template with a key */}
+        <SelectedResumePreview 
+          key={selectedTemplate} // Add key here to force re-render
+          ref={previewRef} 
+          data={resumeData} 
+        />
       </div>
-      <ResumePreview ref={previewRef} data={resumeData} />
+      <div className='Footer'>
+        <Footer />
+      </div>
     </div>
-    <div className='Footer'>
-      <Footer/>
-    </div></div>
   );
 }
 

@@ -1,11 +1,12 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import '../EditorSection.css';
-
 
 const EditorSection = ({ data, updateSection }) => {
     const [summaryLength, setSummaryLength] = useState(data.personal.summary.length);
     const MAX_SUMMARY_LENGTH = 300;
+
+    // ✅ Get the selected template from localStorage
+    const selectedTemplate = localStorage.getItem("selectedTemplate") || "freshie"; // Default to "freshie"
 
     const handleInputChange = (section, field, value) => {
         const updatedData = { ...data[section], [field]: value };
@@ -34,9 +35,40 @@ const EditorSection = ({ data, updateSection }) => {
         updateSection(section, data[section].filter((_, i) => i !== index));
     };
 
+    // ✅ Work Experience Section (Only Show if "experienced")
+    const addWorkExperience = () => {
+        addItem('experience', { jobTitle: '', company: '', startDate: '', endDate: '', tasks: [''] });
+    };
+
+    const handleWorkExperienceChange = (index, field, value) => {
+        handleArrayChange('experience', index, field, value);
+    };
+
+    const removeWorkExperience = (index) => {
+        removeItem('experience', index);
+    };
+
+    const addWorkTask = (index) => {
+        const updatedExperience = [...data.experience];
+        updatedExperience[index].tasks.push('');
+        updateSection('experience', updatedExperience);
+    };
+
+    const handleWorkTaskChange = (index, taskIndex, value) => {
+        const updatedExperience = [...data.experience];
+        updatedExperience[index].tasks[taskIndex] = value;
+        updateSection('experience', updatedExperience);
+    };
+
+    const removeWorkTask = (index, taskIndex) => {
+        const updatedExperience = [...data.experience];
+        updatedExperience[index].tasks.splice(taskIndex, 1);
+        updateSection('experience', updatedExperience);
+    };
+
+    // ✅ Skills Section
     const addSkill = () => {
-        const updatedSkills = [...data.skills, ''];
-        updateSection('skills', updatedSkills);
+        updateSection('skills', [...data.skills, '']);
     };
 
     const handleSkillChange = (index, value) => {
@@ -46,65 +78,27 @@ const EditorSection = ({ data, updateSection }) => {
     };
 
     const removeSkill = (index) => {
-        const updatedSkills = data.skills.filter((_, i) => i !== index);
-        updateSection('skills', updatedSkills);
+        updateSection('skills', data.skills.filter((_, i) => i !== index));
     };
 
+    // ✅ Education Section
     const addEducation = () => {
         if (data.education.length < 2) {
-            updateSection('education', [...data.education, { university: '', graduationDate: '', location: '', course: '' }]);
+            addItem('education', { institution: '', graduationDate: '', course: '', location: '' });
         }
     };
 
     const handleEducationChange = (index, field, value) => {
-        const updatedEducation = [...data.education];
-        updatedEducation[index][field] = value;
-        updateSection('education', updatedEducation);
+        handleArrayChange('education', index, field, value);
     };
 
     const removeEducation = (index) => {
-        updateSection('education', data.education.filter((_, i) => i !== index));
+        removeItem('education', index);
     };
-
-    // Work Experience Section Functions
-    const addWorkExperience = () => {
-        updateSection('workExperience', [
-            ...data.workExperience,
-            { companyName: '', startDate: '', endDate: '', role: '', location: '', tasks: [] }
-        ]);
-    };
-
-    const handleWorkExperienceChange = (index, field, value) => {
-        const updatedWorkExperience = [...data.workExperience];
-        updatedWorkExperience[index][field] = value;
-        updateSection('workExperience', updatedWorkExperience);
-    };
-
-    const removeWorkExperience = (index) => {
-        updateSection('workExperience', data.workExperience.filter((_, i) => i !== index));
-    };
-
-    const addWorkTask = (index) => {
-        const updatedWorkExperience = [...data.workExperience];
-        updatedWorkExperience[index].tasks.push('');
-        updateSection('workExperience', updatedWorkExperience);
-    };
-
-    const handleWorkTaskChange = (index, taskIndex, value) => {
-        const updatedWorkExperience = [...data.workExperience];
-        updatedWorkExperience[index].tasks[taskIndex] = value;
-        updateSection('workExperience', updatedWorkExperience);
-    };
-
-    const removeWorkTask = (index, taskIndex) => {
-        const updatedWorkExperience = [...data.workExperience];
-        updatedWorkExperience[index].tasks.splice(taskIndex, 1);
-        updateSection('workExperience', updatedWorkExperience);
-    };
-    
 
     return (
         <div className="editor-container">
+            {/* ✅ Personal Details */}
             <div className="editor-section">
                 <h2>Personal Details</h2>
                 {['name', 'email', 'phone', 'address'].map((field) => (
@@ -128,7 +122,7 @@ const EditorSection = ({ data, updateSection }) => {
                 </div>
             </div>
 
-            {/* Skills Section */}
+            {/* ✅ Skills Section */}
             <div className="editor-section">
                 <h2>Skills</h2>
                 <button onClick={addSkill}>Add Skill</button>
@@ -146,108 +140,58 @@ const EditorSection = ({ data, updateSection }) => {
                 </div>
             </div>
 
-            {[{ section: 'experience', title: 'Work Experience' }, { section: 'projects', title: 'Projects' }].map(({ section, title }) => (
-                <div key={section} className="editor-section">
-                    <h2>{title}</h2>
-                    <button onClick={() => addItem(section, section === 'experience' ? {
-                        Company: '', Position: '', StartDate: '', EndDate: '', Tasks: [], Location: ''
-                    } : {
-                        name: '', tasks: [] 
-                    })}>Add {title.slice(0, -1)}</button>
-                    {data[section].map((item, index) => (
+            {/* ✅ Conditionally Show Work Experience (Only if 'experienced') */}
+            {selectedTemplate === "experienced" && (
+                <div className="editor-section">
+                    <h2>Work Experience</h2>
+                    <button onClick={addWorkExperience}>Add Work Experience</button>
+                    {data.experience.map((exp, index) => (
                         <div key={index} className="item-group">
-                            {Object.keys(item).filter(field => field !== 'tasks').map((field) => (
+                            {['jobTitle', 'company', 'startDate', 'endDate', 'location'].map((field) => (
                                 <div key={field} className="form-group">
                                     <label>{field.replace(/([A-Z])/g, ' $1').trim()}</label>
-                                    {field === 'tasks' ? null : (
-                                        field.includes('Date') ? (
-                                            <input
-                                                type="text"
-                                                value={item[field] || ''}
-                                                onChange={(e) => handleArrayChange(section, index, field, e.target.value)}
-                                                placeholder="MM/YYYY"
-                                                maxLength={7}
-                                                pattern="\d{2}/\d{4}"
-                                            />
-                                        ) : (
-                                            <input
-                                                value={item[field]}
-                                                onChange={(e) => handleArrayChange(section, index, field, e.target.value)}
-                                            />
-                                        )
-                                    )}
+                                    <input
+                                        value={exp[field]}
+                                        onChange={(e) => handleWorkExperienceChange(index, field, e.target.value)}
+                                        placeholder={field}
+                                    />
                                 </div>
                             ))}
                             <div className="tasks-section">
                                 <label>Tasks</label>
-                                {item.tasks?.map((task, taskIndex) => (
+                                {exp.tasks.map((task, taskIndex) => (
                                     <div key={taskIndex} className="task-input">
                                         <input
                                             value={task}
-                                            onChange={(e) => {
-                                                const newItems = [...data[section]];
-                                                newItems[index].tasks[taskIndex] = e.target.value;
-                                                updateSection(section, newItems);
-                                            }}
+                                            onChange={(e) => handleWorkTaskChange(index, taskIndex, e.target.value)}
                                         />
-                                        <button className="remove-task" onClick={() => {
-                                            const newItems = [...data[section]];
-                                            newItems[index].tasks.splice(taskIndex, 1);
-                                            updateSection(section, newItems);
-                                        }}>×</button>
+                                        <button className="remove-task" onClick={() => removeWorkTask(index, taskIndex)}>×</button>
                                     </div>
                                 ))}
-                                <button className="add-task" onClick={() => {
-                                    const newItems = [...data[section]];
-                                    newItems[index].tasks = [...(newItems[index].tasks || []), ''];
-                                    updateSection(section, newItems);
-                                }}>Add Task</button>
+                                <button className="add-task" onClick={() => addWorkTask(index)}>Add Task</button>
                             </div>
-                            <button className="remove-item" onClick={() => removeItem(section, index)}>Remove {title.slice(0, -1)}</button>
+                            <button className="remove-item" onClick={() => removeWorkExperience(index)}>Remove Work Experience</button>
                         </div>
                     ))}
                 </div>
-            ))}
+            )}
 
-            {/* Education Section */}
+            {/* ✅ Education Section */}
             <div className="editor-section">
                 <h2>Education</h2>
                 <button onClick={addEducation} disabled={data.education.length >= 2}>Add Education</button>
                 {data.education.map((education, index) => (
                     <div key={index} className="item-group">
-                        <div className="form-group">
-                            <label>University/College</label>
-                            <input
-                                value={education.university}
-                                onChange={(e) => handleEducationChange(index, 'university', e.target.value)}
-                                placeholder="University/College Name"
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Graduation Date (mm/yyyy)</label>
-                            <input
-                                type="month"
-                                value={education.graduationDate}
-                                onChange={(e) => handleEducationChange(index, 'graduationDate', e.target.value)}
-                                placeholder="Graduation Date"
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Location</label>
-                            <input
-                                value={education.location}
-                                onChange={(e) => handleEducationChange(index, 'location', e.target.value)}
-                                placeholder="Location"
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Course</label>
-                            <input
-                                value={education.course}
-                                onChange={(e) => handleEducationChange(index, 'course', e.target.value)}
-                                placeholder="Course Name"
-                            />
-                        </div>
+                        {['institution', 'graduationDate', 'course', 'location'].map((field) => (
+                            <div key={field} className="form-group">
+                                <label>{field.replace(/([A-Z])/g, ' $1').trim()}</label>
+                                <input
+                                    value={education[field]}
+                                    onChange={(e) => handleEducationChange(index, field, e.target.value)}
+                                    placeholder={field}
+                                />
+                            </div>
+                        ))}
                         <button className="remove-item" onClick={() => removeEducation(index)}>Remove Education</button>
                     </div>
                 ))}

@@ -10,8 +10,7 @@ const ResumeBuilder = () => {
   const [resumeData, setResumeData] = useState({
     personal: { name: '', email: '', phone: '', address: '', summary: '' },
     skills: [],
-    experience: [],
-    workExperience: [], // added so that work experience validations can be tracked
+    experience: [{jobTitle: '', company: '', startDate: '', endDate: '', tasks: ['']}],
     education: [{ institution: '', graduationDate: '', course: '', location: '' }],
     projects: [],
   });
