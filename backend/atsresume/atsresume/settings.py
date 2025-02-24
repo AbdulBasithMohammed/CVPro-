@@ -49,7 +49,7 @@ SECRET_KEY = 'y_wg($v2p&cpf+cu8!-sgze5w-9di1&52d16=!!ecd+$4=sfw4'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -197,3 +197,4 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # ✅ Ensure STATIC_ROOT is set
+
