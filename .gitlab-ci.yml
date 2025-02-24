@@ -62,7 +62,8 @@ build-frontend:
   script:
     - cd frontend
     - npm install
-    - export REACT_APP_API_URL=$BASE_URL
+    - export REACT_BACKEND_BASE_URL=$REACT_BACKEND_BASE_URL
+    - export CI=false
     - npm run build
   artifacts:
     paths:
