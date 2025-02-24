@@ -1,22 +1,23 @@
 import React, { useState, useRef } from 'react';
-import '@progress/kendo-theme-default/dist/all.css';
 import EditorSection from '../components/EditorSection';
 import ResumePreview from '../components/ResumePreview';
 import SaveButton from '../components/SaveButton';
 import '../template-resume.css';
 import Navbar from '../components/navbar';
-import Footer from '../components/footer'
-
+import Footer from '../components/footer';
 
 const ResumeBuilder = () => {
   const [resumeData, setResumeData] = useState({
     personal: { name: '', email: '', phone: '', address: '', summary: '' },
     skills: [],
     experience: [],
+    workExperience: [], // added so that work experience validations can be tracked
     education: [{ institution: '', graduationDate: '', course: '', location: '' }],
     projects: [],
   });
 
+  // Maintain a flag for overall form validity
+  const [isFormValid, setIsFormValid] = useState(false);
   const previewRef = useRef();
 
   const updateSection = (section, data, index = null) => {
@@ -31,23 +32,30 @@ const ResumeBuilder = () => {
     }
   };
 
-  const formatGraduationDate = (date) => {
-    const [month, year] = date.split('/');
-    const dateObj = new Date(Number(year), Number(month) - 1);
-    return isNaN(dateObj.getTime()) ? "Invalid Date" : dateObj.toLocaleString('default', { month: 'long', year: 'numeric' });
+  const handleSave = () => {
+    if (isFormValid) {
+      console.log('Form is valid. Saving data...');
+      // Place your save logic here.
+    } else {
+      console.log('Cannot save: fix the errors first.');
+    }
   };
 
   return (
-    <div className='Navbar'>
-    <Navbar/>
-    <div className="app-container">
-      <div className="editor-section">
-        <EditorSection data={resumeData} updateSection={updateSection} />
-        <SaveButton targetRef={previewRef} />
+    <div className="Navbar">
+      <Navbar />
+      <div className="app-container">
+        <div className="editor-section">
+          <EditorSection
+            data={resumeData}
+            updateSection={updateSection}
+            onValidationChange={setIsFormValid}
+          />
+          <SaveButton onClick={handleSave} disabled={!isFormValid} />
+        </div>
+        <ResumePreview ref={previewRef} data={resumeData} />
       </div>
-      <ResumePreview ref={previewRef} data={resumeData} formatGraduationDate={formatGraduationDate} />
-    </div>
-    <div className='Footer'><Footer/></div>
+      <Footer />
     </div>
   );
 };

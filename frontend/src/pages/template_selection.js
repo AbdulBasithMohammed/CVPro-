@@ -5,6 +5,8 @@ import ResumePreview from '../components/ResumePreview';
 import SaveButton from '../components/SaveButton';
 import '../template-resume.css';
 import html2canvas from "html2canvas";
+import Navbar from '../components/navbar';
+import Footer from '../components/footer'
 
 function TemplateSelection() {
   const [resumeData, setResumeData] = useState({
@@ -103,6 +105,10 @@ function TemplateSelection() {
   
 
   return (
+    <div className='Navbar'>
+      <Navbar/>
+      
+    
     <div className="app-container">
       <div className="editor-section">
         <EditorSection data={resumeData} updateSection={updateSection} />
@@ -110,6 +116,9 @@ function TemplateSelection() {
       </div>
       <ResumePreview ref={previewRef} data={resumeData} />
     </div>
+    <div className='Footer'>
+      <Footer/>
+    </div></div>
   );
 }
 
