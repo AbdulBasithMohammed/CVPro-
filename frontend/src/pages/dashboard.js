@@ -45,7 +45,7 @@ const Dashboard = () => {
     };
 
     fetchResumes();
-  }, [navigate, accessToken, user]);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col justify-between">

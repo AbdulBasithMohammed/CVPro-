@@ -87,7 +87,7 @@ class LoginView(APIView):
             refresh_token = str(refresh)
 
             # Remove sensitive data before returning
-            user_data.pop('_id')
+            user_data['_id'] = str(user_data['_id'])
             user_data.pop('password')
 
             return Response({
