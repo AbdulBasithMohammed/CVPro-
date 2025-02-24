@@ -25,3 +25,9 @@ sqlparse==0.2.4
 typing_extensions==4.12.2
 urllib3==2.3.0
 google-auth==2.38.0
+pdfplumber
+docx
+python-docx
+spacy
+google-generativeai
+phonenumbers
