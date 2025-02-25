@@ -133,7 +133,7 @@ publish-frontend:
   script:
     - echo "$DOCKER_HUB_PWD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
     - IMAGE_TAG="$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
-    - docker build --build-arg REACT_APP_API_URL=$BASE_URL -t arshadvhora/projectstream-frontend:$IMAGE_TAG frontend 
+    - docker build --build-arg REACT_BACKEND_BASE_URL=$REACT_BACKEND_BASE_URL -t arshadvhora/projectstream-frontend:$IMAGE_TAG frontend 
     - docker push arshadvhora/projectstream-frontend:$IMAGE_TAG
   only:
     - main
