@@ -28,7 +28,7 @@ const ResumeUpload = () => {
             const fileType = selectedFile.name.split(".").pop().toLowerCase();
             if (["pdf", "doc", "docx"].includes(fileType)) {
                 setFile(selectedFile);
-                setIsModalOpen(true);
+
                 setError("");
             } else {
                 setError("Only PDF or Word files are allowed.");
@@ -47,7 +47,7 @@ const ResumeUpload = () => {
         formData.append("resume", file);
 
         try {
-            const response = await axios.post("http://your-backend-api.com/upload", formData, {
+            const response = await axios.post("http://172.17.3.79:8000/uploadextract/", formData, {
                 headers: { "Content-Type": "multipart/form-data" }
             });
             console.log(response);
@@ -56,6 +56,7 @@ const ResumeUpload = () => {
         } catch (error) {
             console.error("Upload error:", error);
             setError("Failed to upload resume. Try again.");
+            setIsModalOpen(true);
         }
     };
 

@@ -32,7 +32,7 @@ const ForgotPassword = () => {
     }
 
     try {
-      await axios.post(BASE_URL+"/auth/forgot-password/", {
+      await axios.post("http://172.17.3.79:8000auth/forgot-password/", {
         email: tokendata.email,
       });
 
@@ -55,7 +55,7 @@ const ForgotPassword = () => {
     }
 
     try {
-      await axios.post(BASE_URL+"/auth/verify-otp/", tokendata);
+      await axios.post("http://172.17.3.79:8000/auth/verify-otp/", tokendata);
 
       setMessage("OTP verified successfully! Redirecting to reset password page...");
       setTimeout(() => {

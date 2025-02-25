@@ -93,7 +93,7 @@ function TemplateSelection() {
     formData.append("user_id", userId);  // Send user ID
 
     try {
-        const response = await fetch(BASE_URL+"/resume/create/", {
+        const response = await fetch("http://172.17.3.79:8000/resume/create/", {
             method: "POST",
             body: formData,
         });

@@ -60,7 +60,7 @@ const Signup = () => {
     if (Object.values(errors).some((error) => error)) return;
 
     try {
-      await axios.post(BASE_URL+"/auth/register/", formData, {
+      await axios.post("http://172.17.3.79:8000/auth/register/", formData, {
         headers: { "Content-Type": "application/json" },
       });
       navigate("/login");
@@ -72,7 +72,7 @@ const Signup = () => {
   // ✅ Handle Google Signup Success
   const handleGoogleSignupSuccess = async (credentialResponse) => {
     try {
-      const response = await axios.post(BASE_URL+"/auth/google-login/", {
+      const response = await axios.post("http://172.17.3.79:8000auth/google-login/", {
         token: credentialResponse.credential,
       });
 

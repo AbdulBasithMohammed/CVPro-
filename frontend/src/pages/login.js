@@ -49,7 +49,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(BASE_URL+"/auth/login/", formData, {
+      const response = await axios.post("http://172.17.3.79:8000/auth/login/", formData, {
         headers: { "Content-Type": "application/json" },
       });
 
@@ -76,7 +76,7 @@ const Login = () => {
 
   const handleGoogleSignupSuccess = async (credentialResponse) => {
     try {
-      const response = await axios.post(BASE_URL+"/auth/google-login/", {
+      const response = await axios.post("http://172.17.3.79:8000/auth/google-login/", {
         token: credentialResponse.credential,
       });
 

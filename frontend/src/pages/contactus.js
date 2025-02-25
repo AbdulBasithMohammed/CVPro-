@@ -46,7 +46,7 @@ const ContactUs = () => {
     }
 
     try {
-      const response = await axios.post('http://your-backend-api.com/contact', contactData);
+      const response = await axios.post("http://172.17.3.79:8000/auth/contact-us/", contactData);
       console.log('Message sent:', response.data);
       alert('Your message has been sent successfully!');
       setErrors({});

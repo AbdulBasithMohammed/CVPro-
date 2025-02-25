@@ -31,7 +31,7 @@ const Dashboard = () => {
 
     const fetchResumes = async () => {
       try {
-        const response = await axios.get(BASE_URL+`/resume/retrieve`, {
+        const response = await axios.get("http://172.17.3.79:8000/resume/retrieve/", {
           params: { user_id: user._id }, // Send user_id as a query parameter
         });
 
