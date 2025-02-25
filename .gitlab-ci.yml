@@ -71,8 +71,9 @@ build-frontend:
   script:
     - cd frontend
     - npm install
+    - echo $REACT_BACKEND_BASE_URL
     - export REACT_BACKEND_BASE_URL=$REACT_BACKEND_BASE_URL
-    - export NODE_OPTIONS=--openssl-legacy-provider
+    - echo $REACT_BACKEND_BASE_URL
     - export CI=false
     - npm run build
   artifacts:

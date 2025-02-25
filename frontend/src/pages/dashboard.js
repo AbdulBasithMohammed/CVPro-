@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
+import { BASE_URL } from "../Constant";
 
 const Dashboard = () => {
   const [userResumes, setUserResumes] = useState([]);
@@ -30,7 +31,7 @@ const Dashboard = () => {
 
     const fetchResumes = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/resume/retrieve`, {
+        const response = await axios.get(BASE_URL+`/resume/retrieve`, {
           params: { user_id: user._id }, // Send user_id as a query parameter
         });
 
@@ -93,7 +94,7 @@ const Dashboard = () => {
             {userResumes.length > 0 &&
               userResumes.map((resume) => {
                 const imageSrc = resume.image_id
-                  ? `http://localhost:8000/resume/image/${resume.image_id}`
+                  ? BASE_URL+`/resume/image/${resume.image_id}`
                   : "https://via.placeholder.com/250";
 
                 return (
