@@ -72,7 +72,7 @@ const Signup = () => {
   // ✅ Handle Google Signup Success
   const handleGoogleSignupSuccess = async (credentialResponse) => {
     try {
-      const response = await axios.post("http://172.17.3.79:8000auth/google-login/", {
+      const response = await axios.post("http://172.17.3.79:8000/auth/google-login/", {
         token: credentialResponse.credential,
       });
 

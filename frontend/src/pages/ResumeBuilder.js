@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import EditorSection from '../components/EditorSection';
 import ResumePreview from '../components/ResumePreview';
 import SaveButton from '../components/SaveButton';
-import '../template-resume.css';
+// import '../template-resume.css';
 import Navbar from '../components/navbar';
 import Footer from '../components/footer';
 
@@ -41,21 +41,23 @@ const ResumeBuilder = () => {
   };
 
   return (
-    <div className="Navbar">
-      <Navbar />
-      <div className="app-container">
-        <div className="editor-section">
-          <EditorSection
-            data={resumeData}
-            updateSection={updateSection}
-            onValidationChange={setIsFormValid}
-          />
-          <SaveButton onClick={handleSave} disabled={!isFormValid} />
-        </div>
+    <div className="flex flex-col h-screen">
+    <Navbar />
+    <div className="flex flex-grow p-4">
+      <div className="flex-1 p-4 bg-white shadow-md rounded-lg mr-4">
+        <EditorSection
+          data={resumeData}
+          updateSection={updateSection}
+          onValidationChange={setIsFormValid}
+        />
+        <SaveButton onClick={handleSave} disabled={!isFormValid} />
+      </div>
+      <div className="flex-1 p-4 bg-white shadow-md rounded-lg">
         <ResumePreview ref={previewRef} data={resumeData} />
       </div>
-      <Footer />
     </div>
+    <Footer />
+  </div>
   );
 };
 

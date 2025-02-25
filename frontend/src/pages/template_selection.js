@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import EditorSection from '../components/EditorSection';
 import SaveButton from '../components/SaveButton';
-import '../template-resume.css';
+import '../CSS/template-resume.css';
 import html2canvas from "html2canvas";
 import Navbar from '../components/navbar';
 import { BASE_URL } from "../Constant";
@@ -93,7 +93,7 @@ function TemplateSelection() {
     formData.append("user_id", userId);  // Send user ID
 
     try {
-        const response = await fetch("http://172.17.3.79:8000/resume/create/", {
+        const response = await fetch("http://localhost:8000/resume/create/", {
             method: "POST",
             body: formData,
         });

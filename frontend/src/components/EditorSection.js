@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../EditorSection.css';
+import '../CSS/EditorSection.css';
 
 const EditorSection = ({ data, updateSection }) => {
     const [summaryLength, setSummaryLength] = useState(data.personal.summary.length);
