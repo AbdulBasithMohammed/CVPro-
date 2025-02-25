@@ -1,119 +1,147 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import Navbar from "../components/navbar"; // Assuming Navbar is in the same folder
 import axios from "axios";
+import Navbar from "../components/navbar";
+import Footer from "../components/footer";
+import { BASE_URL } from "../Constant";
 
 const Dashboard = () => {
   const [userResumes, setUserResumes] = useState([]);
   const [loading, setLoading] = useState(true);
-  // const [message, setMessage] = useState("");
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
-  
-  // Get user data from localStorage
-  const user = JSON.parse(localStorage.getItem("user")); // Assuming user is stored as a JSON object
 
-  // Function to get the greeting based on the current time
-  const getTimeBasedGreeting = () => {
-    const currentHour = new Date().getHours();
+  // Retrieve user details from localStorage
+  const user = JSON.parse(localStorage.getItem("user"));
+  const accessToken = localStorage.getItem("access_token");
 
-    if (currentHour < 12 && currentHour>=6) {
-      return "Good Morning";
-    } else if (currentHour < 18 && currentHour>=12) {
-      return "Good Afternoon";
-    } 
-    // else if (currentHour >=0 && currentHour<6)  {
-    //   return "Good Night";
-    // }
-    else{
-        return "Good Evening";
-    }
-  };
+  // Function to generate a time-based greeting
+  // const getTimeBasedGreeting = () => {
+  //   const currentHour = new Date().getHours();
+  //   if (currentHour >= 6 && currentHour < 12) return "Good Morning";
+  //   if (currentHour >= 12 && currentHour < 18) return "Good Afternoon";
+  //   return "Good Evening";
+  // };
 
   useEffect(() => {
-    // Check if user is logged in
-    const accessToken = localStorage.getItem("access_token");
-
-    if (!accessToken) {
+    if (!accessToken || !user?._id) {
       navigate("/login");
-    } else {
-      const fetchResumes = async () => {
-        try {
-          const response = await axios.get("http://127.0.0.1:8000/api/resumes/", {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          });
-          setUserResumes(response.data);
-          setLoading(false);
-        } catch (error) {
-          setLoading(false);
-        }
-      };
-
-      fetchResumes();
+      return;
     }
-  }, [navigate]);
+
+    const fetchResumes = async () => {
+      try {
+        const response = await axios.get("http://172.17.3.79:8000/resume/retrieve/", {
+          params: { user_id: user._id }, // Send user_id as a query parameter
+        });
+
+        console.log("API Response:", response.data);
+        setUserResumes(response.data);
+      } catch (error) {
+        console.error("Error fetching resumes:", error);
+        setError("Failed to load resumes. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchResumes();
+  },[]);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-gray-900 text-white flex flex-col justify-between">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-4xl font-light text-center text-gray-100 mb-6">
-         Hello {user?.first_name || "User"}, {getTimeBasedGreeting()}  
-         <br/>
-         </h2>
-         <h2 className="text-4xl font-extrabold text-center text-gray-100 mb-6">
-         Your Dashboard
-        </h2>
+      {/* Main Container */}
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-12">
+        {/* Greeting Section */}
+        <div className="text-center mb-10">
+          <h2 className="text-4xl font-light text-gray-300 tracking-wide">
+            Hi, {user?.first_name || "User"} 👋
+          </h2>
+          <h2 className="text-6xl font-extrabold text-white mt-3 tracking-wide">
+            Your Dashboard
+          </h2>
+        </div>
 
-        {/* {message && <p className="text-center text-red-500 mt-4">{message}</p>} */}
-
+        {/* Loading State */}
         {loading ? (
           <div className="flex justify-center items-center mt-6">
-            <span className="text-xl text-gray-300">Loading your resumes...</span>
+            <span className="text-lg text-gray-300">Loading your resumes...</span>
+          </div>
+        ) : error ? (
+          <div className="text-center mt-6">
+            <p className="text-xl text-red-400">{error}</p>
           </div>
         ) : (
-          <>
-            {/* Resumes Section */}
-            {userResumes.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {userResumes.map((resume) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Create Resume Card */}
+            <div
+              onClick={() => navigate("/createresume")}
+              className="cursor-pointer bg-gray-800 bg-opacity-80 backdrop-blur-lg rounded-xl shadow-lg border border-gray-700 overflow-hidden transform transition-all duration-300 hover:scale-105 hover:bg-opacity-90 p-6 text-center flex flex-col justify-center items-center"
+            >
+              <div className="relative w-48 h-60 mx-auto mb-4 flex flex-col items-center justify-center">
+                <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center text-white text-2xl font-semibold">
+                  +
+                </div>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-200 tracking-wide">
+                Create Resume
+              </h3>
+            </div>
+
+            {/* Resume Cards */}
+            {userResumes.length > 0 &&
+              userResumes.map((resume) => {
+                const imageSrc = resume.image_id
+                  ? BASE_URL+`/resume/image/${resume.image_id}`
+                  : "https://via.placeholder.com/250";
+
+                return (
                   <div
-                    key={resume.id}
-                    className="bg-gray-800 p-6 rounded-lg shadow-xl transform transition-all duration-300 hover:scale-105 hover:bg-gray-700"
+                    key={resume._id}
+                    className="bg-gray-800 bg-opacity-80 backdrop-blur-lg rounded-xl shadow-lg border border-gray-700 overflow-hidden transform transition-all duration-300 hover:scale-105 hover:bg-opacity-90 p-6 text-center"
                   >
-                    <h3 className="text-2xl font-semibold text-gray-200">{resume.title}</h3>
-                    <p className="text-gray-400 mt-2">{resume.description || "No description provided."}</p>
-                    <div className="mt-4">
-                      <Link
-                        to={`/resume/${resume.id}`}
-                        className="text-blue-400 hover:text-blue-300 font-semibold"
-                      >
-                        View Resume
-                      </Link>
+                    {/* Resume Thumbnail */}
+                    <div className="relative w-48 h-60 mx-auto mb-4">
+                      <img
+                        src={imageSrc}
+                        alt={resume.title || "Resume Thumbnail"}
+                        className="w-full h-full object-cover object-top rounded-lg shadow-md border border-gray-600"
+                        onError={(e) => {
+                          e.target.src = "https://via.placeholder.com/250";
+                        }}
+                      />
+                    </div>
+
+                    {/* Resume Details */}
+                    <div className="text-center">
+                      <h3 className="text-lg font-semibold text-gray-200 tracking-wide">
+                        {resume.title || "Untitled Resume"}
+                      </h3>
+                      <div className="mt-4 flex justify-center space-x-4">
+                        <Link
+                          to={`/resume/${resume._id}`}
+                          className="px-5 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow hover:bg-blue-500 transition-all duration-200"
+                        >
+                          View Resume
+                        </Link>
+                        <Link
+                          to={`/editresume/${resume._id}`}
+                          className="px-5 py-2 bg-[#1DB954] text-black text-sm font-semibold rounded-lg shadow hover:bg-[#2BAF2B] transition-all duration-200"
+                        >
+                          Edit
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center mt-6">
-                <p className="text-xl text-gray-300">You haven't uploaded any resumes yet.</p>
-              </div>
-            )}
-
-            {/* Upload New Resume Button */}
-            <div className="mt-8 text-center">
-              <Link
-                to="/upload"
-                className="inline-block bg-black text-white text-lg py-3 px-6 rounded-full shadow-lg hover:bg-gray-800 transform hover:scale-110 transition-all duration-300"
-              >
-                Upload New Resume
-              </Link>
-            </div>
-          </>
+                );
+              })}
+          </div>
         )}
       </div>
+
+      <Footer />
     </div>
   );
 };

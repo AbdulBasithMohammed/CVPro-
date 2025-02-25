@@ -8,6 +8,8 @@ import ContactUs from "./pages/contactus";
 import ForgotPassword from "./pages/forgot-password";
 import ResetPass from "./pages/reset-password"
 import Dashboard from "./pages/dashboard";
+import Uploadresume from "./pages/uploadresume"
+import TemplateSelection from "./pages/template_selection";
 
 const App = () => {
   return (
@@ -21,6 +23,8 @@ const App = () => {
         <Route path="/forgotpassword" element={<ForgotPassword />} />
         <Route path="/resetpassword" element={<ResetPass />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/createresume" element={<Uploadresume />} />
+        <Route path="/template_selection" element={<TemplateSelection />} />
       </Routes>
     </Router>
   );

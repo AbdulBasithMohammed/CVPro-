@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import backgroundImage from "../assets/signupbg2.jpg";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { BASE_URL } from "../Constant";
 
 const ResetPassword = () => {
   const [passdata, setPassData] = useState({ email: "", token: "", new_password: "" });
@@ -57,7 +58,7 @@ const ResetPassword = () => {
       formData.append("new_password", passdata.new_password.trim());
 
       // API call using Axios
-      const response = await axios.post("http://127.0.0.1:8000/auth/reset-password/", formData, {
+      const response = await axios.post("http://172.17.3.79:8000/auth/reset-password/", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       console.log(response.data);

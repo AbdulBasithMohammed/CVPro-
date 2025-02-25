@@ -1,0 +1,213 @@
+.resume-preview {
+    width: 100%;
+    max-width: 750px;
+    margin: 0 auto;
+    font-family: 'Arial', sans-serif;
+    color: #333;
+    padding: 20px;
+}
+
+/* Resume Header */
+.resume-header {
+    text-align: center;
+    position: relative;
+}
+
+.resume-section p {
+    margin-bottom: 15px;
+    text-align: left;
+    position: relative;
+    z-index: 10;
+    word-wrap: break-word; /* Ensure long words break to the next line */
+    overflow-wrap: break-word; /* Prevent overflow */
+    white-space: normal; /* Make sure it wraps normally and doesn't extend in one line */
+}
+
+.resume-header h1 {
+    font-size: 22px;
+    font-weight: bold;
+    position: relative;
+    padding-bottom: 5px; /* Space for the line */
+}
+
+.resume-header p {
+    font-size: 16px;
+    position: relative;
+    padding-bottom: 5px; /* Space for the line */
+}
+
+/* Extra horizontal line below the name */
+.resume-header h1::after {
+    content: "";
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    width: 100%;
+    height: 1px;
+    background-color: #2925253f;
+    transform: translateX(-50%);
+}
+
+/* Contact Details - Inline */
+.resume-contact {
+    font-size: 12px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    white-space: nowrap;
+}
+
+/* Resume Section */
+.resume-section {
+    margin-bottom: 10px;
+    text-align: center;
+    position: relative;
+    padding-top: 10px;
+    font-size: 14px;
+}
+
+/* Horizontal lines above and below section title */
+.section-lines {
+    display: grid;
+    align-items: stretch;
+    justify-content: str;
+    position: relative;
+    width: 100%;
+}
+
+.section-lines::before,
+.section-lines::after {
+    content: "";
+    flex-grow: 1;
+    height: 2px;
+    background-color: #342e2e3f;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: bold;
+    text-transform: uppercase;
+    background: #fff;
+    padding: 0 10px;
+    position: relative;
+    z-index: 10;
+}
+
+/* Project Section Styling */
+.project-item {
+    margin-bottom: 10px;
+    margin-top: 10px;
+    text-align: left;
+    font-size: 14px;
+    position: relative;
+    z-index: 10;
+    word-wrap: break-word; /* Ensure long words break to the next line */
+    overflow-wrap: break-word; /* Prevent overflow */
+    white-space: normal; /* Make sure it wraps normally and doesn't extend in one line */
+
+}
+
+.project-name {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.task-list {
+    padding-left: 20px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.task-list li {
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Skills Section Styles */
+.skills-list {
+    list-style-type: disc;
+    padding-left: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Creates two equal-width columns */
+    font-size: 14px;
+    text-align: left;
+}
+
+.skills-list li {
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Ensure text is readable and not overlapping */
+.resume-section p {
+    margin-bottom: 15px;
+    text-align: left;
+    position: relative;
+    z-index: 10;
+}
+
+/* Education Section Styles */
+.education-item {
+    margin-bottom: 15px;
+    padding-top: 10px;
+}
+
+.education-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.education-name {
+    font-weight: bold;
+    font-size: 14px;
+    color: #333;
+}
+
+.graduation-date {
+    font-size: 14px;
+    color: #555;
+}
+
+.education-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: #777;
+}
+
+.course-name {
+    font-style: italic;
+    color: #555;
+}
+
+.education-location {
+    font-size: 14px;
+    color: #777;
+}
+
+/* Additional Responsive Styles */
+@media (max-width: 768px) {
+    .resume-preview {
+        padding: 15px;
+    }
+
+    .resume-header h1 {
+        font-size: 16px;
+    }
+
+    .section-title {
+        font-size: 12px;
+    }
+
+    .skills-list {
+        grid-template-columns: 1fr; /* One column on smaller screens */
+    }
+
+    .education-university {
+        font-size: 13px;
+    }
+}

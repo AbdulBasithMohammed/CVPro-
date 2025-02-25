@@ -34,6 +34,7 @@ def get_creds_from_env():
 
 mongo_user,mongo_pass,mongo_cluster,mongo_db = get_creds_from_env()
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -47,7 +48,7 @@ SECRET_KEY = 'y_wg($v2p&cpf+cu8!-sgze5w-9di1&52d16=!!ecd+$4=sfw4'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -64,6 +65,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
+    'resume',
 ]
 
 REST_FRAMEWORK = {
@@ -94,12 +96,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_BACKEND = 'authentication.custom_email_backend.CustomEmailBackend'
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
-EMAIL_HOST_USER = "group6asdc@gmail.com"
-EMAIL_HOST_PASSWORD = "aaxy ikvh xxtr hbiz"
-EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS")
 
 
 ROOT_URLCONF = 'atsresume.urls'
@@ -133,27 +135,22 @@ WSGI_APPLICATION = 'atsresume.wsgi.application'
 #     }
 # }
 
-mongo_user = os.getenv("MONGO_USERNAME")
-mongo_password = os.getenv("MONGO_PASSWORD")
-
 escaped_username = quote_plus(mongo_user)
-escaped_password = quote_plus(mongo_password)
+escaped_password = quote_plus(mongo_pass)
+MONGO_URI=f'mongodb+srv://{escaped_username}:{escaped_password}@{mongo_cluster}/?retryWrites=true&w=majority&appName=g6user-db'
+
 
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
         'NAME': os.getenv("MONGO_DB_NAME"),
         'CLIENT': {
-            'host': f'mongodb+srv://{escaped_username}:{escaped_password}@g6user-db.7hzwm.mongodb.net/{os.getenv("MONGO_DB_NAME")}?retryWrites=true&w=majority',
+            'host': f'mongodb+srv://{escaped_username}:{escaped_password}@g6user-db.7hzwm.mongodb.net/ats_resume?retryWrites=true&w=majority',
         }
     }
 }
 
-
-
-escaped_username = quote_plus(mongo_user)
-escaped_password = quote_plus(mongo_pass)
-MONGO_URI=f'mongodb+srv://{escaped_username}:{escaped_password}@{mongo_cluster}/?retryWrites=true&w=majority&appName=g6user-db'
+# MONGO_URI=f'mongodb+srv://{escaped_username}:{escaped_password}@g6user-db.7hzwm.mongodb.net/?retryWrites=true&w=majority&appName=g6user-db'
 
 
 # Password validation
@@ -194,3 +191,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 GOOGLE_CLIENT_ID = "1020835081770-vq18tvgqbcr1u1dc76cea0u1k9crop91.apps.googleusercontent.com"
+
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # ✅ Ensure STATIC_ROOT is set
+

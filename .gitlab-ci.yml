@@ -1,0 +1,202 @@
+stages:
+  - build
+  - test
+  - publish
+  - deliver
+  - deploy
+
+variables:
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_HOST: "tcp://docker:2375"
+  IMAGE_TAG: "$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
+  BACKEND_IMAGE: "arshadvhora/cvproplus-backend:$IMAGE_TAG"
+  FRONTEND_IMAGE: "arshadvhora/cvproplus-frontend:$IMAGE_TAG"
+  DATABASE_URL: "mongodb+srv://$MONGO_USERNAME:$MONGO_PASSWORD@g6user-db.7hzwm.mongodb.net/$MONGO_DB_NAME?retryWrites=true&w=majority"
+
+# -------------------------- #
+# 🔹 Backend: Build & Test 🔹 #
+# -------------------------- #
+# build-backend:
+#   stage: build
+#   image: python:3.11
+#   tags:
+#     - cvpro-runner
+#   before_script:
+#     - cd backend/atsresume
+#     - python -m venv venv
+#     - source venv/bin/activate
+#     - pip install --upgrade pip
+#     - pip install -r requirements.txt
+#     - python -m spacy download en_core_web_sm
+#   script:
+#     - python manage.py collectstatic --noinput
+#     - python manage.py migrate
+#   artifacts:
+#     paths:
+#       - backend/atsresume/staticfiles
+#   timeout: 1hr 30min  # Reduced timeout to optimize efficiency
+
+# test-backend:
+#   stage: test
+#   image: python:3.11
+#   tags:
+#     - cvpro-runner
+#   before_script:
+#     - cd backend/atsresume
+#     - python -m venv venv
+#     - source venv/bin/activate
+#     - pip install --upgrade pip
+#     - pip install -r requirements.txt
+#     - python -m spacy download en_core_web_sm
+#   script:
+#     - python manage.py test
+
+# -------------------------- #
+# 🔹 Frontend: Build & Test 🔹 #
+# -------------------------- #
+build-frontend:
+  stage: build
+  image: node:18-alpine
+  tags:
+    - cvpro-runner
+  cache:
+    key: npm-cache
+    paths:
+      - frontend/node_modules
+  before_script:  
+    - export NODE_OPTIONS=--openssl-legacy-provider
+    - rm -rf node_modules
+    - npm install webpack@4.42.0
+    - npm install
+  script:
+    - cd frontend
+    - npm install
+    - echo $REACT_BACKEND_BASE_URL
+    - export REACT_BACKEND_BASE_URL=$REACT_BACKEND_BASE_URL
+    - echo $REACT_BACKEND_BASE_URL
+    - export CI=false
+    - npm run build
+  artifacts:
+    paths:
+      - frontend/build
+  timeout: 20m
+
+# test-frontend:
+#   stage: test
+#   image: node:18-alpine
+#   tags:
+#     - cvpro-runner
+#   cache:
+#     key: npm-cache
+#     paths:
+#       - frontend/node_modules
+#   before_script:  
+#     - export NODE_OPTIONS=--openssl-legacy-provider
+#     - rm -rf node_modules
+#     - npm install webpack@4.42.0
+#     - npm install
+#   script:
+#     - cd frontend
+#     - npm install
+#     - export REACT_BACKEND_BASE_URL=$REACT_BACKEND_BASE_URL
+#     - export NODE_OPTIONS=--openssl-legacy-provider
+#     - export CI=false
+#     - npm run test -- --passWithNoTests
+
+# -------------------------- #
+# 🔹 Publish Docker Images 🔹 #
+# -------------------------- #
+# publish-backend:
+#   stage: publish
+#   tags:
+#     - cvpro-runner
+#   image: docker:latest
+#   services:
+#     - docker:dind
+#   script:
+#     - echo "$DOCKER_HUB_PWD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
+#     - IMAGE_TAG="$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
+#     - docker build -t arshadvhora/projectstream-backend-api:$IMAGE_TAG backend/atsresume 
+#     - docker push arshadvhora/projectstream-backend-api:$IMAGE_TAG
+#   only:
+#     - main
+#     - Developer
+#     - feature/#34_resumebackend
+
+publish-frontend:
+  stage: publish
+  tags:
+    - cvpro-runner
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - echo "$DOCKER_HUB_PWD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
+    - IMAGE_TAG="$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
+    - docker build --build-arg REACT_BACKEND_BASE_URL=$REACT_BACKEND_BASE_URL -t arshadvhora/projectstream-frontend:$IMAGE_TAG frontend 
+    - docker push arshadvhora/projectstream-frontend:$IMAGE_TAG
+  only:
+    - main
+    - Developer
+    - feature/#34_resumebackend
+
+# -------------------------- #
+# 🔹 Deploy on VM 🔹 #
+# -------------------------- #
+# deploy-backend:
+#   stage: deploy
+#   tags:
+#     - cvpro-runner
+#   image: alpine:latest
+#   before_script:
+#     - apk update && apk add openssh-client
+#     - eval $(ssh-agent -s)
+#     - mkdir -p ~/.ssh
+#     - chmod 700 ~/.ssh
+#     - echo "$ID_RSA" | base64 -d > ~/.ssh/id_ed25519
+#     - chmod 600 ~/.ssh/id_ed25519
+#     - ssh-add ~/.ssh/id_ed25519
+#   script:
+#     - IMAGE_TAG="$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
+#     - CONTAINER_NAME="Backend_Container_app"
+#     - SERVER_PORT="8000"
+#     - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "echo "$DOCKER_HUB_PWD" | docker login -u "$DOCKER_HUB_USER" --password-stdin"
+#     - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull arshadvhora/projectstream-backend-api:$IMAGE_TAG"
+#     - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker container rm -f $CONTAINER_NAME || true"
+#     - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker run -d -p $SERVER_PORT:$SERVER_PORT -e SERVER_PORT=$SERVER_PORT -e DATABASE_URL=\"$DATABASE_URL\" -e MONGO_USERNAME=\"$MONGO_USERNAME\" -e MONGO_PASSWORD=\"$MONGO_PASSWORD\" -e MONGO_DB_NAME=\"$MONGO_DB_NAME\" -e MONGO_CLUSTER_NAME=\"$MONGO_CLUSTER_NAME\" --name $CONTAINER_NAME --restart=always arshadvhora/projectstream-backend-api:$IMAGE_TAG"
+#   environment:
+#     name: development
+#     url: http://$SERVER_IP:8000
+#   only:
+#     - main
+#     - Developer
+#     - feature/#34_resumebackend
+
+deploy-frontend:
+  image: alpine:latest
+  stage: deploy
+  tags:
+    - cvpro-runner
+  before_script:
+    - apk update && apk add openssh-client
+    - eval $(ssh-agent -s)
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$ID_RSA" | base64 -d > ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
+    - ssh-add ~/.ssh/id_ed25519
+  script:
+    - IMAGE_TAG="$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
+    - CONTAINER_NAME="projectstream-frontend"
+    - SERVER_PORT="3000"
+    - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "echo \"$DOCKER_HUB_PWD\" | docker login -u \"$DOCKER_HUB_USER\" --password-stdin"
+    - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull arshadvhora/projectstream-frontend:$IMAGE_TAG"
+    - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker container rm -f $CONTAINER_NAME || true"
+    - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker run -d -p $SERVER_PORT:$SERVER_PORT -e SERVER_PORT=$SERVER_PORT -e REACT_APP_BACKEND_BASE_URL=$REACT_APP_BACKEND_BASE_URL --name $CONTAINER_NAME --restart=always arshadvhora/projectstream-frontend:$IMAGE_TAG"
+  environment:
+    name: development
+    url: http://$SERVER_IP:$SERVER_PORT
+  only:
+    - develop
+    - main  
+    - feature/#34_resumebackend
