@@ -55,6 +55,14 @@
   margin-bottom: 5px;
 }
 
+/* Validation error messages - NEW */
+.validation-error {
+  color: #ffffff;
+  font-style: italic;
+  margin-top: 5px;
+  font-size: 0.9rem;
+}
+
 /* Form Input Styles */
 .form-group input,
 textarea {
@@ -94,6 +102,33 @@ textarea:focus,
   color: #fff;
 }
 
+/* Updated Action Buttons - NEW */
+.add-skill, .add-education, .add-experience, 
+.remove-education, .remove-experience, .add-task {
+  padding: 10px 18px;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+  background-color: #e0e0e0;
+  color: #000000;
+  border: none;
+  margin-top: 10px;
+}
+
+.add-skill:hover, .add-education:hover, .add-experience:hover,
+.remove-education:hover, .remove-experience:hover, .add-task:hover {
+  background-color: #f5f5f5;
+}
+
+/* Remove button specific styles - removed to match add buttons */
+/* 
+.remove-education, .remove-experience {
+  These were causing the difference in styling
+}
+*/
+
 button:hover {
   background-color: #555;
 }
@@ -120,14 +155,21 @@ button:hover {
   margin-right: 0;
 }
 
+/* Updated remove skill button to match task section - NEW */
 .skills-section .remove-skill {
-  color: #FF9800;
-  font-size: 1.5rem;
-  background: none;
-  border: none;
+  padding: 10px 18px;
+  font-size: 1rem;
+  border-radius: 6px;
   cursor: pointer;
-  padding: 0;
-  margin-left: 10px; /* Added spacing between input and button */
+  font-weight: 600;
+  transition: all 0.3s;
+  border: 1px solid #777;
+  background-color: #444;
+  color: #fff;
+}
+
+.skills-section .remove-skill:hover {
+  background-color: #555;
 }
 
 /* Summary Counter */
@@ -206,4 +248,3 @@ button[onclick="addSkill()"] { /* This selector might need adjustment */
 .remove-task:hover {
   background-color: #555;
 }
-
