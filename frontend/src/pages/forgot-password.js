@@ -32,7 +32,7 @@ const ForgotPassword = () => {
     }
 
     try {
-      await axios.post("http://172.17.3.79:8000auth/forgot-password/", {
+      await axios.post("http://172.17.3.79:8000/auth/forgot-password/", {
         email: tokendata.email,
       });
 

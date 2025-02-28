@@ -3,49 +3,40 @@ import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
-import { BASE_URL } from "../Constant";
 
 const Dashboard = () => {
   const [userResumes, setUserResumes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
-  // Retrieve user details from localStorage
-  const user = JSON.parse(localStorage.getItem("user"));
-  const accessToken = localStorage.getItem("access_token");
-
-  // Function to generate a time-based greeting
-  // const getTimeBasedGreeting = () => {
-  //   const currentHour = new Date().getHours();
-  //   if (currentHour >= 6 && currentHour < 12) return "Good Morning";
-  //   if (currentHour >= 12 && currentHour < 18) return "Good Afternoon";
-  //   return "Good Evening";
-  // };
+  const fetchResumes = async (userId) => {
+    try {
+      const response = await axios.get("http://172.17.3.79:8000/resume/retrieve/", {
+        params: { user_id: userId },
+      });
+      console.log("API Response:", response.data);
+      setUserResumes(response.data);
+    } catch (error) {
+      console.error("Error fetching resumes:", error);
+      setError("Failed to load resumes. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (!accessToken || !user?._id) {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const storedToken = localStorage.getItem("access_token");
+
+    if (!storedToken || !storedUser?._id) {
       navigate("/login");
       return;
     }
 
-    const fetchResumes = async () => {
-      try {
-        const response = await axios.get("http://172.17.3.79:8000/resume/retrieve/", {
-          params: { user_id: user._id }, // Send user_id as a query parameter
-        });
-
-        console.log("API Response:", response.data);
-        setUserResumes(response.data);
-      } catch (error) {
-        console.error("Error fetching resumes:", error);
-        setError("Failed to load resumes. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchResumes();
+    setUser(storedUser);
+    fetchResumes(storedUser._id);
   },[]);
 
   return (
@@ -94,7 +85,7 @@ const Dashboard = () => {
             {userResumes.length > 0 &&
               userResumes.map((resume) => {
                 const imageSrc = resume.image_id
-                  ? BASE_URL+`/resume/image/${resume.image_id}`
+                  ? `http://172.17.3.79:8000/resume/image/${resume.image_id}`
                   : "https://via.placeholder.com/250";
 
                 return (

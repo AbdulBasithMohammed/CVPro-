@@ -16,25 +16,25 @@ variables:
 # -------------------------- #
 # 🔹 Backend: Build & Test 🔹 #
 # -------------------------- #
-# build-backend:
-#   stage: build
-#   image: python:3.11
-#   tags:
-#     - cvpro-runner
-#   before_script:
-#     - cd backend/atsresume
-#     - python -m venv venv
-#     - source venv/bin/activate
-#     - pip install --upgrade pip
-#     - pip install -r requirements.txt
-#     - python -m spacy download en_core_web_sm
-#   script:
-#     - python manage.py collectstatic --noinput
-#     - python manage.py migrate
-#   artifacts:
-#     paths:
-#       - backend/atsresume/staticfiles
-#   timeout: 1hr 30min  # Reduced timeout to optimize efficiency
+build-backend:
+  stage: build
+  image: python:3.11
+  tags:
+    - cvpro-runner
+  before_script:
+    - cd backend/atsresume
+    - python -m venv venv
+    - source venv/bin/activate
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+    - python -m spacy download en_core_web_sm
+  script:
+    - python manage.py collectstatic --noinput
+    - python manage.py migrate
+  artifacts:
+    paths:
+      - backend/atsresume/staticfiles
+  timeout: 1hr 30min  # Reduced timeout to optimize efficiency
 
 # test-backend:
 #   stage: test
@@ -106,22 +106,22 @@ build-frontend:
 # -------------------------- #
 # 🔹 Publish Docker Images 🔹 #
 # -------------------------- #
-# publish-backend:
-#   stage: publish
-#   tags:
-#     - cvpro-runner
-#   image: docker:latest
-#   services:
-#     - docker:dind
-#   script:
-#     - echo "$DOCKER_HUB_PWD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
-#     - IMAGE_TAG="$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
-#     - docker build -t arshadvhora/projectstream-backend-api:$IMAGE_TAG backend/atsresume 
-#     - docker push arshadvhora/projectstream-backend-api:$IMAGE_TAG
-#   only:
-#     - main
-#     - Developer
-#     - feature/#34_resumebackend
+publish-backend:
+  stage: publish
+  tags:
+    - cvpro-runner
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - echo "$DOCKER_HUB_PWD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
+    - IMAGE_TAG="$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
+    - docker build -t arshadvhora/projectstream-backend-api:$IMAGE_TAG backend/atsresume 
+    - docker push arshadvhora/projectstream-backend-api:$IMAGE_TAG
+  only:
+    - main
+    - Developer
+    - feature/#34_resumebackend
 
 publish-frontend:
   stage: publish
@@ -143,34 +143,34 @@ publish-frontend:
 # -------------------------- #
 # 🔹 Deploy on VM 🔹 #
 # -------------------------- #
-# deploy-backend:
-#   stage: deploy
-#   tags:
-#     - cvpro-runner
-#   image: alpine:latest
-#   before_script:
-#     - apk update && apk add openssh-client
-#     - eval $(ssh-agent -s)
-#     - mkdir -p ~/.ssh
-#     - chmod 700 ~/.ssh
-#     - echo "$ID_RSA" | base64 -d > ~/.ssh/id_ed25519
-#     - chmod 600 ~/.ssh/id_ed25519
-#     - ssh-add ~/.ssh/id_ed25519
-#   script:
-#     - IMAGE_TAG="$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
-#     - CONTAINER_NAME="Backend_Container_app"
-#     - SERVER_PORT="8000"
-#     - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "echo "$DOCKER_HUB_PWD" | docker login -u "$DOCKER_HUB_USER" --password-stdin"
-#     - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull arshadvhora/projectstream-backend-api:$IMAGE_TAG"
-#     - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker container rm -f $CONTAINER_NAME || true"
-#     - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker run -d -p $SERVER_PORT:$SERVER_PORT -e SERVER_PORT=$SERVER_PORT -e DATABASE_URL=\"$DATABASE_URL\" -e MONGO_USERNAME=\"$MONGO_USERNAME\" -e MONGO_PASSWORD=\"$MONGO_PASSWORD\" -e MONGO_DB_NAME=\"$MONGO_DB_NAME\" -e MONGO_CLUSTER_NAME=\"$MONGO_CLUSTER_NAME\" --name $CONTAINER_NAME --restart=always arshadvhora/projectstream-backend-api:$IMAGE_TAG"
-#   environment:
-#     name: development
-#     url: http://$SERVER_IP:8000
-#   only:
-#     - main
-#     - Developer
-#     - feature/#34_resumebackend
+deploy-backend:
+  stage: deploy
+  tags:
+    - cvpro-runner
+  image: alpine:latest
+  before_script:
+    - apk update && apk add openssh-client
+    - eval $(ssh-agent -s)
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$ID_RSA" | base64 -d > ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
+    - ssh-add ~/.ssh/id_ed25519
+  script:
+    - IMAGE_TAG="$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
+    - CONTAINER_NAME="Backend_Container_app"
+    - SERVER_PORT="8000"
+    - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "echo "$DOCKER_HUB_PWD" | docker login -u "$DOCKER_HUB_USER" --password-stdin"
+    - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull arshadvhora/projectstream-backend-api:$IMAGE_TAG"
+    - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker container rm -f $CONTAINER_NAME || true"
+    - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker run -d -p $SERVER_PORT:$SERVER_PORT -e SERVER_PORT=$SERVER_PORT -e DATABASE_URL=\"$DATABASE_URL\" -e MONGO_USERNAME=\"$MONGO_USERNAME\" -e MONGO_PASSWORD=\"$MONGO_PASSWORD\" -e MONGO_DB_NAME=\"$MONGO_DB_NAME\" -e MONGO_CLUSTER_NAME=\"$MONGO_CLUSTER_NAME\" --name $CONTAINER_NAME --restart=always arshadvhora/projectstream-backend-api:$IMAGE_TAG"
+  environment:
+    name: development
+    url: http://$SERVER_IP:8000
+  only:
+    - main
+    - Developer
+    - feature/#34_resumebackend
 
 deploy-frontend:
   image: alpine:latest

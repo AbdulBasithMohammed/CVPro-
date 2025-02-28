@@ -1,5 +1,5 @@
 import React, { memo, forwardRef } from 'react';
-import '../ResumePreview.css';
+import '../CSS/ResumePreview.css';
 
 // Section Component (Move this above ResumePreview)
 const Section = ({ title, children }) => (
