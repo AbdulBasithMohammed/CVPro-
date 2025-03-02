@@ -2,7 +2,7 @@ import json
 import google.generativeai as genai
 
 # Configure Gemini AI
-genai.configure(api_key="AIzaSyBZE_RvBLkCDnADNKxstac1uv8VawmGMN8")
+genai.configure(api_key="AIzaSyBZE_RvBLkCDnADNKxstac1uv8VawmGMN8")  # Replace with your actual API key
 
 def normalize_spaces(text):
     """Normalize spaces in the text to ensure proper formatting."""
@@ -20,10 +20,12 @@ def parse_resume_with_gemini(text):
     - Name
     - Email
     - Phone Number
+    - Address
     - Summary (Ensure it's extracted properly. If missing, return null.)
     - Skills (as a list)
-    - Experience (Company, Role, Years, Description)
-    - Projects (List of JSON objects with title, description, and technologies)
+    - Experience (Job Title, Company, Start Date, End Date, Location, Description as separate tasks)
+    - Projects (Title, Description as separate tasks, Technologies used)
+    - Education (Institution, Graduation Date, Course, Location)
 
     Structure it in **valid JSON** format:
     {json.dumps({
@@ -32,10 +34,34 @@ def parse_resume_with_gemini(text):
         "name": "string",
         "email": "string",
         "phone": "string",
+        "address": "string",
         "summary": "string or null",
-        "experience": [{"company": "string", "role": "string", "description": "string", "years": "string"}],
         "skills": ["string"],
-        "projects": [{"title": "string", "description": "string", "technologies": ["string"]}]
+        "experience": [
+            {
+                "job_title": "string",
+                "company": "string",
+                "start_date": "MM/YYYY",
+                "end_date": "MM/YYYY or null (if current)",
+                "location": "string",
+                "tasks": ["string"]  
+            }
+        ],
+        "projects": [
+            {
+                "title": "string",
+                "tasks": ["string"],  
+                "technologies": ["string"]
+            }
+        ],
+        "education": [
+            {
+                "institution": "string",
+                "graduation_date": "MM/YYYY",
+                "course": "string",
+                "location": "string"
+            }
+        ]
     }, indent=4)}
 
     Resume Text:
@@ -46,7 +72,7 @@ def parse_resume_with_gemini(text):
     response_text = response.text.strip()
 
     if response_text.startswith("```json") and response_text.endswith("```"):
-        response_text = response_text[7:-3].strip()  # Remove ```json and ```
+        response_text = response_text[7:-3].strip()  
 
     try:
         response_dict = json.loads(response_text)

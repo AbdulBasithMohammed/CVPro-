@@ -11,16 +11,17 @@ const ResumeUpload = () => {
     const [file, setFile] = useState(null);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
-    const [isModalOpen, setIsModalOpen] = useState(false);  // To control modal visibility
-    const [selectedTemplate, setSelectedTemplate] = useState(null); // To store the selected template
+    const [isUploading, setIsUploading] = useState(false);  // Uploading state
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedTemplate, setSelectedTemplate] = useState(null);
     const navigate = useNavigate();
-  useEffect(() => {
-    // Check if user is logged in
-    const accessToken = localStorage.getItem("access_token");
 
-    if (!accessToken) {
-      navigate("/login");
-    }},[navigate]);
+    useEffect(() => {
+        const accessToken = localStorage.getItem("access_token");
+        if (!accessToken) {
+            navigate("/login");
+        }
+    }, [navigate]);
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
@@ -28,7 +29,6 @@ const ResumeUpload = () => {
             const fileType = selectedFile.name.split(".").pop().toLowerCase();
             if (["pdf", "doc", "docx"].includes(fileType)) {
                 setFile(selectedFile);
-
                 setError("");
             } else {
                 setError("Only PDF or Word files are allowed.");
@@ -43,16 +43,16 @@ const ResumeUpload = () => {
             return;
         }
 
-        // console.log(file);
+        setIsUploading(true);  // Start loading animation
         const formData = new FormData();
         formData.append("file", file);
-        
-        try {
 
+        try {
             const response = await axios.post("http://localhost:8000/resume/extract/", formData, {
-                headers: { "Content-Type": "multipart/form-data" }
+                headers: { "Content-Type": "multipart/form-data" },
             });
             console.log("Upload Success:", response.data);
+            alert("Resume uploaded successfully!");
             localStorage.setItem("resumeData", JSON.stringify(response.data));
             setIsModalOpen(true);
             setSuccess("Resume uploaded successfully!");
@@ -65,23 +65,22 @@ const ResumeUpload = () => {
                 console.error("Unexpected Error:", error);
                 setError("An unexpected error occurred.");
             }
-            
+        } finally {
+            setIsUploading(false);  // Stop loading animation
         }
     };
 
     const handleTemplateSelection = (template) => {
         localStorage.setItem("selectedTemplate", template);
         setSelectedTemplate(template);
-        setIsModalOpen(false); // Close modal after selection
+        setIsModalOpen(false);
         navigate("/template_selection");
     };
-
 
     const handleCreateResume = () => {
         setIsModalOpen(true);
     };
 
-    // Function to render file preview based on type
     const renderFilePreview = () => {
         const fileType = file.name.split(".").pop().toLowerCase();
         if (fileType === "pdf") {
@@ -135,15 +134,21 @@ const ResumeUpload = () => {
 
                 {/* File Name and Preview */}
                 {file && (
-                    <div className="mt-6">
+                    <div className="mt-6 w-full flex flex-col items-center">
                         <p className="text-lg font-semibold">{file.name}</p>
                         <div className="mt-2 flex justify-center items-center">
                             {renderFilePreview()}
                         </div>
-                        <button onClick={handleUpload} className="mt-6 px-6 py-3 bg-blue-600 rounded-lg font-bold text-white hover:bg-blue-500 transition">
-                            Upload Now
+                        <button
+                            onClick={handleUpload}
+                            className="mt-6 px-6 py-3 bg-blue-600 rounded-lg font-bold text-white hover:bg-blue-500 transition flex items-center"
+                            disabled={isUploading}
+                        >
+                            {isUploading ? (
+                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                            ) : null}
+                            {isUploading ? "Uploading..." : "Upload Now"}
                         </button>
-                        
                     </div>
                 )}
             </div>
@@ -173,4 +178,3 @@ const ResumeUpload = () => {
 };
 
 export default ResumeUpload;
-

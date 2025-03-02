@@ -150,36 +150,6 @@ class ResumeDeleteView(APIView):
             return Response({"message": "Resume deleted successfully"}, status=200)
         return Response({"error": "Failed to delete resume"}, status=400)
 
-
-# class ResumeImageView(APIView):
-#     """
-#     API to serve images stored in GridFS.
-#     """
-#     def get(self, request, image_id):
-#         try:
-#             file_data = fs.get(ObjectId(image_id))
-#             response = Response(file_data.read(), content_type="image/jpeg")  # Change content type as needed
-#             response["Content-Disposition"] = f'inline; filename="{file_data.filename}"'
-#             return response
-#         except gridfs.errors.NoFile:
-#             return Response({"error": "Image not found"}, status=404)      
-
-
-    # class ResumeImageView(View):
-    #     """
-    #     API to serve images stored in GridFS.
-    #     """
-    #     def get(self, request,image_id):
-    #         try:
-    #             file_data = fs.get(ObjectId(image_id))  # Ensure image_id is valid
-    #             response = HttpResponse(file_data.read(), content_type="image/jpeg")  # Set correct content type
-    #             response["Content-Disposition"] = f'inline; filename="{file_data.filename}"'
-    #             return response
-    #         except gridfs.errors.NoFile:
-    #             return HttpResponse("Image not found", status=404)
-
-   
-
 class ResumeImageView(View):
     """
     API to serve images stored in GridFS.
