@@ -2,18 +2,23 @@ from bson import ObjectId
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser,MultiPartParser
-from .utils import extract_text_from_pdf, extract_text_from_docx, parse_resume, parse_resume_with_gemini
+# from .utils import extract_text_from_pdf, extract_text_from_docx, parse_resume, parse_resume_with_gemini
 from bson import ObjectId
 from rest_framework.permissions import IsAuthenticated
 from django.views import View   
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from bson import ObjectId
 from django.http import HttpResponse
 
 from db_connection import get_mongo_connection
 import gridfs
 # Get MongoDB collection
+
+#imports for resume upload
+import tempfile
+import os
+import pdfplumber
+import docx
+from .utils import parse_resume_with_gemini  # Import LLM function
 
 db = get_mongo_connection()
 fs = gridfs.GridFS(db)
@@ -146,45 +151,19 @@ class ResumeDeleteView(APIView):
         return Response({"error": "Failed to delete resume"}, status=400)
 
 
-class ResumeImageView(APIView):
-    """
-    API to serve images stored in GridFS.
-    """
-    def get(self, request, image_id):
-        try:
-            file_data = fs.get(ObjectId(image_id))
-            response = Response(file_data.read(), content_type="image/jpeg")  # Change content type as needed
-            response["Content-Disposition"] = f'inline; filename="{file_data.filename}"'
-            return response
-        except gridfs.errors.NoFile:
-            return Response({"error": "Image not found"}, status=404)      
+# class ResumeImageView(APIView):
+#     """
+#     API to serve images stored in GridFS.
+#     """
+#     def get(self, request, image_id):
+#         try:
+#             file_data = fs.get(ObjectId(image_id))
+#             response = Response(file_data.read(), content_type="image/jpeg")  # Change content type as needed
+#             response["Content-Disposition"] = f'inline; filename="{file_data.filename}"'
+#             return response
+#         except gridfs.errors.NoFile:
+#             return Response({"error": "Image not found"}, status=404)      
 
-
-class ResumeUploadView(APIView):
-    parser_classes = (MultiPartParser, FormParser)  # Handle file uploads
-
-    def post(self, request, *args, **kwargs):
-            uploaded_file = request.FILES['file']
-            file_extension = uploaded_file.name.split('.')[-1].lower()
-            #print(f"Extracted file extension: {file_extension}")  # Debugging
-
-            # Extract text based on file type
-            if file_extension == "pdf":
-                print("Saving PDF to a temporary file...")
-
-                extracted_text = extract_text_from_pdf(uploaded_file)  # Pass file path
-                #print("Extraction completed!", extracted_text)
-                extracted_text = parse_resume_with_gemini(extracted_text)
-                # Use AI to parse the resume
-                return Response(extracted_text,status=200)
-
-            elif file_extension in ["doc", "docx"]:
-                extracted_text = extract_text_from_docx(uploaded_file)
-                resume_data = parse_resume(extracted_text)  
-                return Response(resume_data, status=200)
-
-            else:
-                return Response({"error": "Unsupported file format"}, status=400)
 
     # class ResumeImageView(View):
     #     """
@@ -215,3 +194,58 @@ class ResumeImageView(View):
             return HttpResponse("Image not found", status=404)
         except Exception as e:
             return HttpResponse(f"Error loading image: {str(e)}", status=500)
+
+
+
+class ResumeUploadView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request, *args, **kwargs):
+        if 'file' not in request.FILES:
+            return Response({"error": "No file uploaded"}, status=400)
+
+        uploaded_file = request.FILES['file']
+        file_extension = uploaded_file.name.split('.')[-1].lower()
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_extension}") as temp_file:
+            for chunk in uploaded_file.chunks():
+                temp_file.write(chunk)
+            temp_file_path = temp_file.name
+
+        try:
+            if file_extension == "pdf":
+                extracted_text = extract_text_from_pdf(temp_file_path)
+            elif file_extension in ["doc", "docx"]:
+                extracted_text = extract_text_from_docx(temp_file_path)
+            else:
+                return Response({"error": "Unsupported file format"}, status=400)
+
+            # Call LLM function for structured resume parsing
+            extracted_data = parse_resume_with_gemini(extracted_text)
+            return Response(extracted_data, status=200)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+        finally:
+            os.remove(temp_file_path)  # Clean up temp file
+
+def extract_text_from_pdf(pdf_path):
+    """Extract text from a PDF file"""
+    text = ""
+    try:
+        with pdfplumber.open(pdf_path) as pdf:
+            for page in pdf.pages:
+                text += page.extract_text() or ""
+        return text.strip()
+    except Exception as e:
+        print(f"Error extracting text from PDF: {e}")
+        return ""
+
+def extract_text_from_docx(docx_path):
+    """Extract text from a DOCX file"""
+    try:
+        doc = docx.Document(docx_path)
+        return "\n".join([para.text for para in doc.paragraphs]).strip()
+    except Exception as e:
+        print(f"Error extracting text from DOCX: {e}")
+        return ""

@@ -1,134 +1,8 @@
-import pdfplumber
-import docx
-import re
-import spacy
-import google.generativeai as genai  # Gemini API
-import phonenumbers
-
-def extract_text_from_pdf(pdf_file):
-    text = ""
-    with pdfplumber.open(pdf_file) as pdf:
-        for page in pdf.pages:
-            print(page)
-            text += page.extract_text() + "\n"
-    return text.strip()
-
-def extract_text_from_docx(docx_file):
-    doc = docx.Document(docx_file)
-    text = "\n".join([para.text for para in doc.paragraphs])
-    return text.strip()
-
-def parse_resume_text(text):
-    """Basic parsing to extract resume fields (can be improved with NLP)"""
-    resume_data = {
-        "name": None,
-        "email": None,
-        "phone": None,
-        "summary": None,
-        "Experience": [],
-        "skills": [],
-        "projects": []
-    }
-
-    lines = text.split("\n")
-    for line in lines:
-        if "@" in line:  # Extract Email
-            resume_data["email"] = line.strip()
-        elif any(char.isdigit() for char in line) and len(line) >= 10:  # Extract Phone Number
-            resume_data["phone"] = line.strip()
-        elif "Experience" in line:
-            resume_data["Experience"].append(line.strip())
-        elif "Skills" in line:
-            resume_data["skills"].append(line.strip())
-        elif "Projects" in line:
-            resume_data["projects"].append(line.strip())
-        elif resume_data["name"] is None:  # Assume the first line is the name
-            resume_data["name"] = line.strip()
-    
-    return resume_data
-
-
-
-nlp = spacy.load("en_core_web_sm")  # Load NLP model for text processing
-
-def extract_text_from_pdf(pdf_path):
-    """Extract text from a PDF file"""
-    text = ""
-    with pdfplumber.open(pdf_path) as pdf:
-        for page in pdf.pages:
-            text += page.extract_text() + "\n"
-    return text
-
-def extract_text_from_docx(docx_path):
-    """Extract text from a DOCX file"""
-    doc = docx.Document(docx_path)
-    return "\n".join([para.text for para in doc.paragraphs])
-
-def extract_email(text):
-    """Extract email from text using regex"""
-    match = re.search(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", text)
-    return match.group(0) if match else None
-
-def extract_phone(text):
-    """Extract phone number from text using phonenumbers library"""
-    matches = re.findall(r'\+?\d[\d -]{8,15}\d', text)
-    for match in matches:
-        try:
-            phone = phonenumbers.parse(match, None)
-            if phonenumbers.is_valid_number(phone):
-                return phonenumbers.format_number(phone, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
-        except:
-            continue
-    return None
-
-def extract_name(text):
-    """Extract the most probable name using NLP"""
-    doc = nlp(text)
-    for ent in doc.ents:
-        if ent.label_ == "PERSON":
-            return ent.text
-    return None
-
-def extract_sections(text):
-    """Extract structured sections from resume"""
-    sections = {
-        "experience": [],
-        "skills": [],
-        "projects": [],
-    }
-    
-    lines = text.split("\n")
-    current_section = None
-
-    for line in lines:
-        line_lower = line.lower().strip()
-
-        if "experience" in line_lower:
-            current_section = "experience"
-        elif "skills" in line_lower:
-            current_section = "skills"
-        elif "projects" in line_lower:
-            current_section = "projects"
-        elif current_section:
-            sections[current_section].append(line.strip())
-
-    return sections
-
-def parse_resume(text):
-    return {
-        "name": extract_name(text),
-        "email": extract_email(text),
-        "phone": extract_phone(text),
-        **extract_sections(text),
-    }
-
-genai.configure(api_key="AIzaSyC6FCjab0Q6TWvNcvjrtGeAAZY3Q1szp8E")
-
-
-
 import json
 import google.generativeai as genai
 
+# Configure Gemini AI
+genai.configure(api_key="AIzaSyBZE_RvBLkCDnADNKxstac1uv8VawmGMN8")
 
 def normalize_spaces(text):
     """Normalize spaces in the text to ensure proper formatting."""
@@ -136,10 +10,9 @@ def normalize_spaces(text):
 
 def parse_resume_with_gemini(text):
     """Uses Gemini AI to extract structured data from the resume."""
-    model = genai.GenerativeModel("gemini-pro")  # Ensure correct model usage
-    chat = model.start_chat()  # Start a conversation
+    model = genai.GenerativeModel("gemini-2.0-flash")
+    chat = model.start_chat()
 
-    # Normalize spaces in the input text
     normalized_text = normalize_spaces(text)
 
     prompt = f"""
@@ -152,57 +25,31 @@ def parse_resume_with_gemini(text):
     - Experience (Company, Role, Years, Description)
     - Projects (List of JSON objects with title, description, and technologies)
 
-    Structure it in **valid JSON** format as per this Django model and return a json only nothing extra:
-    {{
-        "id": null,
-        "resume_template_id": null,
+    Structure it in **valid JSON** format:
+    {json.dumps({
+        "id": None,
+        "resume_template_id": None,
         "name": "string",
         "email": "string",
         "phone": "string",
         "summary": "string or null",
-        "experience": [
-            {{
-                "company": "string",
-                "role": "string",
-                "description": "string",
-                "years": "string"
-            }}
-        ],
+        "experience": [{"company": "string", "role": "string", "description": "string", "years": "string"}],
         "skills": ["string"],
-        "projects": [
-            {{
-                "title": "string",
-                "description": "string",
-                "technologies": ["string"]
-            }}
-        ]
-    }}
+        "projects": [{"title": "string", "description": "string", "technologies": ["string"]}]
+    }, indent=4)}
 
     Resume Text:
     {normalized_text}
     """
 
-    response = chat.send_message(prompt)  # Send the prompt to Gemini
+    response = chat.send_message(prompt)
     response_text = response.text.strip()
 
-    # Remove any extra formatting like ```json ```
     if response_text.startswith("```json") and response_text.endswith("```"):
         response_text = response_text[7:-3].strip()  # Remove ```json and ```
 
     try:
-        # Convert the response to a Python dictionary
         response_dict = json.loads(response_text)
-
-        # Normalize spaces in the description fields
-        for exp in response_dict.get("experience", []):
-            if "description" in exp:
-                exp["description"] = normalize_spaces(exp["description"])
-
-        for proj in response_dict.get("projects", []):
-            if "description" in proj:
-                proj["description"] = normalize_spaces(proj["description"])
-
         return response_dict
-    except json.JSONDecodeError as e:
-        print(f"Error parsing JSON response: {e}")
-        return None
+    except json.JSONDecodeError:
+        return {"error": "Invalid response from AI"}

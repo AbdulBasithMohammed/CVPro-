@@ -43,20 +43,29 @@ const ResumeUpload = () => {
             return;
         }
 
+        // console.log(file);
         const formData = new FormData();
-        formData.append("resume", file);
-
+        formData.append("file", file);
+        
         try {
-            const response = await axios.post("http://172.17.3.79:8000/resume/extract/", formData, {
+
+            const response = await axios.post("http://localhost:8000/resume/extract/", formData, {
                 headers: { "Content-Type": "multipart/form-data" }
             });
-            console.log(response);
+            console.log("Upload Success:", response.data);
+            localStorage.setItem("resumeData", JSON.stringify(response.data));
+            setIsModalOpen(true);
             setSuccess("Resume uploaded successfully!");
             setError("");
         } catch (error) {
-            console.error("Upload error:", error);
-            setError("Failed to upload resume. Try again.");
-            setIsModalOpen(true);
+            if (error.response) {
+                console.error("Error Response:", error.response.data);
+                setError(error.response.data.message || "Failed to upload resume.");
+            } else {
+                console.error("Unexpected Error:", error);
+                setError("An unexpected error occurred.");
+            }
+            
         }
     };
 
