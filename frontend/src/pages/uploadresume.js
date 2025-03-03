@@ -13,28 +13,54 @@ const ResumeUpload = () => {
     const [success, setSuccess] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);  // To control modal visibility
     const [selectedTemplate, setSelectedTemplate] = useState(null); // To store the selected template
+    const [isDragging, setIsDragging] = useState(false);
     const navigate = useNavigate();
-  useEffect(() => {
-    // Check if user is logged in
-    const accessToken = localStorage.getItem("access_token");
 
-    if (!accessToken) {
-      navigate("/login");
-    }},[navigate]);
+    useEffect(() => {
+        // Check if user is logged in
+        const accessToken = localStorage.getItem("access_token");
 
-    const handleFileChange = (e) => {
-        const selectedFile = e.target.files[0];
+        if (!accessToken) {
+            navigate("/login");
+        }
+    }, [navigate]);
+
+    const validateFile = (selectedFile) => {
         if (selectedFile) {
             const fileType = selectedFile.name.split(".").pop().toLowerCase();
             if (["pdf", "doc", "docx"].includes(fileType)) {
                 setFile(selectedFile);
-
                 setError("");
+                return true;
             } else {
                 setError("Only PDF or Word files are allowed.");
                 setFile(null);
+                return false;
             }
         }
+        return false;
+    };
+
+    const handleFileChange = (e) => {
+        const selectedFile = e.target.files[0];
+        validateFile(selectedFile);
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+        const droppedFile = e.dataTransfer.files[0];
+        validateFile(droppedFile);
     };
 
     const handleUpload = async () => {
@@ -67,13 +93,14 @@ const ResumeUpload = () => {
         navigate("/template_selection");
     };
 
-
     const handleCreateResume = () => {
         setIsModalOpen(true);
     };
 
     // Function to render file preview based on type
     const renderFilePreview = () => {
+        if (!file) return null;
+        
         const fileType = file.name.split(".").pop().toLowerCase();
         if (fileType === "pdf") {
             return (
@@ -100,14 +127,21 @@ const ResumeUpload = () => {
 
                     {/* Upload Resume */}
                     <div className="relative group">
-                        <label className="cursor-pointer">
-                            <div className="w-56 h-56 flex flex-col items-center justify-center bg-gray-800 rounded-lg shadow-lg hover:bg-gray-700 transition-transform transform hover:scale-105">
-                                <FiUpload className="text-4xl mb-3" />
+                        <div
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={handleDrop}
+                            className={`w-56 h-56 flex flex-col items-center justify-center bg-gray-800 rounded-lg shadow-lg ${
+                                isDragging ? 'border-2 border-dashed border-blue-500 bg-gray-700' : 'hover:bg-gray-700'
+                            } transition-all transform hover:scale-105 cursor-pointer`}
+                        >
+                            <label className="cursor-pointer w-full h-full flex flex-col items-center justify-center">
+                                <FiUpload className={`text-4xl mb-3 ${isDragging ? 'text-blue-400' : 'text-white'}`} />
                                 <span className="text-xl font-semibold">Upload Resume</span>
                                 <FiArrowDown className="text-3xl mt-2 animate-bounce" />
-                            </div>
-                            <input type="file" className="hidden" onChange={handleFileChange} />
-                        </label>
+                                <input type="file" className="hidden" onChange={handleFileChange} accept=".pdf,.doc,.docx" />
+                            </label>
+                        </div>
                     </div>
 
                     {/* Create Resume from Scratch */}
@@ -134,7 +168,6 @@ const ResumeUpload = () => {
                         <button onClick={handleUpload} className="mt-6 px-6 py-3 bg-blue-600 rounded-lg font-bold text-white hover:bg-blue-500 transition">
                             Upload Now
                         </button>
-                        
                     </div>
                 )}
             </div>

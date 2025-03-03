@@ -10,6 +10,7 @@ import ResetPass from "./pages/reset-password"
 import Dashboard from "./pages/dashboard";
 import Uploadresume from "./pages/uploadresume"
 import TemplateSelection from "./pages/template_selection";
+import RateMyResume from "./pages/RateMyResume";
 
 const App = () => {
   return (
@@ -25,6 +26,7 @@ const App = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/createresume" element={<Uploadresume />} />
         <Route path="/template_selection" element={<TemplateSelection />} />
+        <Route path="/rate-my-resume" element={<RateMyResume />} />
       </Routes>
     </Router>
   );
