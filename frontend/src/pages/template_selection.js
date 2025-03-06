@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import EditorSection from '../components/EditorSection';
 import SaveButton from '../components/SaveButton';
+import ExportButton from '../components/ExportButton'; // ✅ Import ExportButton
 import '../CSS/template-resume.css';
 import html2canvas from "html2canvas";
 import Navbar from '../components/navbar';
@@ -16,6 +17,7 @@ function TemplateSelection() {
     personal: {
       name: '',
       email: '',
+      linkedin: '',
       phone: '',
       address: '',
       summary: '',
@@ -33,6 +35,7 @@ function TemplateSelection() {
     projects: [],
   });
 
+  const [isFormValid, setIsFormValid] = useState(false);
   const previewRef = useRef();
   const selectedTemplate = localStorage.getItem("selectedTemplate") || "freshie"; 
   console.log("Selected Template:", selectedTemplate);
@@ -40,24 +43,15 @@ function TemplateSelection() {
   // Choose the appropriate component dynamically
   const SelectedResumePreview = selectedTemplate === "experienced" ? ProfessionalResumePreview : ResumePreview;
 
-  
-  
-
   const updateSection = (section, data, index = null) => {
     if (index !== null) {
       setResumeData((prev) => {
         const updatedSection = [...prev[section]];
         updatedSection[index] = data;
-        return {
-          ...prev,
-          [section]: updatedSection,
-        };
+        return { ...prev, [section]: updatedSection };
       });
     } else {
-      setResumeData((prev) => ({
-        ...prev,
-        [section]: data,
-      }));
+      setResumeData((prev) => ({ ...prev, [section]: data }));
     }
   };
 
@@ -114,15 +108,19 @@ function TemplateSelection() {
     }
   };
 
-  
-
   return (
     <div className='Navbar'>
       <Navbar />
       <div className="app-container">
         <div className="editor-section">
-          <EditorSection data={resumeData} updateSection={updateSection} />
-          <SaveButton handleSave={handleSave} />
+          {/* Pass setIsFormValid to EditorSection */}
+          <EditorSection 
+            data={resumeData} 
+            updateSection={updateSection} 
+            onValidationChange={setIsFormValid} 
+          />
+          <SaveButton handleSave={handleSave} isFormValid={isFormValid} />
+          <ExportButton targetRef={previewRef} isFormValid={isFormValid} /> {/* ✅ Updated */}
         </div>
 
         {/* Dynamically render the selected resume template with a key */}

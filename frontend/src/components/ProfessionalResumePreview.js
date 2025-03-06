@@ -16,12 +16,27 @@ const ProfessionalResumePreview = memo(forwardRef(({ data }, ref) => {
     return (
         <div className="resume-preview-prof" ref={ref}>
             <div className="resume-header-prof">
-                <h1>{data?.personal?.name || "Your Full Name"}</h1>
-                <p>
-                    {data?.personal?.email || "your.email@example.com"} | 
-                    {data?.personal?.phone || "000-000-0000"} | 
-                    {data?.personal?.address || "Your Address"}
-                </p>
+                <div className="header-left-prof">
+                    <h1>{data?.personal?.name || "Your Name"}</h1>
+                    <p className="resume-email-prof">
+                        <a href={`mailto:${data?.personal?.email || "your.email@example.com"}`} className="contact-link">
+                            {data?.personal?.email || "your.email@example.com"}
+                        </a>
+                    </p>
+                    <p className="resume-phone-prof">
+                        {data?.personal?.phone || "000-000-0000"}
+                    </p>
+                    <p className="resume-location-prof">
+                        {data?.personal?.address || "Your Address"}
+                    </p>
+                    {data?.personal?.linkedin && (
+                        <p className="resume-linkedin-prof">
+                            <a href={data.personal.linkedin} target="_blank" rel="noopener noreferrer" className="contact-link">
+                                {data.personal.linkedin}
+                            </a>
+                        </p>
+                    )}
+                </div>
             </div>
 
             {data?.personal?.summary && (
@@ -30,9 +45,36 @@ const ProfessionalResumePreview = memo(forwardRef(({ data }, ref) => {
                 </Section>
             )}
 
+            {data?.experience?.length > 0 && (
+                <Section title="Work Experience">
+                    {data.experience.map((experience, index) => (
+                        <div key={index} className="work-experience-item-prof">
+                            <div className="work-header-prof">
+                                <span className="work-company-name-prof">
+                                    {experience.company || "Company Name"}</span>
+                                    <span className="work-dates-prof">
+                                        {experience.startDate || "Start Date"} - {experience.endDate || "End Date"}
+                                </span>
+                            </div>
+                            <div className="work-header-prof">
+                                <span className="work-role-prof">{experience.jobTitle || "Job Title"}</span>
+                                <span className="work-location-prof">
+                                    {experience.location ? `${experience.location}` : ""}
+                                </span>
+                            </div>
+                            <ul className="work-tasks-prof">
+                                {experience.tasks?.map((task, i) => (
+                                    <li key={i}>{task}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    ))}
+                </Section>
+            )}
+
             {data?.skills?.length > 0 && (
                 <Section title="Skills">
-                    <ul className="skills-list">
+                    <ul className="skills-list-prof">
                         {data.skills.map((skill, index) => (
                             <li key={index}>{skill}</li>
                         ))}
@@ -71,29 +113,6 @@ const ProfessionalResumePreview = memo(forwardRef(({ data }, ref) => {
                     ))}
                 </Section>
             )}
-
-            {/* ✅ Work Experience Section (Now Uses 'experience' Instead of 'workExperience') */}
-            {data?.experience?.length > 0 && (
-                <Section title="Work Experience">
-                    {data.experience.map((experience, index) => (
-                        <div key={index} className="work-experience-item-prof">
-                            <span className="work-company-name-prof">{experience.company || "Company Name"}</span>
-                            <div className="work-header-prof">
-                                <span className="work-role-prof">{experience.jobTitle || "Job Title"}</span>
-                                <span className="work-dates-prof">
-                                    {experience.startDate || "Start Date"} - {experience.endDate || "End Date"}
-                                </span>
-                            </div>
-                            <ul className="work-tasks-prof">
-                                {experience.tasks?.map((task, i) => (
-                                    <li key={i}>{task}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    ))}
-                </Section>
-            )}
-
         </div>
     );
 }));

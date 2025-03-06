@@ -1,6 +1,4 @@
-/* Updated EditorSection Styles to Match Dashboard Theme */
-
-/* General container settings */
+/* ✅ Editor Container - Set Height and Overflow for Scrollable Content */
 .editor-container {
   display: flex;
   flex-direction: column;
@@ -8,13 +6,23 @@
   padding: 2rem;
   border-radius: 12px;
   max-width: 900px;
+  height: 99vh; /* ✅ Keeps within screen height */
   margin: 0 auto;
-  overflow: hidden;
+  overflow-y: auto; /* ✅ Entire editor section is scrollable */
   gap: 1.5rem;
   border: 1px solid #2d3748;
+  position: relative; /* Ensures proper layout */
 }
 
-/* Box style for each section */
+/* ✅ Make the main content scrollable within the container */
+.editor-content {
+  flex: 1;
+  overflow-y: auto; /* ✅ Enables scroll for editor content */
+  padding-right: 10px;
+  max-height: calc(100vh - 5rem); /* Ensures content area height fits the screen */
+}
+
+/* ✅ Adjusted Personal Details Section */
 .editor-section {
   width: 100%;
   padding: 1.5rem;
@@ -23,15 +31,11 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
   border: 1px solid #4a5568;
   transition: all 0.2s ease;
+  overflow-y: visible; /* Ensures sections don't scroll individually */
 }
 
-.editor-section:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-}
-
-/* Headings */
-.editor-container h2 {
+/* ✅ Section Titles */
+.editor-section h2 {
   font-size: 1.5rem;
   color: #f7fafc;
   margin-bottom: 1.5rem;
@@ -41,29 +45,34 @@
   padding-bottom: 0.75rem;
 }
 
-/* Form Group */
+/* ✅ Form Groups - Ensures fields within a section stay aligned */
 .form-group {
-  margin-bottom: 1rem;
   display: flex;
   flex-direction: column;
+  gap: 10px;
+  padding-bottom: 10px;
 }
 
-.form-group label {
-  font-size: 1rem;
-  font-weight: bold;
-  color: #cbd5e0;
-  margin-bottom: 5px;
+/* ✅ Adjusted Personal Details Section */
+.personal-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: space-between;
 }
 
-/* Validation error messages - NEW */
-.validation-error {
-  color: #ffffff;
+.personal-details .form-group {
+  flex: 1;
+  min-width: 280px;
+}
+
+/* ✅ Ensures LinkedIn stays optional and aligned */
+.optional-field {
+  opacity: 0.9;
   font-style: italic;
-  margin-top: 5px;
-  font-size: 0.9rem;
 }
 
-/* Form Input Styles */
+/* ✅ Form Input Styles */
 .form-group input,
 textarea {
   width: 100%;
@@ -74,166 +83,47 @@ textarea {
   box-sizing: border-box;
   background-color: #333;
   color: #fff;
+  resize: none; /* Prevents excessive resizing */
 }
 
+/* ✅ Limit height for large text areas */
 textarea {
-  resize: vertical;
-  min-height: 100px;
-  max-height: 200px;
+  min-height: 80px;
+  max-height: 150px;
 }
 
+/* ✅ Input Focus */
 textarea:focus,
 .form-group input:focus {
-  outline: none;
-  border-color: #1a8c4a; /* Darker green instead of blue */
-  background-color: #3a3a3a;
-}
-
-/* Buttons */
-.remove-item button {
-  padding: 10px 18px;
-  font-size: 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s;
-  border: 1px solid #777;
-  background-color: #444;
-  color: #fff;
-}
-
-/* Updated Action Buttons - NEW */
-.add-skill, .add-education, .add-experience, 
-.remove-education, .remove-experience, .add-task {
-  padding: 10px 18px;
-  font-size: 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s;
-  background-color: #e0e0e0;
-  color: #000000;
-  border: none;
-  margin-top: 10px;
-}
-
-.add-skill:hover, .add-education:hover, .add-experience:hover,
-.remove-education:hover, .remove-experience:hover, .add-task:hover {
-  background-color: #f5f5f5;
-}
-
-/* Remove button specific styles - removed to match add buttons */
-/* 
-.remove-education, .remove-experience {
-  These were causing the difference in styling
-}
-*/
-
-button:hover {
-  background-color: #555;
-}
-
-/* Skill Section Updates */
-.skills-section {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px; /* Increased gap */
-  align-items: center;
-  margin-top: 15px;
-}
-
-.skills-section .form-group {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  flex-direction: row; /* Changed to row layout */
-  gap: 10px;
-}
-
-.skills-section input {
-  width: calc(100% - 50px); /* Adjusted for button spacing */
-  margin-right: 0;
-}
-
-/* Updated remove skill button to match task section - NEW */
-.skills-section .remove-skill {
-  padding: 10px 18px;
-  font-size: 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s;
-  border: 1px solid #777;
-  background-color: #444;
-  color: #fff;
-}
-
-.skills-section .remove-skill:hover {
-  background-color: #555;
-}
-
-/* Summary Counter */
-.char-count {
-  color: #fff !important; /* Changed from black to white */
-  font-size: 0.9rem;
-  margin-top: 8px;
-}
-
-/* Tasks Section */
-.tasks-section label {
-  color: #cbd5e0 !important; /* Changed from black to white */
-  margin-bottom: 10px;
-  display: block;
-}
-
-/* Add Skill Button Spacing */
-button[onclick="addSkill()"] { /* This selector might need adjustment */
-  margin-top: 15px;
-}
-
-/* General Spacing Adjustments */
-.add-item, .add-skill, .add-task {
-  margin-top: 15px;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-  .editor-container {
-    padding: 16px;
-  }
-  .skills-section .form-group {
-    width: 100%;
-  }
-  .skills-section input {
-    width: calc(100% - 40px);
-  }
-}
-.task-input {
-  display: flex;
-  align-items: center;
-  gap: 10px; /* Ensures spacing between input and remove button */
-  margin-bottom: 10px;
-}
-
-.task-input input {
-  width: 100%;
-  padding: 12px;
-  font-size: 1rem;
-  border: 1px solid #444;
-  border-radius: 6px;
-  box-sizing: border-box;
-  background-color: #333;
-  color: #fff;
-}
-
-.task-input input:focus {
   outline: none;
   border-color: #1a8c4a;
   background-color: #3a3a3a;
 }
 
+/* ✅ Validation Error Messages */
+.validation-error {
+  color: #ff6961;
+  font-style: italic;
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
 
-.remove-task {
+/* ✅ Character Counter */
+.char-count {
+  color: #fff;
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+
+/* ✅ Address Field Character Limit */
+.address-field .char-count {
+  text-align: right;
+  color: #ccc;
+  font-size: 0.85rem;
+}
+
+/* ✅ Buttons */
+button {
   padding: 10px 18px;
   font-size: 1rem;
   border-radius: 6px;
@@ -245,6 +135,61 @@ button[onclick="addSkill()"] { /* This selector might need adjustment */
   color: #fff;
 }
 
-.remove-task:hover {
+button:hover {
   background-color: #555;
+}
+
+/* ✅ Add Buttons */
+.add-skill, .add-education, .add-experience, .add-task {
+  background-color: #e0e0e0;
+  color: #000;
+  border: none;
+  margin-top: 10px;
+}
+
+.add-skill:hover, .add-education:hover, .add-experience:hover, .add-task:hover {
+  background-color: #f5f5f5;
+}
+
+/* ✅ Remove Buttons */
+.remove-skill, .remove-education, .remove-experience, .remove-task {
+  background-color: #444;
+  border: 1px solid #777;
+}
+
+.remove-skill:hover, .remove-education:hover, .remove-experience:hover, .remove-task:hover {
+  background-color: #555;
+}
+
+/* ✅ Skills Section */
+.skills-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
+  margin-top: 15px;
+}
+
+/* ✅ Task Input */
+.task-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* ✅ Responsive Fixes */
+@media (max-width: 768px) {
+  .editor-container {
+    height: 100vh;
+    padding: 1rem;
+  }
+
+  .editor-content {
+    max-height: 80vh;
+  }
+  
+  .personal-details {
+    flex-direction: column;
+  }
 }
