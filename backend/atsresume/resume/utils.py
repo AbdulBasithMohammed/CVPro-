@@ -2,9 +2,17 @@ import pdfplumber
 import docx
 import re
 import spacy
-import google.generativeai as genai  # Gemini API
+import google.generativeai as genai
 import phonenumbers
 import json
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Configure Gemini API with hardcoded key
+genai.configure(api_key="AIzaSyBZE_RvBLkCDnADNKxstac1uv8VawmGMN8")
 
 def extract_text_from_pdf(pdf_file):
     """
@@ -138,13 +146,6 @@ def parse_resume(text):
         **extract_sections(text),
     }
 
-genai.configure(api_key="AIzaSyBZE_RvBLkCDnADNKxstac1uv8VawmGMN8")
-""" Secure API Key later on!"""
-
-import json
-import google.generativeai as genai
-
-
 def normalize_spaces(text):
     """Normalize spaces in the text to ensure proper formatting."""
     return " ".join(text.split())
@@ -221,3 +222,132 @@ def parse_resume_with_gemini(text):
     except json.JSONDecodeError as e:
         print(f"Error parsing JSON response: {e}")
         return None
+
+def analyze_resume_with_gemini(resume_text):
+    """
+    Analyzes a resume using Google's Gemini AI and returns a score and detailed feedback.
+    
+    Args:
+        resume_text (str): The text content of the resume to analyze
+        
+    Returns:
+        dict: A dictionary containing the score and feedback
+        {
+            'score': int,
+            'feedback': list[str]
+        }
+    """
+    try:
+        # Initialize Gemini model
+        model = genai.GenerativeModel("gemini-2.0-flash")
+        chat = model.start_chat()
+
+        # Define ATS rules and scoring criteria
+        ats_rules = """
+        Evaluate this resume based on the following ATS (Applicant Tracking System) rules:
+
+        1. Contact Information (10 points):
+        - Must have full name, professional email, phone number
+        - LinkedIn profile is a plus
+        - Professional address format
+
+        2. Formatting and Structure (20 points):
+        - Clear section headings
+        - Consistent formatting (fonts, spacing)
+        - Proper use of bullet points
+        - No complex tables or graphics
+        - PDF format compatibility
+
+        3. Content Organization (25 points):
+        - Clear chronological or functional structure
+        - Work experience with dates
+        - Education with dates
+        - Skills section present
+        - Achievements quantified with metrics
+
+        4. Keywords and Language (25 points):
+        - Industry-specific keywords present
+        - Action verbs at the start of bullets
+        - Technical skills relevant to job market
+        - No jargon or abbreviations
+        - Proper grammar and spelling
+
+        5. Professional Impact (20 points):
+        - Achievements clearly stated
+        - Impact metrics (percentages, numbers)
+        - Leadership or initiative examples
+        - Project outcomes
+        - Awards or recognitions
+
+        Analyze the resume and provide:
+        1. A score out of 100
+        2. A list of strengths (what rules were followed well)
+        3. A list of improvements needed (what rules were violated)
+        4. Brief explanation for each point
+
+        Format the response as a JSON object with the following structure:
+        {
+            "score": number,
+            "strengths": [
+                {"rule": "string", "explanation": "string"}
+            ],
+            "improvements": [
+                {"rule": "string", "explanation": "string"}
+            ]
+        }
+        """
+
+        # Combine resume text with ATS rules for the prompt
+        prompt = f"""
+        Here is the resume content to analyze:
+
+        {resume_text}
+
+        {ats_rules}
+        """
+
+        # Get response from Gemini
+        response = chat.send_message(prompt)
+        response_text = response.text.strip()
+
+        # Extract JSON from response
+        json_start = response_text.find('{')
+        if json_start == -1:
+            raise ValueError('Invalid response format from AI')
+
+        json_end = response_text.rindex('}') + 1
+        json_str = response_text[json_start:json_end]
+
+        # Parse the JSON response
+        result = json.loads(json_str)
+
+        # Format the feedback
+        formatted_feedback = []
+
+        # Add strengths with checkmarks
+        if result.get('strengths'):
+            for strength in result['strengths']:
+                if isinstance(strength, dict):
+                    formatted_feedback.append(f"✓ {strength['rule']}: {strength['explanation']}")
+                elif isinstance(strength, str):
+                    formatted_feedback.append(f"✓ {strength}")
+
+        # Add improvements with X marks
+        if result.get('improvements'):
+            for improvement in result['improvements']:
+                if isinstance(improvement, dict):
+                    formatted_feedback.append(f"✗ {improvement['rule']}: {improvement['explanation']}")
+                elif isinstance(improvement, str):
+                    formatted_feedback.append(f"✗ {improvement}")
+
+        return {
+            'score': result.get('score', 0),
+            'feedback': formatted_feedback
+        }
+
+    except json.JSONDecodeError as e:
+        print(f"Error parsing JSON response: {e}")
+        raise ValueError("Failed to parse AI response")
+    except Exception as e:
+        print(f"Error analyzing resume: {e}")
+        raise Exception(f"Failed to analyze resume: {str(e)}")
