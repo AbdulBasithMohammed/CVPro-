@@ -4,14 +4,30 @@ import re
 import spacy
 import google.generativeai as genai  # Gemini API
 import phonenumbers
+import json
 
 def extract_text_from_pdf(pdf_file):
-    text = ""
-    with pdfplumber.open(pdf_file) as pdf:
-        for page in pdf.pages:
-            print(page)
-            text += page.extract_text() + "\n"
-    return text.strip()
+    """
+    Extract text from a PDF file using pdfplumber
+    """
+    try:
+        text = ""
+        with pdfplumber.open(pdf_file) as pdf:
+            for i, page in enumerate(pdf.pages):
+                print(f"Processing page {i+1} of {len(pdf.pages)}")
+                page_text = page.extract_text()
+                if page_text:
+                    text += page_text + "\n"
+                else:
+                    print(f"Warning: No text extracted from page {i+1}")
+        
+        if not text.strip():
+            print("Warning: No text extracted from the entire PDF")
+            
+        return text.strip()
+    except Exception as e:
+        print(f"Error extracting text from PDF: {str(e)}")
+        raise Exception(f"Failed to extract text from PDF: {str(e)}")
 
 def extract_text_from_docx(docx_file):
     doc = docx.Document(docx_file)
@@ -122,9 +138,8 @@ def parse_resume(text):
         **extract_sections(text),
     }
 
-genai.configure(api_key="AIzaSyC6FCjab0Q6TWvNcvjrtGeAAZY3Q1szp8E")
-
-
+genai.configure(api_key="AIzaSyBZE_RvBLkCDnADNKxstac1uv8VawmGMN8")
+""" Secure API Key later on!"""
 
 import json
 import google.generativeai as genai
@@ -136,7 +151,7 @@ def normalize_spaces(text):
 
 def parse_resume_with_gemini(text):
     """Uses Gemini AI to extract structured data from the resume."""
-    model = genai.GenerativeModel("gemini-pro")  # Ensure correct model usage
+    model = genai.GenerativeModel("gemini-2.0-flash")  # Ensure correct model usage
     chat = model.start_chat()  # Start a conversation
 
     # Normalize spaces in the input text

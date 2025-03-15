@@ -2,7 +2,7 @@ from bson import ObjectId
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser,MultiPartParser
-from .utils import extract_text_from_pdf, extract_text_from_docx, parse_resume, parse_resume_with_gemini
+from .utils import extract_text_from_pdf, extract_text_from_docx, parse_resume, parse_resume_with_gemini, analyze_resume_with_gemini
 from bson import ObjectId
 from rest_framework.permissions import IsAuthenticated
 from django.views import View   
@@ -10,6 +10,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from bson import ObjectId
 from django.http import HttpResponse
+from rest_framework.decorators import api_view, permission_classes
+import PyPDF2
+import io
 
 from db_connection import get_mongo_connection
 import gridfs
@@ -159,7 +162,6 @@ class ResumeImageView(APIView):
         except gridfs.errors.NoFile:
             return Response({"error": "Image not found"}, status=404)      
 
-
 class ResumeUploadView(APIView):
     parser_classes = (MultiPartParser, FormParser)  # Handle file uploads
 
@@ -198,20 +200,3 @@ class ResumeUploadView(APIView):
     #             return response
     #         except gridfs.errors.NoFile:
     #             return HttpResponse("Image not found", status=404)
-
-   
-
-class ResumeImageView(View):
-    """
-    API to serve images stored in GridFS.
-    """
-    def get(self, request, image_id):
-        try:
-            file_data = fs.get(ObjectId(image_id))  # Get file from GridFS
-            response = HttpResponse(file_data, content_type="image/png")  # ✅ Ensure binary response
-            response["Content-Disposition"] = f'inline; filename="{file_data.filename}"'
-            return response
-        except gridfs.errors.NoFile:
-            return HttpResponse("Image not found", status=404)
-        except Exception as e:
-            return HttpResponse(f"Error loading image: {str(e)}", status=500)
