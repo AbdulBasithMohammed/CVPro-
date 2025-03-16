@@ -32,6 +32,40 @@ def generate_unique_username(first_name, last_name):
     username = f"{base_username}{random.randint(10000, 99999)}"
     return username
 
+# views.py
+from django.contrib.auth.hashers import make_password
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import status
+from .serializers import AdminRegisterSerializer
+
+class AdminRegisterView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = AdminRegisterSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            first_name = serializer.validated_data['first_name']
+            last_name = serializer.validated_data['last_name']
+            email = serializer.validated_data['email']
+            password = serializer.validated_data['password']
+
+            username = f"{first_name.lower()}.{last_name.lower()}"
+            hashed_password = make_password(password)
+
+            admin_data = {
+                'first_name': first_name,
+                'last_name': last_name,
+                'email': email,
+                'username': username,
+                'password': hashed_password,
+                'role': 'admin'
+            }
+
+            # MongoDB insert mockup here
+            return Response(admin_data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class RegisterUserView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = UserRegisterSerializer(data=request.data)

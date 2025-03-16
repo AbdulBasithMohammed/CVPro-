@@ -1,11 +1,10 @@
-import unittest
-from .views import AdminRegisterView
+# tests/test_admin_registration.py
 
-class TestAdminRegistration(unittest.TestCase):
+class AdminRegistrationTests(TestCase):
     def setUp(self):
-        self.view = AdminRegisterView()
+        self.client = APIClient()
 
-    def test_register_admin_creates_admin_with_role_admin(self):
+    def test_register_admin_success(self):
         request_data = {
             'first_name': 'Alice',
             'last_name': 'Smith',
@@ -13,12 +12,10 @@ class TestAdminRegistration(unittest.TestCase):
             'password': 'password123'
         }
 
-        response = self.view.register_admin_logic(request_data)
+        response = self.client.post('/api/admin/register/', request_data, format='json')
 
-        self.assertEqual(response['first_name'], 'Alice')
-        self.assertEqual(response['last_name'], 'Smith')
-        self.assertEqual(response['email'], 'alice@example.com')
-        self.assertEqual(response['role'], 'admin')
-
-if __name__ == '__main__':
-    unittest.main()
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['first_name'], 'Alice')
+        self.assertEqual(response.data['last_name'], 'Smith')
+        self.assertEqual(response.data['email'], 'alice@example.com')
+        self.assertEqual(response.data['role'], 'admin')
