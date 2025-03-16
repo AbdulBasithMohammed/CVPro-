@@ -14,6 +14,8 @@ import random,string
 from django.core.mail import send_mail
 from google.auth.transport import requests
 from google.oauth2 import id_token
+from rest_framework.response import Response
+from .serializers import AdminRegisterSerializer
 
 def generate_unique_username(first_name, last_name):
     """Generate a unique username by combining first name, last name, and a random 4-digit number."""
@@ -33,11 +35,7 @@ def generate_unique_username(first_name, last_name):
     return username
 
 # views.py
-from django.contrib.auth.hashers import make_password
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework import status
-from .serializers import AdminRegisterSerializer
+
 
 class AdminRegisterView(APIView):
     def post(self, request, *args, **kwargs):
@@ -48,7 +46,9 @@ class AdminRegisterView(APIView):
             last_name = serializer.validated_data['last_name']
             email = serializer.validated_data['email']
             password = serializer.validated_data['password']
-
+            if admin_collection.find_one({'email': email}):  # Simulate MongoDB query
+                return Response({"email": "This email is already registered."}, status=status.HTTP_400_BAD_REQUEST)
+            
             username = f"{first_name.lower()}.{last_name.lower()}"
             hashed_password = make_password(password)
 
