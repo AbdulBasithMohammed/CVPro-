@@ -19,3 +19,16 @@ class AdminRegistrationTests(TestCase):
         self.assertEqual(response.data['last_name'], 'Smith')
         self.assertEqual(response.data['email'], 'alice@example.com')
         self.assertEqual(response.data['role'], 'admin')
+
+    def test_register_admin_missing_fields(self):
+        request_data = {
+            'first_name': 'Alice',
+            'email': 'alice@example.com',
+            'password': 'password123'
+        }
+
+        response = self.client.post('/api/admin/register/', request_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('last_name', response.data)
+
