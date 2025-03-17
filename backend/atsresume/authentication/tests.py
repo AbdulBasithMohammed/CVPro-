@@ -94,3 +94,22 @@ class AdminLoginTests(TestCase):
         self.assertIn('access_token', response.data)
         self.assertIn('refresh_token', response.data)
         self.assertEqual(response.data['user']['role'], 'admin')
+        
+    def test_non_admin_login_should_fail(self):
+        # Create a non-admin user
+        user_collection.insert_one({
+            "_id": ObjectId(),
+            "first_name": "Normal",
+            "last_name": "User",
+            "email": "user@example.com",
+            "password": make_password("userpass"),
+            "role": "user"
+        })
+
+        response = self.client.post('/api/admin/login/', {
+            'email': 'user@example.com',
+            'password': 'userpass'
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data['error'], 'Unauthorized. Only admins can log in.')
