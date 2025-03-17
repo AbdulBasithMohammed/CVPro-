@@ -1,6 +1,6 @@
 # urls.py
 from django.urls import path
-from .views import RegisterUserView,LoginView,ForgotPasswordView,ResetPasswordView,ContactUsView,VerifyTokenView,GoogleLoginView
+from .views import RegisterUserView,LoginView,ForgotPasswordView,ResetPasswordView,ContactUsView,VerifyTokenView,GoogleLoginView,AdminLoginView
 from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
 
 from rest_framework_simplejwt.views import (
@@ -27,4 +27,5 @@ urlpatterns = [
     path('reset-password/', ResetPasswordView.as_view(), name='reset-password'),
     path('contact-us/', ContactUsView.as_view(), name='contact-us'),
     path('google-login/', GoogleLoginView.as_view(), name="google-login"),
+    path('admin/login/',AdminLoginView.as_view(), name='login_user'),
 ]

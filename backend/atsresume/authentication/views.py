@@ -66,6 +66,41 @@ class AdminRegisterView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class AdminLoginView(APIView):
+    def post(self, request, *args, **kwargs):
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        if not email or not password:
+            return Response({"error": "Email and password are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user_data = user_collection.find_one({'email': email})
+
+        if not user_data:
+            return Response({"error": "Invalid email or password."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if user_data.get('role') != 'admin':
+            return Response({"error": "Unauthorized. Only admins can log in."}, status=status.HTTP_403_FORBIDDEN)
+
+        if not check_password(password, user_data['password']):
+            return Response({"error": "Invalid email or password."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        user_obj = SimpleNamespace(id=str(user_data['_id']))
+        refresh = RefreshToken.for_user(user_obj)
+
+        user_response = {
+            "_id": str(user_data['_id']),
+            "first_name": user_data.get('first_name'),
+            "last_name": user_data.get('last_name'),
+            "email": user_data.get('email'),
+            "role": user_data.get('role')
+        }
+
+        return Response({
+            "access_token": str(refresh.access_token),
+            "refresh_token": str(refresh),
+            "user": user_response
+        }, status=status.HTTP_200_OK)
 class RegisterUserView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = UserRegisterSerializer(data=request.data)

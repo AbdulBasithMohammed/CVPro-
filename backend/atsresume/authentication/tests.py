@@ -67,32 +67,30 @@ class AdminRegistrationTests(TestCase):
 # Mock DB (In actual, use MongoDB)
 mock_db = {}
 
-class LoginTests(TestCase):
+class AdminLoginTests(TestCase):
     def setUp(self):
         self.client = APIClient()
 
-        # Insert a user in mock db to simulate MongoDB
-        self.user = {
+        # Create an admin user in the mock DB
+        self.admin_user = {
             "_id": ObjectId(),
-            "first_name": "John",
-            "last_name": "Doe",
-            "email": "john@example.com",
-            "password": make_password("password123"),  # hashed password
-            "role": "user"
+            "first_name": "Admin",
+            "last_name": "User",
+            "email": "admin@example.com",
+            "password": make_password("adminpass"),
+            "role": "admin"
         }
-        mock_db[self.user['email']] = self.user  # Mock insert
+        mock_db[self.admin_user['email']] = self.admin_user
 
-    def test_login_success(self):
-        request_data = {
-            "email": "john@example.com",
-            "password": "password123"
+    def test_admin_login_success(self):
+        data = {
+            "email": "admin@example.com",
+            "password": "adminpass"
         }
 
-        response = self.client.post('/api/login/', request_data, format='json')
+        response = self.client.post('/api/admin/login/', data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('access_token', response.data)
         self.assertIn('refresh_token', response.data)
-        self.assertIn('user', response.data)
-        self.assertEqual(response.data['user']['email'], "john@example.com")
-
+        self.assertEqual(response.data['user']['role'], 'admin')
