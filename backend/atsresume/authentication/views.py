@@ -79,8 +79,10 @@ class AdminLoginView(APIView):
         if not user_data:
             return Response({"error": "Invalid email or password."}, status=status.HTTP_401_UNAUTHORIZED)
 
+
         if user_data.get('role') != 'admin':
-            return Response({"error": "Unauthorized. Only admins can log in."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"error": "Unauthorized. Only admin are allowed to log in."}, status=status.HTTP_403_FORBIDDEN)
+        
 
         if not check_password(password, user_data['password']):
             return Response({"error": "Invalid email or password."}, status=status.HTTP_401_UNAUTHORIZED)
