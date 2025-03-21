@@ -120,8 +120,8 @@ publish-backend:
     - docker push arshadvhora/projectstream-backend-api:$IMAGE_TAG
   only:
     - main
-    - Developer
-    - feature/#34_resumebackend
+    - developer
+    - integration/sprint3
 
 publish-frontend:
   stage: publish
@@ -137,8 +137,8 @@ publish-frontend:
     - docker push arshadvhora/projectstream-frontend:$IMAGE_TAG
   only:
     - main
-    - Developer
-    - feature/#34_resumebackend
+    - developer
+    - integration/sprint3
 
 # -------------------------- #
 # 🔹 Deploy on VM 🔹 #
@@ -178,7 +178,6 @@ deploy-backend:
     - main
     - developer
     - integration/sprint3
-    - feature/#34_resumebackend
 
 
 deploy-frontend:
@@ -216,5 +215,4 @@ deploy-frontend:
     - main
     - developer
     - integration/sprint3
-    - feature/#34_resumebackend
 
