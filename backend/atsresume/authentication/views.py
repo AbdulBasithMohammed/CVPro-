@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import UserRegisterSerializer,LoginSerializer,ForgotPasswordSerializer,ResetPasswordSerializer,ContactSerializer,VerifyTokenSerializer
-from .models import user_collection,contact_collection
+from .models import user_collection,contact_collection,admin_collection,resume_collection
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 import jwt, datetime
@@ -16,6 +16,8 @@ from google.auth.transport import requests
 from google.oauth2 import id_token
 from rest_framework.response import Response
 from .serializers import AdminRegisterSerializer
+from bson import ObjectId
+
 
 def generate_unique_username(first_name, last_name):
     """Generate a unique username by combining first name, last name, and a random 4-digit number."""
@@ -49,7 +51,7 @@ class AdminRegisterView(APIView):
             if admin_collection.find_one({'email': email}):  # Simulate MongoDB query
                 return Response({"email": "This email is already registered."}, status=status.HTTP_400_BAD_REQUEST)
             
-            username = f"{first_name.lower()}.{last_name.lower()}"
+            username = generate_unique_username(first_name, last_name)
             hashed_password = make_password(password)
 
             admin_data = {
@@ -60,9 +62,16 @@ class AdminRegisterView(APIView):
                 'password': hashed_password,
                 'role': 'admin'
             }
-
+            admin_collection.insert_one(admin_data)
+            response_data = {
+                'first_name': first_name,
+                'last_name': last_name,
+                'email': email,
+                'admin_username': username,
+                'role': 'admin'
+            }
             # MongoDB insert mockup here
-            return Response(admin_data, status=status.HTTP_201_CREATED)
+            return Response(response_data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -74,7 +83,7 @@ class AdminLoginView(APIView):
         if not email or not password:
             return Response({"error": "Email and password are required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        user_data = user_collection.find_one({'email': email})
+        user_data = admin_collection.find_one({'email': email})
 
         if not user_data:
             return Response({"error": "Invalid email or password."}, status=status.HTTP_401_UNAUTHORIZED)
@@ -335,3 +344,50 @@ class GoogleLoginView(APIView):
 
         except Exception as e:
             return Response({"error": "Invalid Google token", "details": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+class AdminUserListView(APIView):
+    def get(self, request):
+        users = []
+        for user in user_collection.find({"role": {"$ne": "admin"}}):
+            user_id = str(user['_id'])
+            num_resumes = resume_collection.count_documents({'user_id': user_id})
+            users.append({
+                "id": user_id,
+                "first_name": user.get("first_name"),
+                "last_name": user.get("last_name"),
+                "email": user.get("email"),
+                "total_resumes": num_resumes
+            })
+        return Response({"users": users}, status=status.HTTP_200_OK)
+
+
+# View: Get list of all resumes
+class AdminAllResumesView(APIView):
+    def get(self, request):
+        resumes = []
+        for resume in resume_collection.find():
+            resumes.append({
+                "id": str(resume['_id']),
+                "user_id": resume.get("user_id"),
+                "resume_title": resume.get("title", ""),
+                "created_at": resume.get("created_at"),
+            })
+        return Response({"resumes": resumes}, status=status.HTTP_200_OK)
+
+
+# View: Delete a user and their resumes
+class AdminDeleteUserView(APIView):
+    def delete(self, request, user_id):
+        if not ObjectId.is_valid(user_id):
+            return Response({"error": "Invalid user ID."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = user_collection.find_one({'_id': ObjectId(user_id)})
+        if not user:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Delete user
+        user_collection.delete_one({'_id': ObjectId(user_id)})
+        # Delete resumes
+        resume_collection.delete_many({'user_id': user_id})
+
+        return Response({"message": "User and their resumes deleted successfully."}, status=status.HTTP_200_OK)

@@ -1,6 +1,6 @@
 # urls.py
 from django.urls import path
-from .views import RegisterUserView,LoginView,ForgotPasswordView,ResetPasswordView,ContactUsView,VerifyTokenView,GoogleLoginView,AdminLoginView,AdminRegisterView
+from .views import RegisterUserView,LoginView,ForgotPasswordView,ResetPasswordView,ContactUsView,VerifyTokenView,GoogleLoginView,AdminLoginView,AdminRegisterView,AdminUserListView,AdminAllResumesView,AdminDeleteUserView
 from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
 
 from rest_framework_simplejwt.views import (
@@ -29,4 +29,7 @@ urlpatterns = [
     path('google-login/', GoogleLoginView.as_view(), name="google-login"),
     path('admin/login/',AdminLoginView.as_view(), name='login_user'),
     path('admin/register/',AdminRegisterView.as_view(), name='login_user'),
+    path('admin/users/', AdminUserListView.as_view(), name='admin-users'),
+    path('admin/resumes/', AdminAllResumesView.as_view(), name='admin-resumes'),
+    path('admin/deleteusers/<str:user_id>/', AdminDeleteUserView.as_view(), name='admin-delete-user'),
 ]
