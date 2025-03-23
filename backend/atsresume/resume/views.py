@@ -3,12 +3,15 @@ from bson import ObjectId
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser,MultiPartParser
-# from .utils import extract_text_from_pdf, extract_text_from_docx, parse_resume, parse_resume_with_gemini
+from .utils import extract_text_from_pdf, extract_text_from_docx, parse_resume, parse_resume_with_gemini, analyze_resume_with_gemini
 from bson import ObjectId
 from rest_framework.permissions import IsAuthenticated
 from django.views import View   
 from bson import ObjectId
 from django.http import HttpResponse
+from rest_framework.decorators import api_view, permission_classes
+import PyPDF2
+import io
 
 from db_connection import get_mongo_connection
 import gridfs

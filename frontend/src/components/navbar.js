@@ -56,8 +56,8 @@ const Navbar = () => {
 
               {/* Show these links only if the user is logged in */}
               {isLoggedIn && (
-                <Link to="/resumes" className="text-gray-700 hover:text-black text-lg font-medium transition duration-300">
-                  Resumes
+                <Link to="/rate-my-resume" className="text-gray-700 hover:text-black text-lg font-medium transition duration-300">
+                  RateMyResume
                 </Link>
               )}
 
