@@ -73,7 +73,7 @@
 }
 
 /* ✅ Form Input Styles */
-.form-group input,
+ input,
 textarea {
   width: 100%;
   padding: 12px;

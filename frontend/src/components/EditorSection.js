@@ -380,7 +380,12 @@ const EditorSection = ({ data, updateSection, onValidationChange }) => {
                             {skill.trim() === '' && (
                                 <span className="validation-error">Skill cannot be empty</span>
                             )}
-                            <div className="char-count">{skill.length} / {MAX_SKILL_LENGTH} characters</div>
+                           <div
+                            className="char-count"
+                            style={{ color: skill.length > MAX_SKILL_LENGTH ? 'red' : 'inherit' }}
+                            >
+                            {skill.length} / {MAX_SKILL_LENGTH} characters
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -434,29 +439,34 @@ const EditorSection = ({ data, updateSection, onValidationChange }) => {
                                             value={task}
                                             onChange={(e) => handleWorkTaskChange(index, taskIndex, e.target.value)}
                                         />
-                                        <button className="remove-task" onClick={() => removeWorkTask(index, taskIndex)}>×</button>
+                                        <button className="editorbutton" onClick={() => removeWorkTask(index, taskIndex)}>×</button>
                                         {task.trim() === '' && (
                                             <span className="validation-error">Task cannot be empty</span>
                                         )}
                                     </div>
                                 ))}
-                                <button 
-                                    className="editorbutton" 
-                                    onClick={() => addWorkTask(index)}
-                                    disabled={exp.tasks.some(task => task.trim() === '')}
-                                >
-                                    Add Task
-                                </button>
+                                    <button 
+                                        className="editorbutton" 
+                                        onClick={() => addWorkTask(index)}
+                                        disabled={exp.tasks.some(task => task.trim() === '')}
+                                        style={{ marginRight: '10px' }} // Adding space between the buttons
+                                    >
+                                        Add Task
+                                    </button>
+                                    <button 
+                                        className="editorbutton" 
+                                        onClick={() => removeWorkExperience(index)}
+                                    >
+                                        Remove Work Experience
+                                    </button>
+
                             </div>
-                            {/* Changed from div with class to direct button */}
-                            <button className="editorbutton" onClick={() => removeWorkExperience(index)}>
-                                Remove Work Experience
-                            </button>
+<br/><br/>
                         </div>
                     ))}
                 </div>
             )}
-            
+
             {/* Projects Section */}
             <div className="editor-section">
                 <h2>Projects</h2>
@@ -501,13 +511,18 @@ const EditorSection = ({ data, updateSection, onValidationChange }) => {
                                 className="editorbutton" 
                                 onClick={() => addProjectTask(index)}
                                 disabled={project.tasks.some(task => task.trim() === '')}
+                                style={{ marginRight: '10px' }}  
                             >
                                 Add Task
                             </button>
+                            <button 
+                                className="editorbutton" 
+                                onClick={() => removeProject(index)}
+                            >
+                                Remove Project
+                            </button>
                         </div>
-                        <button className="editorbutton" onClick={() => removeProject(index)}>
-                            Remove Project
-                        </button>
+ <br/> <br/>
                     </div>
                 ))}
             </div>
