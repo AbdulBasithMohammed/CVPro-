@@ -182,7 +182,7 @@ function TemplateSelection() {
         console.error("Error:", error);
         alert("Network error, please try again");
     }
-};
+  };
 
   return (
     <div className='Navbar'>
