@@ -58,7 +58,7 @@ const ResetPassword = () => {
       formData.append("new_password", passdata.new_password.trim());
 
       // API call using Axios
-      const response = await axios.post("http://172.17.3.79:8000/auth/reset-password/", formData, {
+      const response = await axios.post("http://localhost:8000/auth/reset-password/", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       console.log(response.data);

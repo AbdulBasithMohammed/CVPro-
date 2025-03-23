@@ -13,7 +13,7 @@ const Dashboard = () => {
 
   const fetchResumes = async (userId) => {
     try {
-      const response = await axios.get("http://172.17.3.79:8000/resume/retrieve/", {
+      const response = await axios.get("http://localhost:8000/resume/retrieve/", {
         params: { user_id: userId },
       });
       console.log("API Response:", response.data);
@@ -85,7 +85,7 @@ const Dashboard = () => {
             {userResumes.length > 0 &&
               userResumes.map((resume) => {
                 const imageSrc = resume.image_id
-                  ? `http://172.17.3.79:8000/resume/image/${resume.image_id}`
+                  ? `http://localhost:8000/resume/image/${resume.image_id}`
                   : "https://via.placeholder.com/250";
 
                 return (
