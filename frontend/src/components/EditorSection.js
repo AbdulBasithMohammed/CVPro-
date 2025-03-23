@@ -5,44 +5,39 @@ const EditorSection = ({ data, updateSection, onValidationChange }) => {
     const [summaryLength, setSummaryLength] = useState(data.personal.summary.length);
     const [addressLength, setAddressLength] = useState(data.personal.address ? data.personal.address.length : 0);
     const MAX_SUMMARY_LENGTH = 300;
-    const MAX_ADDRESS_LENGTH = 50;
-    const MAX_SKILL_LENGTH = 50;
+    const MAX_ADDRESS_LENGTH = 30;
+    const MAX_SKILL_LENGTH = 30;
 
     // Validation helper functions
-    const isValidEmail = (email) =>
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const isValidEmail = (email) => /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
     const isValidPhone = (phone) => {
         const digits = phone.replace(/\D/g, '');
-        return digits.length >= 10;
+        return digits.length === 10;
     };
-    const isValidDateFormat = (date) =>
-        /^\d{2}\/\d{4}$/.test(date);
-    const isRequiredFieldFilled = (value) => 
-        value && value.trim() !== '';
+    const isValidDateFormat = (date) => /^\d{2}\/\d{4}$/.test(date);
+    const isValidLinkedIn = (url) =>
+        url === '' || /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9-_]+\/?$/.test(url); // ✅ Allow empty field
+    const isRequiredFieldFilled = (value) => value && value.trim() !== '';
 
     // Get the selected template from localStorage
     const selectedTemplate = localStorage.getItem("selectedTemplate") || "freshie"; // Default to "freshie"
     
-    // Revalidate whenever data changes and update localStorage with form validity
     useEffect(() => {
-      let valid = true;
-      
-      // Personal details validation
-      // Name, email, phone, and address are required
-      if (!isRequiredFieldFilled(data.personal.name) || 
-          !isRequiredFieldFilled(data.personal.email) || 
-          !isRequiredFieldFilled(data.personal.phone) || 
-          !isRequiredFieldFilled(data.personal.address)) {
-        valid = false;
-      }
-      // Email
-      if (!isValidEmail(data.personal.email)) {
-        valid = false;
-      }
-      // Phone
-      if (!isValidPhone(data.personal.phone)) {
-        valid = false;
-      }
+        let valid = true;
+        
+        // Personal details validation
+        if (!isRequiredFieldFilled(data.personal.name) || 
+            !isRequiredFieldFilled(data.personal.email) || 
+            !isRequiredFieldFilled(data.personal.phone) || 
+            !isRequiredFieldFilled(data.personal.address)) {
+            valid = false;
+        }
+        if (!isValidEmail(data.personal.email)) valid = false;
+        if (!isValidPhone(data.personal.phone)) valid = false;
+        if (data.personal.linkedin && !isValidLinkedIn(data.personal.linkedin)) valid = false;
+
+        localStorage.setItem("formIsValid", valid.toString());
+        onValidationChange && onValidationChange(valid);
       
       // Skills validation
       if (data.skills && data.skills.length > 0) {
@@ -119,22 +114,25 @@ const EditorSection = ({ data, updateSection, onValidationChange }) => {
                 const updatedData = { ...data[section], [field]: value };
                 updateSection(section, updatedData);
             }
-        } else {
+        } 
+        else if (section === 'personal' && field === 'phone') {
+            const digits = value.replace(/\D/g, '').slice(0, 10);
+            const updatedData = { ...data[section], [field]: digits };
+            updateSection(section, updatedData);
+        } 
+        else if (section === 'personal' && field === 'summary'){
+            if(value.length <= MAX_SUMMARY_LENGTH){
+                setSummaryLength(value.length);
+                const updatedData = { ...data[section], [field]: value };
+                updateSection(section, updatedData);
+            }
+        } else{
             const updatedData = { ...data[section], [field]: value };
             updateSection(section, updatedData);
         }
     };
 
-    const handleSummaryChange = (e) => {
-        const value = e.target.value;
-        if (value.length <= MAX_SUMMARY_LENGTH) {
-            setSummaryLength(value.length);
-            handleInputChange('personal', 'summary', value);
-        }
-    };
-
     const handleArrayChange = (section, index, field, value) => {
-        // For skill field, check length limit
         if (section === 'skills' && value.length > MAX_SKILL_LENGTH) {
             return;
         }
@@ -255,7 +253,6 @@ const EditorSection = ({ data, updateSection, onValidationChange }) => {
 
     // Skills Section
     const addSkill = () => {
-        // Prevent adding a new skill if any existing skill is empty or too long
         if (data.skills.some(skill => skill.trim() === '' || skill.length > MAX_SKILL_LENGTH)) {
             return;
         }
@@ -303,51 +300,68 @@ const EditorSection = ({ data, updateSection, onValidationChange }) => {
 
     return (
         <div className="editor-container">
-            {/* Personal Details */}
             <div className="editor-section">
                 <h2>Personal Details</h2>
-                {['name', 'email', 'phone', 'address'].map((field) => (
-                    <div key={field} className="form-group">
-                        <label>
-                            {field.charAt(0).toUpperCase() + field.slice(1)}
-                            <span className="required">*</span>
-                        </label>
+                <div className="personal-details">  {/* Ensures all personal fields are together */}
+                    {['name', 'email', 'phone', 'address'].map((field) => (
+                        <div key={field} className="form-group">
+                            <label>
+                                {field.charAt(0).toUpperCase() + field.slice(1)}
+                                <span className="required">*</span>
+                            </label>
+                            <input
+                                type={field === 'email' ? 'email' : 'text'}
+                                value={data.personal[field]}
+                                onChange={(e) => handleInputChange('personal', field, e.target.value)}
+                                {...(field === 'address' ? { maxLength: MAX_ADDRESS_LENGTH } : {})}
+                            />
+                            {field === 'name' && !isRequiredFieldFilled(data.personal.name) && (
+                                <span className="validation-error">Name is required</span>
+                            )}
+                            {field === 'email' && (!isValidEmail(data.personal.email)) && (
+                                <span className="validation-error">Invalid email format</span>
+                            )}
+                            {field === 'phone' && (!isValidPhone(data.personal.phone) || data.personal.phone.length !== 10) && (
+                                <span className="validation-error">Phone number must be exactly 10 digits</span>
+                            )}
+                            {field === 'address' && !isRequiredFieldFilled(data.personal.address) && (
+                                <span className="validation-error">Address is required</span>
+                            )}
+                            {field === 'address' && (
+                                <div className="char-count">{addressLength} / {MAX_ADDRESS_LENGTH} characters</div>
+                            )}
+                        </div>
+                    ))}
+                    <div className="form-group">
+                        <label>LinkedIn (Optional)</label>
                         <input
-                            type={field === 'email' ? 'email' : 'text'}
-                            value={data.personal[field]}
-                            onChange={(e) => handleInputChange('personal', field, e.target.value)}
-                            {...(field === 'address' ? { maxLength: MAX_ADDRESS_LENGTH } : {})}
+                            type="text"
+                            value={data.personal.linkedin}
+                            onChange={(e) => handleInputChange('personal', 'linkedin', e.target.value)}
+                            placeholder="LinkedIn URL"
                         />
-                        {!isRequiredFieldFilled(data.personal[field]) && (
-                            <span className="validation-error">{field.charAt(0).toUpperCase() + field.slice(1)} is required</span>
-                        )}
-                        {field === 'email' && data.personal.email && !isValidEmail(data.personal.email) && (
-                            <span className="validation-error">Invalid email address</span>
-                        )}
-                        {field === 'phone' && data.personal.phone && !isValidPhone(data.personal.phone) && (
-                            <span className="validation-error">Invalid phone number</span>
-                        )}
-                        {field === 'address' && (
-                            <div className="char-count">{addressLength} / {MAX_ADDRESS_LENGTH} characters</div>
+                        {data.personal.linkedin && !isValidLinkedIn(data.personal.linkedin) && (
+                            <span className="validation-error">Invalid LinkedIn URL</span>
                         )}
                     </div>
-                ))}
-                <div className="form-group">
-                    <label>Summary</label>
-                    <textarea
-                        value={data.personal.summary}
-                        onChange={handleSummaryChange}
-                        maxLength={MAX_SUMMARY_LENGTH}
-                    />
-                    <div className="char-count">{summaryLength} / {MAX_SUMMARY_LENGTH} characters</div>
+                    <div className="form-group summary-group"> {/* Ensure summary is part of personal details */}
+                        <label>Summary</label>
+                        <textarea
+                            value={data.personal.summary}
+                            onChange={(e) => handleInputChange('personal', 'summary', e.target.value)}
+                            maxLength={MAX_SUMMARY_LENGTH}
+                        />
+                        <div className="char-count">{summaryLength} / {MAX_SUMMARY_LENGTH} characters</div>
+                    </div>
                 </div>
             </div>
+
 
             {/* Skills Section */}
             <div className="editor-section">
                 <h2>Skills</h2>
                 <button 
-                    className="add-skill"
+                    className="editorbutton"
                     onClick={addSkill} 
                     disabled={!data.skills.every(skill => skill.trim() !== '' && skill.length <= MAX_SKILL_LENGTH)}
                 >
@@ -362,7 +376,7 @@ const EditorSection = ({ data, updateSection, onValidationChange }) => {
                                 placeholder={`Skill ${index + 1}`}
                                 maxLength={MAX_SKILL_LENGTH}
                             />
-                            <button className="remove-skill" onClick={() => removeSkill(index)}>×</button>
+                            <button className="editorbutton" onClick={() => removeSkill(index)}>×</button>
                             {skill.trim() === '' && (
                                 <span className="validation-error">Skill cannot be empty</span>
                             )}
@@ -377,7 +391,7 @@ const EditorSection = ({ data, updateSection, onValidationChange }) => {
                 <div className="editor-section">
                     <h2>Work Experience</h2>
                     <button 
-                        className="add-experience"
+                        className="editorbutton"
                         onClick={addWorkExperience}
                         disabled={!isWorkExperienceValid()}
                     >
@@ -427,7 +441,7 @@ const EditorSection = ({ data, updateSection, onValidationChange }) => {
                                     </div>
                                 ))}
                                 <button 
-                                    className="add-task" 
+                                    className="editorbutton" 
                                     onClick={() => addWorkTask(index)}
                                     disabled={exp.tasks.some(task => task.trim() === '')}
                                 >
@@ -435,7 +449,7 @@ const EditorSection = ({ data, updateSection, onValidationChange }) => {
                                 </button>
                             </div>
                             {/* Changed from div with class to direct button */}
-                            <button className="remove-experience" onClick={() => removeWorkExperience(index)}>
+                            <button className="editorbutton" onClick={() => removeWorkExperience(index)}>
                                 Remove Work Experience
                             </button>
                         </div>
@@ -447,7 +461,7 @@ const EditorSection = ({ data, updateSection, onValidationChange }) => {
             <div className="editor-section">
                 <h2>Projects</h2>
                 <button 
-                    className="add-experience"
+                    className="editorbutton"
                     onClick={addProject}
                     disabled={!isProjectValid()}
                 >
@@ -477,21 +491,21 @@ const EditorSection = ({ data, updateSection, onValidationChange }) => {
                                         value={task}
                                         onChange={(e) => handleProjectTaskChange(index, taskIndex, e.target.value)}
                                     />
-                                    <button className="remove-task" onClick={() => removeProjectTask(index, taskIndex)}>×</button>
+                                    <button className="editorbutton" onClick={() => removeProjectTask(index, taskIndex)}>×</button>
                                     {task.trim() === '' && (
                                         <span className="validation-error">Task cannot be empty</span>
                                     )}
                                 </div>
                             ))}
                             <button 
-                                className="add-task" 
+                                className="editorbutton" 
                                 onClick={() => addProjectTask(index)}
                                 disabled={project.tasks.some(task => task.trim() === '')}
                             >
                                 Add Task
                             </button>
                         </div>
-                        <button className="remove-experience" onClick={() => removeProject(index)}>
+                        <button className="editorbutton" onClick={() => removeProject(index)}>
                             Remove Project
                         </button>
                     </div>
@@ -502,7 +516,7 @@ const EditorSection = ({ data, updateSection, onValidationChange }) => {
             <div className="editor-section">
                 <h2>Education</h2>
                 <button 
-                    className="add-education"
+                    className="editorbutton"
                     onClick={addEducation} 
                     disabled={data.education.length >= 2 || !isEducationValid()}
                 >
@@ -520,7 +534,7 @@ const EditorSection = ({ data, updateSection, onValidationChange }) => {
                                 <input
                                     value={education[field]}
                                     onChange={(e) => handleEducationChange(index, field, e.target.value)}
-                                    placeholder={field === 'graduationDate' ? "MM/YYYY" : field}
+                                    placeholder={field === 'raduationDate' ? "MM/YYYY" : field}
                                 />
                                 {field === 'institution' && !isRequiredFieldFilled(education.institution) && (
                                     <span className="validation-error">Institution name is required</span>
@@ -537,7 +551,7 @@ const EditorSection = ({ data, updateSection, onValidationChange }) => {
                             </div>
                         ))}
                         {/* Changed from div with class to direct button */}
-                        <button className="remove-education" onClick={() => removeEducation(index)}>
+                        <button className="editorbutton" onClick={() => removeEducation(index)}>
                             Remove Education
                         </button>
                     </div>

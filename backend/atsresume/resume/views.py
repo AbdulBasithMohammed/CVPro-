@@ -1,3 +1,4 @@
+import json
 from bson import ObjectId
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -47,7 +48,8 @@ class ResumeCreateView(APIView):
         resume_data = {
             "_id": resume_id,
             "user_id": user_id,
-            "resume_details": data.get("resume_details", {}),
+            "title":"",
+            "resume_details": json.loads(data.get("resumeData", {})),
             "email": data.get("email", ""),
             "image_id": str(image_id) if image_id else None
         }
@@ -56,6 +58,64 @@ class ResumeCreateView(APIView):
         resume_collection.insert_one(resume_data)
         return Response({"message": "Resume saved successfully", "resume_id": resume_id}, status=201)
 
+class ResumeUpdateView(APIView):
+    """
+    API to update an existing resume by ID, including updating the image.
+    """
+    parser_classes = (MultiPartParser, FormParser)  # Allow file uploads
+
+    def put(self, request, id):
+        updated_data = request.data
+        print(updated_data)
+
+        resume = resume_collection.find_one({"_id": id})
+        print(resume)
+        if not resume:
+            return Response({"error": "Resume not found"}, status=404)
+
+        update_fields = {}  # Store only provided fields
+
+        if "title" in updated_data:
+            update_fields["title"] = updated_data.get("title")
+
+        # Update user_id if present
+        if "user_id" in updated_data:
+            update_fields["user_id"] = updated_data.get("user_id")
+
+        # Extract and parse JSON from resumeData only if present
+        if "resumeData" in updated_data:
+            try:
+                resume_details = json.loads(updated_data["resumeData"])
+                update_fields["resume_details"] = resume_details  # Only update if provided
+            except json.JSONDecodeError:
+                return Response({"error": "Invalid JSON format in resumeData"}, status=400)
+
+        # Handle image update if new image is uploaded
+        if "image" in request.FILES:
+            uploaded_image = request.FILES["image"]
+            image_id = fs.put(uploaded_image, filename=uploaded_image.name)  # Save new image to GridFS
+
+            # Remove old image if exists
+            if resume.get("image_id"):
+                try:
+                    fs.delete(ObjectId(resume["image_id"]))  # Delete old image from GridFS
+                except gridfs.errors.NoFile:
+                    pass
+
+            update_fields["image_id"] = str(image_id)  # Store new image ID
+
+      
+
+        # Only update if there are changes
+        if update_fields:
+            print(update_fields)
+            result = resume_collection.update_one({"_id": id}, {"$set": update_fields})
+            if result.modified_count:
+                return Response({"message": "Resume updated successfully"}, status=200)
+            return Response({"error": "No changes made"}, status=400)
+
+        return Response({"error": "No valid fields provided to update"}, status=400)
+    
 
 class ResumeRetrieveView(APIView):
     """
@@ -94,37 +154,7 @@ class ResumeRetrieveView(APIView):
         return Response({"error": "Please provide email, user ID, or resume ID"}, status=400)
 
 
-class ResumeUpdateView(APIView):
-    """
-    API to update an existing resume by ID, including updating the image.
-    """
-    parser_classes = (MultiPartParser, FormParser)  # Allow file uploads
 
-    def put(self, request, id):
-        updated_data = request.data
-        resume = resume_collection.find_one({"_id": id})
-
-        if not resume:
-            return Response({"error": "Resume not found"}, status=404)
-
-        # Handle image update
-        if "image" in request.FILES:
-            uploaded_image = request.FILES["image"]
-            image_id = fs.put(uploaded_image, filename=uploaded_image.name)
-            updated_data["image_id"] = str(image_id)
-
-            # Remove old image if exists
-            if "image_id" in resume and resume["image_id"]:
-                try:
-                    fs.delete(ObjectId(resume["image_id"]))
-                except gridfs.errors.NoFile:
-                    pass
-
-        result = resume_collection.update_one({"_id": id}, {"$set": updated_data})
-
-        if result.modified_count:
-            return Response({"message": "Resume updated successfully"}, status=200)
-        return Response({"error": "No changes made"}, status=400)
 
 
 class ResumeDeleteView(APIView):

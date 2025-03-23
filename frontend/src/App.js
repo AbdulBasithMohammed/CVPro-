@@ -25,6 +25,7 @@ const App = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/createresume" element={<Uploadresume />} />
         <Route path="/template_selection" element={<TemplateSelection />} />
+        <Route path="/template-selection/:resumeId" element={<TemplateSelection />} />
       </Routes>
     </Router>
   );

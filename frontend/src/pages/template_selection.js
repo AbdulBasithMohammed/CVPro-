@@ -1,21 +1,31 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef ,useEffect} from 'react';
 import EditorSection from '../components/EditorSection';
 import SaveButton from '../components/SaveButton';
+import ExportButton from '../components/ExportButton'; // ✅ Import ExportButton
 import '../CSS/template-resume.css';
 import html2canvas from "html2canvas";
+import { useParams } from "react-router-dom";
 import Navbar from '../components/navbar';
 import { BASE_URL } from "../Constant";
 import Footer from '../components/footer';
-
+import axios from "axios";
 // Import both resume templates
 import ResumePreview from '../components/ResumePreview';
 import ProfessionalResumePreview from '../components/ProfessionalResumePreview';
 
 function TemplateSelection() {
+  const { resumeId } = useParams();
+  useEffect(() => {
+    if (resumeId) {
+      console.log("Fetching details hehehe")
+      fetchResumeDetails();
+    }
+  }, [resumeId]);
   const [resumeData, setResumeData] = useState({
     personal: {
       name: '',
       email: '',
+      linkedin: '',
       phone: '',
       address: '',
       summary: '',
@@ -33,31 +43,76 @@ function TemplateSelection() {
     projects: [],
   });
 
+  const [isFormValid, setIsFormValid] = useState(false);
   const previewRef = useRef();
   const selectedTemplate = localStorage.getItem("selectedTemplate") || "freshie"; 
   console.log("Selected Template:", selectedTemplate);
+  const [resumeTitle, setResumeTitle] = useState("resume"); // Default title
+
 
   // Choose the appropriate component dynamically
   const SelectedResumePreview = selectedTemplate === "experienced" ? ProfessionalResumePreview : ResumePreview;
 
-  
-  
+  const fetchResumeDetails = async () => {
+    try {
+        const response = await axios.get(`http://localhost:8000/resume/retrieve/?id=${resumeId}`);
+        console.log(response.data);
+        
+        const fetchedData = response.data.resume_details; // Extract resume details
 
+        console.log("Printing fetched data as",fetchedData)
+
+        if (!fetchedData) {
+            console.error("No resume details found.");
+            return;
+        }
+
+        // Set title if available
+        if(response.data.title)
+        {
+          setResumeTitle(response.data.title)
+        }
+
+        // Update each section separately
+        if (fetchedData.personal) {
+            updateSection("personal", {
+                name: fetchedData.personal.name || "",
+                email: fetchedData.personal.email || "",
+                phone: fetchedData.personal.phone || "",
+                address: fetchedData.personal.address || "",
+                summary: fetchedData.personal.summary || "",
+            });
+        }
+
+        if (Array.isArray(fetchedData.skills)) {
+            updateSection("skills", fetchedData.skills.length > 0 ? fetchedData.skills : []);
+        }
+
+        if (Array.isArray(fetchedData.experience)) {
+            updateSection("experience", fetchedData.experience.length > 0 ? fetchedData.experience : []);
+        }
+
+        if (Array.isArray(fetchedData.education)) {
+            updateSection("education", fetchedData.education.length > 0 ? fetchedData.education : []);
+        }
+
+        if (Array.isArray(fetchedData.projects)) {
+            updateSection("projects", fetchedData.projects.length > 0 ? fetchedData.projects : []);
+        }
+
+    } catch (error) {
+        console.error("Error fetching resume details:", error);
+    }
+};
   const updateSection = (section, data, index = null) => {
     if (index !== null) {
       setResumeData((prev) => {
         const updatedSection = [...prev[section]];
         updatedSection[index] = data;
-        return {
-          ...prev,
-          [section]: updatedSection,
-        };
+        return { ...prev, [section]: updatedSection };
       });
     } else {
-      setResumeData((prev) => ({
-        ...prev,
-        [section]: data,
-      }));
+      setResumeData((prev) => ({ ...prev, [section]: data }));
     }
   };
 
@@ -70,15 +125,15 @@ function TemplateSelection() {
         return;
     }
 
+    console.log(resumeData);
+
     // Capture resume preview as image
     const resumeElement = previewRef.current;
     const fullCanvas = await html2canvas(resumeElement);
-    
-    // Create a thumbnail canvas
+
+    // Create a thumbnail
     const thumbnailCanvas = document.createElement("canvas");
     const ctx = thumbnailCanvas.getContext("2d");
-    
-    // Set thumbnail size (adjust as needed)
     thumbnailCanvas.width = 150;
     thumbnailCanvas.height = 200;
     ctx.drawImage(fullCanvas, 0, 0, 150, 300);
@@ -88,41 +143,61 @@ function TemplateSelection() {
     const thumbnailBlob = await new Promise((resolve) => thumbnailCanvas.toBlob(resolve, "image/png"));
 
     const formData = new FormData();
-    formData.append("image", fullImageBlob, "resume.png");  // Full-size image
-    formData.append("thumbnail", thumbnailBlob, "resume_thumbnail.png");  // Thumbnail
-    formData.append("user_id", userId);  // Send user ID
+    formData.append("image", fullImageBlob, "resume.png");
+    formData.append("resumeData", JSON.stringify(resumeData)); 
+    formData.append("user_id", userId);
 
     try {
-        const response = await fetch("http://localhost:8000/resume/create/", {
-            method: "POST",
-            body: formData,
-        });
+        let response;
 
-        console.log(formData);
+        if (resumeId) {
+            // If resume already exists, update it
+            //formData.append("resume_id", resumeId);
+            response = await fetch(`http://localhost:8000/resume/update/${resumeId}/`, {
+                method: "PUT",
+                body: formData,
+            });
+        } else {
+            // If no resumeId, create a new one
+            response = await fetch("http://localhost:8000/resume/create/", {
+                method: "POST",
+                body: formData,
+            });
+        }
 
         if (response.ok) {
             const result = await response.json();
-            console.log("Resume saved:", result);
-            alert("Resume saved successfully!");
+            console.log("Resume saved/updated:", result);
+            alert(resumeId ? "Resume updated successfully!" : "Resume saved successfully!");
+
+            // If a new resume is created, update resumeId
+            if (!resumeId && result.resume_id) {
+                window.history.replaceState(null, "", `/template/${result.resume_id}`);
+            }
         } else {
-            console.error("Failed to save resume");
-            alert("Error saving resume");
+            console.error("Failed to save/update resume");
+            alert("Error saving/updating resume");
         }
     } catch (error) {
         console.error("Error:", error);
         alert("Network error, please try again");
     }
-  };
-
-  
+};
 
   return (
     <div className='Navbar'>
       <Navbar />
       <div className="app-container">
         <div className="editor-section">
-          <EditorSection data={resumeData} updateSection={updateSection} />
-          <SaveButton handleSave={handleSave} />
+          {/* Pass setIsFormValid to EditorSection */}
+          <EditorSection 
+            data={resumeData} 
+            updateSection={updateSection} 
+            onValidationChange={setIsFormValid} 
+          />
+          <SaveButton handleSave={handleSave} isFormValid={isFormValid} />
+          <ExportButton targetRef={previewRef} isFormValid={isFormValid} fileName={resumeTitle} />
+
         </div>
 
         {/* Dynamically render the selected resume template with a key */}
@@ -133,6 +208,7 @@ function TemplateSelection() {
         />
       </div>
       <div className='Footer'>
+
         <Footer />
       </div>
     </div>

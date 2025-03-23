@@ -2,15 +2,17 @@ import React, { useState, useRef } from 'react';
 import EditorSection from '../components/EditorSection';
 import ResumePreview from '../components/ResumePreview';
 import SaveButton from '../components/SaveButton';
+import ExportButton from '../components/ExportButton'; // ✅ Import ExportButton
 import Navbar from '../components/navbar';
 import Footer from '../components/footer';
+
 console.log("✅ ResumeBuilder.js is running!");
 
 const ResumeBuilder = () => {
   console.log("ResumeBuilder component is rendering..."); // ✅ Debug log
 
   const [resumeData, setResumeData] = useState({
-    personal: { name: '', email: '', phone: '', address: '', summary: '' },
+    personal: { name: '', email: '', phone: '', address: '', linkedin: '', summary: '' },
     skills: [],
     experience: [{ jobTitle: '', company: '', startDate: '', endDate: '', tasks: [''] }],
     education: [{ institution: '', graduationDate: '', course: '', location: '' }],
@@ -18,10 +20,8 @@ const ResumeBuilder = () => {
   });
 
   const [isFormValid, setIsFormValid] = useState(false); // ✅ Track form validation
+  const [showError, setShowError] = useState(false); // ✅ Track if error message should be shown
   const previewRef = useRef();
-  
-  // Force re-render function (only if needed)
-  const [, forceUpdate] = useState(); 
 
   const updateSection = (section, data) => {
     setResumeData(prev => ({
@@ -33,7 +33,7 @@ const ResumeBuilder = () => {
   const handleValidationChange = (isValid) => {
     console.log("handleValidationChange received:", isValid); // ✅ Debug log
     setIsFormValid(isValid);
-    forceUpdate({}); // ✅ Force re-render if state isn't updating
+    setShowError(!isValid); // ✅ Show error only if form is invalid
   };
 
   const handleSave = () => {
@@ -42,11 +42,9 @@ const ResumeBuilder = () => {
       localStorage.setItem('resumeData', JSON.stringify(resumeData));
       alert('Resume data saved successfully!');
     } else {
-      console.log("Cannot save: fix the errors first.");
+      setShowError(true); //  Show error if form is not valid
     }
   };
-
-  console.log("ResumeBuilder - isFormValid:", isFormValid); // ✅ Debug log
 
   return (
     <div className="flex flex-col h-screen">
@@ -58,10 +56,19 @@ const ResumeBuilder = () => {
             updateSection={updateSection}
             onValidationChange={handleValidationChange}
           />
-          <SaveButton 
-            handleSave={handleSave} 
-            disabled={!isFormValid} 
-          />
+
+          {/* ✅ Show error message when form is invalid */}
+          {showError && (
+            <p className="text-red-600 font-semibold mt-2">
+              Please fix all validation errors before exporting or saving.
+            </p>
+          )}
+
+        <div className="button-controls">
+          <SaveButton handleSave={handleSave} isFormValid={isFormValid} />
+          <ExportButton targetRef={previewRef} isFormValid={isFormValid} />
+        </div>
+
         </div>
         <div className="flex-1 p-4 bg-white shadow-md rounded-lg">
           <ResumePreview ref={previewRef} data={resumeData} />

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
@@ -9,6 +9,10 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
+  const [selectedResume, setSelectedResume] = useState(null);
+  const [isImageLoading, setIsImageLoading] = useState(true);
+  const [editingTitle, setEditingTitle] = useState(null);
+  const [newTitle, setNewTitle] = useState("");
   const navigate = useNavigate();
 
   const fetchResumes = async (userId) => {
@@ -26,6 +30,43 @@ const Dashboard = () => {
     }
   };
 
+  
+  const updateTitle = async (resumeId, title) => {
+    try {
+        // Extract required fields from resumeData
+        const formData = new FormData();
+        console.log("Title to be updated is ",title)
+        formData.append("title", title); // Corrected syntax
+
+        // Make the API request
+        const response = await axios.put(
+            `http://localhost:8000/resume/update/${resumeId}/`, 
+            formData, // Pass FormData directly
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",  // Use correct content type for FormData
+                },
+            }
+        );
+
+        // Handle Response
+        if (response.status === 200) {
+            setUserResumes((prevResumes) =>
+                prevResumes.map((resume) =>
+                    resume._id === resumeId ? { ...resume, title } : resume
+                )
+            );
+            setEditingTitle(null);
+            console.log("Title updated successfully:", title);
+        } else {
+            console.error("Failed to update title:", response.statusText);
+        }
+    } catch (error) {
+        console.error("Error updating title:", error);
+    }
+};
+
+
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     const storedToken = localStorage.getItem("access_token");
@@ -36,8 +77,11 @@ const Dashboard = () => {
     }
 
     setUser(storedUser);
-    fetchResumes(storedUser._id);
-  },[]);
+
+    if (userResumes.length === 0) {
+      fetchResumes(storedUser._id);
+    }
+  }, [userResumes.length]);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col justify-between">
@@ -84,6 +128,8 @@ const Dashboard = () => {
             {/* Resume Cards */}
             {userResumes.length > 0 &&
               userResumes.map((resume) => {
+                console.log("Resume Data:", resume);
+                console.log("Resume ID:", resume._id, "Image ID:", resume.image_id);
                 const imageSrc = resume.image_id
                   ? `http://localhost:8000/resume/image/${resume.image_id}`
                   : "https://via.placeholder.com/250";
@@ -95,34 +141,56 @@ const Dashboard = () => {
                   >
                     {/* Resume Thumbnail */}
                     <div className="relative w-48 h-60 mx-auto mb-4">
-                      <img
-                        src={imageSrc}
-                        alt={resume.title || "Resume Thumbnail"}
-                        className="w-full h-full object-cover object-top rounded-lg shadow-md border border-gray-600"
-                        onError={(e) => {
-                          e.target.src = "https://via.placeholder.com/250";
-                        }}
-                      />
-                    </div>
+                    <img
+                      src={imageSrc}
+                      alt={resume.title || "Resume Thumbnail"}
+                      className="w-full h-full object-cover object-top rounded-lg shadow-md border border-gray-600"
+                      onError={(e) => {
+                        e.target.src = "https://via.placeholder.com/250";
+                      }}
+                       />
+                     </div>
 
                     {/* Resume Details */}
                     <div className="text-center">
-                      <h3 className="text-lg font-semibold text-gray-200 tracking-wide">
-                        {resume.title || "Untitled Resume"}
-                      </h3>
+                    {editingTitle === resume._id ? (
+                    <input
+                    type="text"
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    onBlur={() => updateTitle(resume._id, newTitle)}
+                    onKeyDown={(e) => e.key === "Enter" && updateTitle(resume._id, newTitle)}
+                    className="bg-gray-700 text-white p-2 rounded-md w-full"
+                    autoFocus
+                  />
+                ) : (
+                  <h3
+                    className="text-lg font-semibold text-gray-200 cursor-pointer"
+                    onClick={() => {
+                      setEditingTitle(resume._id);
+                      setNewTitle(resume.title || "");
+                    }}
+                  >
+                    {resume.title || "Untitled Resume"}
+                  </h3>
+                )}
                       <div className="mt-4 flex justify-center space-x-4">
-                        <Link
-                          to={`/resume/${resume._id}`}
+                        {/* Open Modal Button */}
+                        <button
+                          onClick={() => {
+                            setSelectedResume(imageSrc);
+                            setIsImageLoading(true);
+                          }}
                           className="px-5 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow hover:bg-blue-500 transition-all duration-200"
                         >
                           View Resume
-                        </Link>
-                        <Link
-                          to={`/editresume/${resume._id}`}
-                          className="px-5 py-2 bg-[#1DB954] text-black text-sm font-semibold rounded-lg shadow hover:bg-[#2BAF2B] transition-all duration-200"
+                        </button>
+                        <button
+                          onClick={() => navigate(`/template-selection/${resume._id}`)}
+                          className="text-yellow-400 hover:text-yellow-300 font-semibold"
                         >
                           Edit
-                        </Link>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -133,6 +201,42 @@ const Dashboard = () => {
       </div>
 
       <Footer />
+
+      {/* Resume Modal */}
+      {selectedResume && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-gray-900 p-6 rounded-lg shadow-lg w-11/12 max-w-4xl max-h-[90vh] overflow-auto relative">
+            
+            {/* Close Button */}
+            <button
+              onClick={() => {
+                setSelectedResume(null);
+                setIsImageLoading(true); // Reset loading state when closing
+              }}
+              className="absolute top-4 right-4 bg-gray-700 text-white px-3 py-2 rounded-full hover:bg-gray-600"
+            >
+              ❌
+            </button>
+
+            {/* Loading Spinner */}
+            {isImageLoading && (
+              <div className="flex justify-center items-center min-h-[300px]">
+                <div className="w-10 h-10 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+              </div>
+            )}
+
+            {/* Resume Image */}
+            <img
+              src={selectedResume}
+              alt="Resume Preview"
+              className={`w-full h-auto rounded-lg shadow transition-opacity duration-500 ${
+                isImageLoading ? "opacity-0" : "opacity-100"
+              }`}
+              onLoad={() => setIsImageLoading(false)} // Hide loader once image loads
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

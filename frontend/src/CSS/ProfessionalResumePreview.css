@@ -1,133 +1,105 @@
+/* ✅ Resume Container (ATS-Friendly) */
 .resume-preview-prof {
     width: 100%;
     max-width: 750px;
     margin: 0 auto;
-    font-family: 'Georgia', serif;
+    font-family: Arial, sans-serif; /* ✅ ATS-Friendly Font */
     color: #222;
     padding: 30px !important;
     background: #fff;
+    line-height: 1.5; /* ✅ Improves readability */
 }
- 
-.resume-name-prof {
-    font-size: 26px;
+
+/* ✅ Name Styling */
+.resume-header-prof h1 {
+    font-size: 24px;
     font-weight: bold;
     text-transform: uppercase;
-    margin: 0;
+    margin-bottom: 5px;
 }
- 
-.resume-summary-prof {
-    font-size: 14px;
-    color: #555;
-    margin-top: 10px;
-}
- 
+
+/* ✅ Contact Information */
 .resume-header-prof {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column; /* ✅ Stacked format for ATS readability */
     align-items: flex-start;
-    flex-wrap: wrap;
-    padding-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #ccc; /* ✅ Soft separator */
 }
- 
-.header-left-prof {
-    display: flex;
-    flex-direction: column;
-}
- 
-.header-right-prof {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-}
- 
-.resume-header-prof h1 {
-    font-size: 26px;
-    font-weight: bold;
-    text-transform: uppercase;
-    margin: 0;
-}
- 
-.resume-location-prof {
+
+.resume-header-prof p {
     font-size: 14px;
     color: #555;
-    margin-top: 3px;
+    margin: 3px 0;
 }
- 
-.resume-contac-prof {
-    font-size: 14px;
-    color: #555;
-    text-align: right;
-    display: flex;
-    flex-direction: column;
+
+/* ✅ Contact Links */
+.contact-link {
+    color: #1a73e8; /* ✅ Professional blue color */
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
 }
- 
-.resume-email-prof {
-    font-size: 14px;
-    color: #555;
-    text-align: right;
-    display: flex;
-    flex-direction: column;
-    margin: 0;
+
+.contact-link:hover {
+    text-decoration: underline;
+    color: #0f5bb5; /* ✅ Darker blue on hover */
 }
- 
-.resume-phone-prof {
-    margin-bottom: 3px;
-    font-size: 14px;
-}
- 
+
+/* ✅ Section Formatting */
 .resume-section-prof {
     margin-bottom: 20px;
-    text-align: left;
     font-size: 15px;
     padding-top: 15px;
 }
- 
+
+/* ✅ Section Titles */
 .section-title-prof {
     font-size: 16px;
     font-weight: bold;
     text-transform: uppercase;
     padding-bottom: 5px;
+    border-bottom: 1px solid #ccc; /* ✅ Subtle separator */
+    bottom: -6px; /* ✅ Moves the underline slightly lower */
 }
- 
-.experience-item-prof {
-    margin-bottom: 20px;
-    font-size: 15px;
+
+/* ✅ Work Experience Section */
+.work-experience-item-prof {
+    margin-bottom: 15px;
 }
- 
-.experience-header-prof {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
- 
-.job-title-prof {
+
+.work-company-name-prof {
     font-size: 15px;
     font-weight: bold;
-    margin-bottom: 2px;
+    flex-grow: 1; /* Ensures proper spacing */
+    text-align: left;
 }
- 
-.employment-dates-prof {
+
+.work-dates-prof {
     font-size: 14px;
     color: #555;
-    margin-left: 5px;
+    text-align: right;
+    white-space: nowrap; /* Prevents wrapping */
+    font-weight: bold;
 }
- 
-.company-location-prof {
+
+.work-header-prof {
+    display: flex;
+    justify-content: space-between;
     font-size: 14px;
     color: #555;
-    margin-top: 2px;
 }
- 
-.responsibilities-list-prof {
+
+.work-tasks-prof {
     padding-left: 20px;
     font-size: 14px;
-    line-height: 1;
 }
- 
-.responsibilities-list-prof li {
+
+.work-tasks-prof li {
     margin-bottom: 5px;
 }
- 
+
+/* ✅ Skills Section */
 .skills-list-prof {
     list-style-type: disc;
     padding-left: 20px;
@@ -136,23 +108,37 @@
     font-size: 14px;
     text-align: left;
 }
- 
+
 .skills-list-prof li {
     padding: 3px 0;
 }
- 
-.education-item-prof {
-    margin-bottom: 15px;
+
+/* ✅ Projects Section */
+.project-item-prof {
+    margin-bottom: 10px;
 }
- 
-.education-heade-prof {
+
+.project-name-prof {
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.task-list-prof {
+    padding-left: 20px;
+    font-size: 14px;
+}
+
+/* ✅ Education Section */
+.education-item-prof {
+    margin-bottom: 10px;
+}
+
+.education-header-prof {
     display: flex;
     justify-content: space-between;
-    align-items: center;
     font-weight: bold;
-    padding-bottom: 5px;
 }
- 
+
 .education-details-prof {
     font-size: 14px;
     color: #555;
@@ -160,43 +146,45 @@
     display: flex;
     justify-content: space-between;
 }
- 
+
 .course-name-prof {
     flex: 1;
     text-align: left;
 }
- 
+
 .education-location-prof {
     flex: 1;
     text-align: right;
 }
- 
+
+.work-location-prof {
+    flex: 1;
+    text-align: right;
+}
+
+
+/* ✅ RESPONSIVE FIXES */
 @media (max-width: 768px) {
     .resume-preview-prof {
         padding: 15px;
     }
- 
+
     .resume-header-prof {
-        flex-direction: column;
         align-items: flex-start;
     }
- 
+
     .resume-header-prof h1 {
         font-size: 20px;
     }
- 
-    .resume-contact-prof {
-        text-align: left;
-    }
- 
+
     .section-title-prof {
         font-size: 14px;
     }
- 
+
     .skills-list-prof {
         grid-template-columns: 1fr;
     }
- 
+
     .education-header-prof,
     .education-details-prof {
         flex-direction: column;
