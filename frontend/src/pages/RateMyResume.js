@@ -19,7 +19,7 @@ const RateMyResume = () => {
     const navigate = useNavigate();
     
     // Gemini API key - in a production app, this should be stored securely
-    const GEMINI_API_KEY = "AIzaSyBZE_RvBLkCDnADNKxstac1uv8VawmGMN8";
+    const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
 
     useEffect(() => {
         // No need to check for authentication since we're using frontend-only approach
