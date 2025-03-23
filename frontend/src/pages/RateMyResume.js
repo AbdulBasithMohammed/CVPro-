@@ -4,7 +4,6 @@ import { FiUpload } from "react-icons/fi";
 import axios from "axios";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
-import { createWorker } from 'tesseract.js';
 
 // Add CSS for animations
 import "../CSS/RateMyResume.css";
@@ -148,7 +147,7 @@ const RateMyResume = () => {
             throw new Error('Failed to extract text from PDF. Please try a different file.');
         }
     };
-    
+
     // Function to analyze resume with Gemini API
     const analyzeResumeWithGemini = async (resumeText) => {
         try {
