@@ -432,7 +432,7 @@ const EditorSection = ({ data, updateSection, onValidationChange }) => {
                                 </div>
                             ))}
                             <div className="tasks-section">
-                                <label>Tasks</label>
+                                <label>Tasks</label><br/>
                                 {exp.tasks.map((task, taskIndex) => (
                                     <div key={taskIndex} className="task-input">
                                         <input
