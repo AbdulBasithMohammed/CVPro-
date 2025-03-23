@@ -4,4 +4,6 @@ from db_connection import get_mongo_connection
 
 db=get_mongo_connection()
 user_collection=db['users']
+admin_collection=db['admins']
+resume_collection = db["resumes"]
 contact_collection = db["contact_messages"]
