@@ -11,6 +11,7 @@ import Dashboard from "./pages/dashboard";
 import Uploadresume from "./pages/uploadresume"
 import TemplateSelection from "./pages/template_selection";
 import RateMyResume from "./pages/RateMyResume";
+import AdminDashboard from "./pages/admindashboard";
 
 const App = () => {
   return (
@@ -28,6 +29,7 @@ const App = () => {
         <Route path="/template_selection" element={<TemplateSelection />} />
         <Route path="/template-selection/:resumeId" element={<TemplateSelection />} />
         <Route path="/rate-my-resume" element={<RateMyResume />} />
+        <Route path="/admindashboard" element={<AdminDashboard />} />
       </Routes>
     </Router>
   );

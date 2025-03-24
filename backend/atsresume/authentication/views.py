@@ -1,5 +1,6 @@
 # views.py
 from time import timezone
+from requests import RequestException
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -392,7 +393,9 @@ class AdminUserListView(APIView):
                 "first_name": user.get("first_name"),
                 "last_name": user.get("last_name"),
                 "email": user.get("email"),
-                "total_resumes": num_resumes
+                "total_resumes": num_resumes,
+                "location": user.get("location"),  # Added location here
+                "created_at":user.get("created_at")
             })
         return Response({"users": users}, status=status.HTTP_200_OK)
 
@@ -427,3 +430,18 @@ class AdminDeleteUserView(APIView):
         resume_collection.delete_many({'user_id': user_id})
 
         return Response({"message": "User and their resumes deleted successfully."}, status=status.HTTP_200_OK)
+    
+class AdminLoginLogsView(APIView):
+    def get(self, request):
+        logs = []
+        for log in login_log_collection.find():
+            logs.append({
+                "id": str(log['_id']),
+                "user_id": log.get("user_id"),
+                "timestamp": log.get("timestamp"),
+                "ip_address": log.get("ip_address"),
+                "login_successful": log.get("login_successful"),
+            })
+        return Response({"login_logs": logs}, status=status.HTTP_200_OK)
+    
+    
