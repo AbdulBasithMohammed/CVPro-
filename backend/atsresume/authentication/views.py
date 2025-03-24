@@ -402,16 +402,29 @@ class AdminUserListView(APIView):
 
 # View: Get list of all resumes
 class AdminAllResumesView(APIView):
-    def get(self, request):
-        resumes = []
-        for resume in resume_collection.find():
-            resumes.append({
-                "id": str(resume['_id']),
-                "user_id": resume.get("user_id"),
-                "resume_title": resume.get("title", ""),
-                "created_at": resume.get("created_at"),
-            })
-        return Response({"resumes": resumes}, status=status.HTTP_200_OK)
+    def get(self, request, user_id=None):
+        if user_id:
+            # Fetch resumes for a specific user_id
+            resumes = []
+            for resume in resume_collection.find({"user_id": user_id}):
+                resumes.append({
+                    "id": str(resume['_id']),
+                    "user_id": resume.get("user_id"),
+                    "resume_title": resume.get("title", ""),
+                    "created_at": resume.get("created_at"),
+                })
+            return Response({"resumes": resumes}, status=status.HTTP_200_OK)
+        else:
+            # Fetch all resumes if no user_id is provided
+            resumes = []
+            for resume in resume_collection.find():
+                resumes.append({
+                    "id": str(resume['_id']),
+                    "user_id": resume.get("user_id"),
+                    "resume_title": resume.get("title", ""),
+                    "created_at": resume.get("created_at"),
+                })
+            return Response({"resumes": resumes}, status=status.HTTP_200_OK)
 
 
 # View: Delete a user and their resumes

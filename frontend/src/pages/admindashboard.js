@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';  // Import Link for routing
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import * as XLSX from 'xlsx';
 import axios from 'axios';
@@ -103,7 +104,7 @@ const AdminDashboard = () => {
     try {
       const response = await axios.get(`https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lon}&key=${GEOCODE_API_KEY}`);
       if (response.data && response.data.results && response.data.results[0]) {
-        return response.data.results[0].components.city;
+        return response.data.results[0].components.city+", "+response.data.results[0].components.country;
       }
     } catch (error) {
       console.error("Error fetching country data:", error);
@@ -216,7 +217,11 @@ const AdminDashboard = () => {
             <tbody>
               {filteredUsers.map(user => (
                 <tr key={user.id} className="border-t border-gray-600">
-                  <td className="px-4 py-2 text-sm text-gray-300">{user.first_name} {user.last_name}</td>
+                  <td className="px-4 py-2 text-sm text-gray-300">
+                    <Link to={`/user/${user.id}`} className="text-blue-400 hover:text-blue-600">
+                      {user.first_name} {user.last_name}
+                    </Link>
+                  </td>
                   <td className="px-4 py-2 text-sm text-gray-300">{user.email}</td>
                   <td className="px-4 py-2 text-sm text-gray-300">{user.total_resumes}</td>
                   <td className="px-4 py-2 text-sm text-gray-300">{user.country}</td> {/* Use country here */}
@@ -249,7 +254,6 @@ const AdminDashboard = () => {
             <Line type="monotone" dataKey="loginCount" stroke="#8884d8" />
           </LineChart>
         </ResponsiveContainer>
-
         <div>
           <p><strong>Peak Hour in UTC timezone:</strong> {peakHour}</p>
           <p><strong>Lowest Hour in UTC timezone:</strong> {lowestHour}</p>
