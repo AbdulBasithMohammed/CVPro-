@@ -12,6 +12,7 @@ import Uploadresume from "./pages/uploadresume"
 import TemplateSelection from "./pages/template_selection";
 import RateMyResume from "./pages/RateMyResume";
 import AdminDashboard from "./pages/admindashboard";
+import UserDetailsPage from "./pages/userDetailspage"
 
 const App = () => {
   return (
@@ -30,6 +31,7 @@ const App = () => {
         <Route path="/template-selection/:resumeId" element={<TemplateSelection />} />
         <Route path="/rate-my-resume" element={<RateMyResume />} />
         <Route path="/admindashboard" element={<AdminDashboard />} />
+        <Route path="/user/:userId" element={<UserDetailsPage />} />
       </Routes>
     </Router>
   );

@@ -30,7 +30,7 @@ urlpatterns = [
     path('admin/login/',AdminLoginView.as_view(), name='login_user'),
     path('admin/register/',AdminRegisterView.as_view(), name='login_user'),
     path('admin/users/', AdminUserListView.as_view(), name='admin-users'),
-    path('admin/resumes/', AdminAllResumesView.as_view(), name='admin-resumes'),
+    path('admin/resumes/<str:user_id>/', AdminAllResumesView.as_view(), name='admin-resumes'),
     path('admin/login-logs/', AdminLoginLogsView.as_view(), name='admin-login-logs'),
     path('admin/deleteusers/<str:user_id>/', AdminDeleteUserView.as_view(), name='admin-delete-user'),
 ]
