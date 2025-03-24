@@ -405,7 +405,6 @@ class AdminUserListView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 class AdminAllResumesView(APIView):
-<<<<<<< HEAD
     renderer_classes = [JSONRenderer]
     
     def get(self, request):
@@ -443,31 +442,6 @@ class AdminAllResumesView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 content_type='application/json'
             )
-=======
-    def get(self, request, user_id=None):
-        if user_id:
-            # Fetch resumes for a specific user_id
-            resumes = []
-            for resume in resume_collection.find({"user_id": user_id}):
-                resumes.append({
-                    "id": str(resume['_id']),
-                    "user_id": resume.get("user_id"),
-                    "resume_title": resume.get("title", ""),
-                    "created_at": resume.get("created_at"),
-                })
-            return Response({"resumes": resumes}, status=status.HTTP_200_OK)
-        else:
-            # Fetch all resumes if no user_id is provided
-            resumes = []
-            for resume in resume_collection.find():
-                resumes.append({
-                    "id": str(resume['_id']),
-                    "user_id": resume.get("user_id"),
-                    "resume_title": resume.get("title", ""),
-                    "created_at": resume.get("created_at"),
-                })
-            return Response({"resumes": resumes}, status=status.HTTP_200_OK)
->>>>>>> 0fddc9bc657625dacebaddc679f00d895f53e519
 
 class AdminDeleteUserView(APIView):
     renderer_classes = [JSONRenderer]
