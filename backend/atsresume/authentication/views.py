@@ -442,6 +442,10 @@ class AdminAllResumesView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 content_type='application/json'
             )
+class AdminLoginLogsView(APIView):
+    def get(self, request):
+        # Your implementation here
+        return Response({"message": "Login logs functionality"}, status=status.HTTP_200_OK)
 
 class AdminDeleteUserView(APIView):
     renderer_classes = [JSONRenderer]
