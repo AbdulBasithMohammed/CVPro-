@@ -19,8 +19,8 @@ from google.oauth2 import id_token
 from rest_framework.response import Response
 from .serializers import AdminRegisterSerializer
 from bson import ObjectId
-from django.utils import timezone
-from datetime import datetime
+from rest_framework.renderers import JSONRenderer
+
 
 
 def generate_unique_username(first_name, last_name):
@@ -128,6 +128,11 @@ class RegisterUserView(APIView):
             password = serializer.validated_data['password']
             location = request.data.get('location', {})  # Extract location from request data
             
+            if user_collection.find_one({'email': email}):
+                return Response(
+                    {'email': 'A user with this email already exists.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             # Generate a unique username
             username = generate_unique_username(first_name, last_name)
             
@@ -384,64 +389,91 @@ class GoogleLoginView(APIView):
         
 class AdminUserListView(APIView):
     def get(self, request):
-        users = []
-        for user in user_collection.find({"role": {"$ne": "admin"}}):
-            user_id = str(user['_id'])
-            num_resumes = resume_collection.count_documents({'user_id': user_id})
-            users.append({
-                "id": user_id,
-                "first_name": user.get("first_name"),
-                "last_name": user.get("last_name"),
-                "email": user.get("email"),
-                "total_resumes": num_resumes,
-                "location": user.get("location"),  # Added location here
-                "created_at":user.get("created_at")
-            })
-        return Response({"users": users}, status=status.HTTP_200_OK)
-
-
-# View: Get list of all resumes
+        try:
+            users = []
+            for user in user_collection.find({"role": {"$ne": "admin"}}):
+                user_id = str(user['_id'])
+                num_resumes = resume_collection.count_documents({'user_id': user_id})
+                users.append({
+                    "id": user_id,
+                    "first_name": user.get("first_name"),
+                    "last_name": user.get("last_name"),
+                    "email": user.get("email"),
+                    "total_resumes": num_resumes
+                })
+            return Response({"users": users}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 class AdminAllResumesView(APIView):
+    renderer_classes = [JSONRenderer]
+    
     def get(self, request):
-        resumes = []
-        for resume in resume_collection.find():
-            resumes.append({
-                "id": str(resume['_id']),
-                "user_id": resume.get("user_id"),
-                "resume_title": resume.get("title", ""),
-                "created_at": resume.get("created_at"),
-            })
-        return Response({"resumes": resumes}, status=status.HTTP_200_OK)
+        try:
+            resumes = []
+            for resume in resume_collection.find():
+                resume_details = resume.get("resume_details", {})
+                resumes.append({
+                    "id": str(resume['_id']),
+                    "user_id": resume.get("user_id"),
+                    "title": resume.get("title", ""),
+                    "email": resume.get("email", ""),
+                    "image_id": resume.get("image_id", ""),
+                    "personal_info": {
+                        "name": resume_details.get("personal", {}).get("name", ""),
+                        "email": resume_details.get("personal", {}).get("email", ""),
+                        "phone": resume_details.get("personal", {}).get("phone", ""),
+                        "address": resume_details.get("personal", {}).get("address", ""),
+                        "linkedin": resume_details.get("personal", {}).get("linkedin", ""),
+                        "summary": resume_details.get("personal", {}).get("summary", "")
+                    },
+                    "education": resume_details.get("education", []),
+                    "experience": resume_details.get("experience", []),
+                    "skills": resume_details.get("skills", []),
+                    "projects": resume_details.get("projects", []),
+                    "metadata": {
+                        "created_at": resume.get("created_at", ""),  # Add if available
+                        "updated_at": resume.get("updated_at", "")   # Add if available
+                    }
+                })
+            return Response({"resumes": resumes}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": f"Failed to fetch resumes: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content_type='application/json'
+            )
 
-
-# View: Delete a user and their resumes
 class AdminDeleteUserView(APIView):
+    renderer_classes = [JSONRenderer]
+    
     def delete(self, request, user_id):
-        if not ObjectId.is_valid(user_id):
-            return Response({"error": "Invalid user ID."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            if not ObjectId.is_valid(user_id):
+                return Response(
+                    {"error": "Invalid user ID."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                    content_type='application/json'
+                )
 
-        user = user_collection.find_one({'_id': ObjectId(user_id)})
-        if not user:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            user = user_collection.find_one({'_id': ObjectId(user_id)})
+            if not user:
+                return Response(
+                    {"error": "User not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                    content_type='application/json'
+                )
 
-        # Delete user
-        user_collection.delete_one({'_id': ObjectId(user_id)})
-        # Delete resumes
-        resume_collection.delete_many({'user_id': user_id})
-
-        return Response({"message": "User and their resumes deleted successfully."}, status=status.HTTP_200_OK)
-    
-class AdminLoginLogsView(APIView):
-    def get(self, request):
-        logs = []
-        for log in login_log_collection.find():
-            logs.append({
-                "id": str(log['_id']),
-                "user_id": log.get("user_id"),
-                "timestamp": log.get("timestamp"),
-                "ip_address": log.get("ip_address"),
-                "login_successful": log.get("login_successful"),
-            })
-        return Response({"login_logs": logs}, status=status.HTTP_200_OK)
-    
-    
+            user_collection.delete_one({'_id': ObjectId(user_id)})
+            resume_collection.delete_many({'user_id': user_id})
+            
+            return Response(
+                {"message": "User and resumes deleted successfully."},
+                status=status.HTTP_200_OK,
+                content_type='application/json'
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content_type='application/json'
+            )
