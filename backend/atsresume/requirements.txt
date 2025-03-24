@@ -32,3 +32,4 @@ spacy
 google-generativeai
 phonenumbers
 PyPDF2
+coverage
