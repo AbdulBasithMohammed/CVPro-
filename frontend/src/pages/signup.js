@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import backgroundImage from "../assets/signupbg2.jpg";
-// import googlelogo from "../assets/google.png";
 import axios from "axios";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import { BASE_URL } from "../Constant";
@@ -13,12 +12,45 @@ const Signup = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    location: "", // Added location field
   });
 
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
+
+  // Fetch user's location automatically
+  const getLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setFormData((prevData) => ({
+            ...prevData,
+            location: `${latitude},${longitude}`, // Store location as a string
+          }));
+        },
+        (error) => {
+          console.error("Error fetching location: ", error);
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            location: "Unable to fetch location.",
+          }));
+        }
+      );
+    } else {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        location: "Geolocation is not supported by this browser.",
+      }));
+    }
+  };
+
+  // Call getLocation on component mount
+  useEffect(() => {
+    getLocation();
+  }, []);
 
   // Validation function - runs WHILE TYPING
   const validateField = (name, value) => {

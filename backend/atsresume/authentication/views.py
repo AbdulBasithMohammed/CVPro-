@@ -1,9 +1,10 @@
 # views.py
+from time import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import UserRegisterSerializer,LoginSerializer,ForgotPasswordSerializer,ResetPasswordSerializer,ContactSerializer,VerifyTokenSerializer
-from .models import user_collection,contact_collection,admin_collection,resume_collection
+from .models import user_collection,contact_collection,admin_collection,resume_collection,login_log_collection
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 import jwt, datetime
@@ -17,6 +18,8 @@ from google.oauth2 import id_token
 from rest_framework.response import Response
 from .serializers import AdminRegisterSerializer
 from bson import ObjectId
+from django.utils import timezone
+from datetime import datetime
 
 
 def generate_unique_username(first_name, last_name):
@@ -112,14 +115,17 @@ class AdminLoginView(APIView):
             "refresh_token": str(refresh),
             "user": user_response
         }, status=status.HTTP_200_OK)
+    
 class RegisterUserView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = UserRegisterSerializer(data=request.data)
+        
         if serializer.is_valid():
             first_name = serializer.validated_data['first_name']
             last_name = serializer.validated_data['last_name']
             email = serializer.validated_data['email']
             password = serializer.validated_data['password']
+            location = request.data.get('location', {})  # Extract location from request data
             
             # Generate a unique username
             username = generate_unique_username(first_name, last_name)
@@ -127,13 +133,18 @@ class RegisterUserView(APIView):
             # Hash the password before storing it
             hashed_password = make_password(password)
             
-            # Insert the user into MongoDB
+            # Get current timestamp
+            created_at = datetime.utcnow()  # UTC timestamp for consistency
+            
+            # Insert the user into MongoDB, including the location and created_at data
             user_data = {
                 'first_name': first_name,
                 'last_name': last_name,
                 'username': username,  # Auto-generated username
                 'email': email,
-                'password': hashed_password
+                'password': hashed_password,
+                'location': location,  # Save the location data
+                'created_at': created_at  # Store the current timestamp
             }
             user_collection.insert_one(user_data)
             
@@ -144,23 +155,27 @@ class RegisterUserView(APIView):
 class LoginView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = LoginSerializer(data=request.data)
-        
+
         if serializer.is_valid():
             email = serializer.validated_data['email']
             password = serializer.validated_data['password']
-            
+
             # Find user in MongoDB
             user_data = user_collection.find_one({'email': email})
             if not user_data:
+                # Log the failed login attempt
+                self.log_login_attempt(request, email, success=False)
                 return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
-            
+
             # Check password
             if not check_password(password, user_data['password']):
+                # Log the failed login attempt
+                self.log_login_attempt(request, email, success=False)
                 return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
 
             # Convert MongoDB dict to an object with an 'id' attribute
             user_obj = SimpleNamespace(id=str(user_data['_id']))  # SimpleNamespace allows attribute access
-            
+
             # Generate JWT tokens using Simple JWT
             refresh = RefreshToken.for_user(user_obj)  # Now `user_obj` has an `id`
             access_token = str(refresh.access_token)
@@ -170,6 +185,9 @@ class LoginView(APIView):
             user_data['_id'] = str(user_data['_id'])
             user_data.pop('password')
 
+            # Log the successful login attempt
+            self.log_login_attempt(request, email, success=True)
+
             return Response({
                 "access_token": access_token,
                 "refresh_token": refresh_token,
@@ -177,6 +195,24 @@ class LoginView(APIView):
             }, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def log_login_attempt(self, request, email, success):
+        """
+        Logs the login attempt details to the MongoDB login log collection.
+        """
+        ip_address = request.META.get('REMOTE_ADDR', '')
+        timestamp = timezone.now()
+
+        log_entry = {
+            "email": email,
+            "ip_address": ip_address,
+            "success": success,
+            "timestamp": timestamp,
+            "user_agent": request.META.get('HTTP_USER_AGENT', ''),
+        }
+
+        # Store the log entry in the login_logs collection
+        login_log_collection.insert_one(log_entry)
 
 class ForgotPasswordView(APIView):
     """
