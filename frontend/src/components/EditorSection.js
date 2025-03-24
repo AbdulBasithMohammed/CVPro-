@@ -2,11 +2,16 @@ import React, { useState, useEffect } from 'react';
 import '../CSS/EditorSection.css';
 
 const EditorSection = ({ data, updateSection, onValidationChange }) => {
-    const [summaryLength, setSummaryLength] = useState(data.personal.summary.length);
+    const resumedata = JSON.parse(localStorage.getItem('resumeData'));
+    console.log("resume:",resumedata)
+    data =resumedata || data;
+    const [summaryLength, setSummaryLength] = useState(data.personal.summary ? data.personal.summary.length : 0);
     const [addressLength, setAddressLength] = useState(data.personal.address ? data.personal.address.length : 0);
     const MAX_SUMMARY_LENGTH = 300;
     const MAX_ADDRESS_LENGTH = 30;
     const MAX_SKILL_LENGTH = 30;
+
+    
 
     // Validation helper functions
     const isValidEmail = (email) => /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
@@ -24,6 +29,7 @@ const EditorSection = ({ data, updateSection, onValidationChange }) => {
     
     useEffect(() => {
         let valid = true;
+
         
         // Personal details validation
         if (!isRequiredFieldFilled(data.personal.name) || 

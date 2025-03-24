@@ -161,7 +161,7 @@ def parse_resume_with_gemini(text):
     Extract the following details from this resume:
     - Name
     - Email
-    - Phone Number
+    - Phone Number only in 10 digits
     - Address
     - Summary (Ensure it's extracted properly. If missing, return null.)
     - Skills (as a list)
@@ -171,27 +171,27 @@ def parse_resume_with_gemini(text):
 
     Structure it in **valid JSON** format:
     {json.dumps({
-        "id": None,
-        "resume_template_id": None,
-        "name": "string",
-        "email": "string",
-        "phone": "string",
-        "address": "string",
-        "summary": "string or null",
+        "personal":{
+                    "name": "string",
+                    "email": "string",
+                    "phone": "string",
+                    "address": "string",
+                    "summary": "string or null",
+                    },
         "skills": ["string"],
         "experience": [
             {
-                "job_title": "string",
+                "jobTitle": "string",
                 "company": "string",
-                "start_date": "MM/YYYY",
-                "end_date": "MM/YYYY or null (if current)",
+                "startDate": "MM/YYYY",
+                "endDate": "MM/YYYY or null (if current)",
                 "location": "string",
                 "tasks": ["string"]  
             }
         ],
         "projects": [
             {
-                "title": "string",
+                "name": "string",
                 "tasks": ["string"],  
                 "technologies": ["string"]
             }
@@ -204,7 +204,7 @@ def parse_resume_with_gemini(text):
                 "location": "string"
             }
         ]
-    }, indent=4)}
+    }, indent=5)}
 
     Resume Text:
     {normalized_text}
