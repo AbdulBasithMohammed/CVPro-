@@ -110,6 +110,7 @@
 }
 
 .task-list {
+    list-style-type: disc;
     padding-left: 20px; /* Indentation for task list */
     font-size: 14px;
     margin-top: 5px;

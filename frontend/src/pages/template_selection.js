@@ -2,6 +2,7 @@ import React, { useState, useRef ,useEffect} from 'react';
 import EditorSection from '../components/EditorSection';
 import SaveButton from '../components/SaveButton';
 import ExportButton from '../components/ExportButton'; // ✅ Import ExportButton
+import JobTailoredResume from '../components/JobTailoredResume';
 import '../CSS/template-resume.css';
 import html2canvas from "html2canvas";
 import { useParams } from "react-router-dom";
@@ -196,8 +197,13 @@ function TemplateSelection() {
             onValidationChange={setIsFormValid} 
           />
           <SaveButton handleSave={handleSave} isFormValid={isFormValid} />
-          <ExportButton targetRef={previewRef} isFormValid={isFormValid} fileName={resumeTitle} />
-
+          <ExportButton
+            targetRef={previewRef}
+            isFormValid={isFormValid}
+            data={resumeData}            
+            fileName={resumeTitle}
+            selectedTemplate={selectedTemplate}
+          />
         </div>
 
         {/* Dynamically render the selected resume template with a key */}
@@ -206,6 +212,12 @@ function TemplateSelection() {
           ref={previewRef} 
           data={resumeData} 
         />
+
+        {/* JobTailoredResume component */}
+        <JobTailoredResume 
+        resumeData={resumeData} 
+        setResumeData={setResumeData} 
+      />
       </div>
       <div className='Footer'>
 
