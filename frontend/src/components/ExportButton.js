@@ -396,6 +396,7 @@ const ExportButton = ({ targetRef, isFormValid, data, selectedTemplate = "freshi
                     indent: { left: 350 },
                   }),
                     ...generateList(project.tasks || [], templateStyles.listStyle),
+                    addSectionSpacing(150),
                   ])
                 : []),
 

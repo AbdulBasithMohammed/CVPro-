@@ -473,7 +473,7 @@ const EditorSection = ({ data, updateSection, onValidationChange }) => {
             <div className="editor-section">
                 <h2>Projects</h2>
                 <button 
-                    className="editbutton"
+                    className="editorbutton"
                     onClick={addProject}
                     disabled={!isProjectValid()}
                 >
@@ -528,7 +528,7 @@ const EditorSection = ({ data, updateSection, onValidationChange }) => {
             <div className="editor-section">
                 <h2>Education</h2>
                 <button 
-                    className="editbutton"
+                    className="editorbutton"
                     onClick={addEducation} 
                     disabled={data.education.length >= 2 || !isEducationValid()}
                 >
