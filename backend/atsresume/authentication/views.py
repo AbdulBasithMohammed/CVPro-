@@ -20,6 +20,8 @@ from rest_framework.response import Response
 from .serializers import AdminRegisterSerializer
 from bson import ObjectId
 from rest_framework.renderers import JSONRenderer
+from datetime import datetime, timedelta
+from django.utils import timezone
 
 
 
@@ -140,7 +142,7 @@ class RegisterUserView(APIView):
             hashed_password = make_password(password)
             
             # Get current timestamp
-            created_at = datetime.utcnow()  # UTC timestamp for consistency
+            created_at = datetime.now(timezone.utc)  # UTC timestamp for consistency
             
             # Insert the user into MongoDB, including the location and created_at data
             user_data = {
@@ -207,7 +209,7 @@ class LoginView(APIView):
         Logs the login attempt details to the MongoDB login log collection.
         """
         ip_address = request.META.get('REMOTE_ADDR', '')
-        timestamp = timezone.now()
+        timestamp = datetime.now(timezone.utc)
 
         log_entry = {
             "email": email,
@@ -235,7 +237,7 @@ class ForgotPasswordView(APIView):
 
             # Generate a 6-digit token
             reset_token = str(random.randint(100000, 999999))
-            expiry_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)  # Token expires in 5 min
+            expiry_time = datetime.now(timezone.utc) + datetime.timedelta(minutes=5)  # Token expires in 5 min
 
             # Save token and expiry time in MongoDB
             user_collection.update_one({'email': email}, {'$set': {'reset_token': reset_token, 'token_expiry': expiry_time}})
@@ -278,11 +280,10 @@ class VerifyTokenView(APIView):
             if not stored_token or not token_expiry:
                 return Response({"error": "No token found. Please request a new one."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # ✅ Fix: `token_expiry` is already a `datetime.datetime` object
             if token != stored_token:
                 return Response({"error": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
 
-            if datetime.datetime.utcnow() > token_expiry:
+            if datetime.now(timezone.utc) > token_expiry:
                 user_collection.update_one({'email': email}, {'$unset': {'reset_token': "", 'token_expiry': ""}})
                 return Response({"error": "Token has expired. Please request a new one."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -313,11 +314,11 @@ class ResetPasswordView(APIView):
             if not stored_token or not token_expiry:
                 return Response({"error": "No valid reset token found. Please request a new one."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # ✅ Fix: `token_expiry` is already a `datetime.datetime` object
+
             if token != stored_token:
                 return Response({"error": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
 
-            if datetime.datetime.utcnow() > token_expiry:
+            if datetime.now(timezone.utc) > token_expiry:
                 return Response({"error": "Token has expired. Please request a new one."}, status=status.HTTP_400_BAD_REQUEST)
 
             # Hash the new password before saving
@@ -342,13 +343,27 @@ class ContactUsView(APIView):
             return Response({"message": "Your message has been sent successfully!"}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+from datetime import datetime, timezone, timedelta
+
+from datetime import datetime, timezone, timedelta
+
 class GoogleLoginView(APIView):
     def post(self, request):
         token = request.data.get("token")
+        location = request.data.get("location")  # Get location from request
+        print("Received Token:", token)  # Debugging
+
+        if not token:
+            return Response({"error": "Token is missing"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             # Verify Google token
-            google_data = id_token.verify_oauth2_token(token, requests.Request(), settings.GOOGLE_CLIENT_ID ,clock_skew_in_seconds=5)
+            google_data = id_token.verify_oauth2_token(
+                token, requests.Request(), settings.GOOGLE_CLIENT_ID, clock_skew_in_seconds=5
+            )
+            # print("Google Data:", google_data)  # Debugging
+
             email = google_data.get("email")
             first_name = google_data.get("given_name", "")
             last_name = google_data.get("family_name", "")
@@ -361,31 +376,67 @@ class GoogleLoginView(APIView):
 
             if not user:
                 username = (first_name + last_name).lower()
+                # Get current timestamp (with timezone)
+                created_at = datetime.now(timezone.utc)  # UTC timestamp for consistency
+                
+                # Check if location is available, otherwise set a default
+                location = location or "Unknown"  # Default location if not provided
+            
                 user_data = {
                     "email": email,
                     "first_name": first_name,
                     "last_name": last_name,
                     "username": username,
-                    "password": make_password(None),  # No password required for Google login
+                    "password": make_password(None),
+                    "location": location,  # Store the location from frontend
+                    "created_at": created_at,  # Store the current timestamp
                 }
+
                 inserted_user = user_collection.insert_one(user_data)
-                user_data["_id"] = str(inserted_user.inserted_id)  # Convert ObjectId to string
+                user_data["_id"] = str(inserted_user.inserted_id)
                 user = user_data
             else:
-                user["_id"] = str(user["_id"])  # Convert ObjectId to string
+                user["_id"] = str(user["_id"])
 
             # Generate JWT token
             payload = {
                 "email": user["email"],
-                "exp": datetime.datetime.utcnow() + datetime.timedelta(days=1),
-                "iat": datetime.datetime.utcnow(),
+                "exp": datetime.utcnow() + timedelta(days=1),
+                "iat": datetime.utcnow(),
             }
+
             access_token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+            self.log_login_attempt(request, email, success=True)
 
             return Response({"token": access_token, "user": user}, status=status.HTTP_200_OK)
 
-        except Exception as e:
+        except ValueError as e:
+            print("Google Token Verification Failed:", str(e))  # Debugging
             return Response({"error": "Invalid Google token", "details": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print("Unexpected Error:", str(e))  # Debugging
+            return Response({"error": "An error occurred", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    def log_login_attempt(self, request, email, success):
+        """
+        Logs the login attempt details to the MongoDB login log collection.
+        """
+        ip_address = request.META.get('REMOTE_ADDR', '')
+        timestamp = datetime.now(timezone.utc)  # Correctly use datetime with timezone info
+
+        log_entry = {
+            "email": email,
+            "ip_address": ip_address,
+            "success": success,
+            "timestamp": timestamp,
+            "user_agent": request.META.get('HTTP_USER_AGENT', ''),
+        }
+
+        # Store the log entry in the login_logs collection
+        login_log_collection.insert_one(log_entry)
+
+
         
 class AdminUserListView(APIView):
     def get(self, request):

@@ -100,25 +100,26 @@ const Signup = () => {
       setErrors({ general: "An error occurred. Please try again later." });
     }
   };
-
-  // ✅ Handle Google Signup Success
+  
   const handleGoogleSignupSuccess = async (credentialResponse) => {
+    console.log("Google Credential Response:", credentialResponse); // Debugging
+  
+    getLocation(); // Fetch location first
+  
     try {
       const response = await axios.post("http://localhost:8000/auth/google-login/", {
-        token: credentialResponse.credential,
+        token: credentialResponse.credential, // Ensure this is correctly passed
+        location: formData.location, // Use the location from state
       });
-
-      const { access_token, refresh_token, user } = response.data;
-      localStorage.setItem("access_token", access_token);
-      localStorage.setItem("refresh_token", refresh_token);
-      localStorage.setItem("user", JSON.stringify(user));
-
+  
+      console.log("Backend Response:", response.data); // Debugging
       navigate("/dashboard");
     } catch (error) {
+      console.error("Google Signup Error:", error.response?.data || error.message); // Debugging
       setErrors({ general: "Google signup failed. Please try again." });
     }
   };
-
+  
   return (
     <GoogleOAuthProvider clientId="1020835081770-vq18tvgqbcr1u1dc76cea0u1k9crop91.apps.googleusercontent.com">
       <div
