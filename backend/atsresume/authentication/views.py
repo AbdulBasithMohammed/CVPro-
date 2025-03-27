@@ -450,7 +450,10 @@ class AdminUserListView(APIView):
                     "first_name": user.get("first_name"),
                     "last_name": user.get("last_name"),
                     "email": user.get("email"),
-                    "total_resumes": num_resumes
+                    "total_resumes": num_resumes,
+                    "location": user.get("location"),
+                    "created_at": user.get("created_at"),
+
                 })
             return Response({"users": users}, status=status.HTTP_200_OK)
         except Exception as e:
@@ -495,8 +498,16 @@ class AdminAllResumesView(APIView):
             )
 class AdminLoginLogsView(APIView):
     def get(self, request):
-        # Your implementation here
-        return Response({"message": "Login logs functionality"}, status=status.HTTP_200_OK)
+        logs = []
+        for log in login_log_collection.find():
+            logs.append({
+                "id": str(log['_id']),
+                "user_id": log.get("user_id"),
+                "timestamp": log.get("timestamp"),
+                "ip_address": log.get("ip_address"),
+                "login_successful": log.get("login_successful"),
+            })
+        return Response({"login_logs": logs}, status=status.HTTP_200_OK)
 
 class AdminDeleteUserView(APIView):
     renderer_classes = [JSONRenderer]
