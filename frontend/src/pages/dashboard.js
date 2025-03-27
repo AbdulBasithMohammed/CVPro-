@@ -30,42 +30,56 @@ const Dashboard = () => {
     }
   };
 
-  
   const updateTitle = async (resumeId, title) => {
     try {
-        // Extract required fields from resumeData
-        const formData = new FormData();
-        console.log("Title to be updated is ",title)
-        formData.append("title", title); // Corrected syntax
+      const formData = new FormData();
+      console.log("Title to be updated is ", title);
+      formData.append("title", title); // Corrected syntax
 
-        // Make the API request
-        const response = await axios.put(
-            `http://localhost:8000/resume/update/${resumeId}/`, 
-            formData, // Pass FormData directly
-            {
-                headers: {
-                    "Content-Type": "multipart/form-data",  // Use correct content type for FormData
-                },
-            }
-        );
-
-        // Handle Response
-        if (response.status === 200) {
-            setUserResumes((prevResumes) =>
-                prevResumes.map((resume) =>
-                    resume._id === resumeId ? { ...resume, title } : resume
-                )
-            );
-            setEditingTitle(null);
-            console.log("Title updated successfully:", title);
-        } else {
-            console.error("Failed to update title:", response.statusText);
+      const response = await axios.put(
+        `http://localhost:8000/resume/update/${resumeId}/`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         }
-    } catch (error) {
-        console.error("Error updating title:", error);
-    }
-};
+      );
 
+      if (response.status === 200) {
+        setUserResumes((prevResumes) =>
+          prevResumes.map((resume) =>
+            resume._id === resumeId ? { ...resume, title } : resume
+          )
+        );
+        setEditingTitle(null);
+        console.log("Title updated successfully:", title);
+      } else {
+        console.error("Failed to update title:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error updating title:", error);
+    }
+  };
+
+  const deleteResume = async (resumeId) => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:8000/resume/delete/${resumeId}/`
+      );
+
+      if (response.status === 200) {
+        setUserResumes((prevResumes) =>
+          prevResumes.filter((resume) => resume._id !== resumeId)
+        );
+        console.log("Resume deleted successfully");
+      } else {
+        console.error("Failed to delete resume:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error deleting resume:", error);
+    }
+  };
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -87,9 +101,7 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gray-900 text-white flex flex-col justify-between">
       <Navbar />
 
-      {/* Main Container */}
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-12">
-        {/* Greeting Section */}
         <div className="text-center mb-10">
           <h2 className="text-4xl font-light text-gray-300 tracking-wide">
             Hi, {user?.first_name || "User"} 👋
@@ -99,7 +111,6 @@ const Dashboard = () => {
           </h2>
         </div>
 
-        {/* Loading State */}
         {loading ? (
           <div className="flex justify-center items-center mt-6">
             <span className="text-lg text-gray-300">Loading your resumes...</span>
@@ -110,7 +121,6 @@ const Dashboard = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Create Resume Card */}
             <div
               onClick={() => navigate("/createresume")}
               className="cursor-pointer bg-gray-800 bg-opacity-80 backdrop-blur-lg rounded-xl shadow-lg border border-gray-700 overflow-hidden transform transition-all duration-300 hover:scale-105 hover:bg-opacity-90 p-6 text-center flex flex-col justify-center items-center"
@@ -125,11 +135,8 @@ const Dashboard = () => {
               </h3>
             </div>
 
-            {/* Resume Cards */}
             {userResumes.length > 0 &&
               userResumes.map((resume) => {
-                console.log("Resume Data:", resume);
-                console.log("Resume ID:", resume._id, "Image ID:", resume.image_id);
                 const imageSrc = resume.image_id
                   ? `http://localhost:8000/resume/image/${resume.image_id}`
                   : "https://via.placeholder.com/250";
@@ -139,43 +146,42 @@ const Dashboard = () => {
                     key={resume._id}
                     className="bg-gray-800 bg-opacity-80 backdrop-blur-lg rounded-xl shadow-lg border border-gray-700 overflow-hidden transform transition-all duration-300 hover:scale-105 hover:bg-opacity-90 p-6 text-center"
                   >
-                    {/* Resume Thumbnail */}
                     <div className="relative w-48 h-60 mx-auto mb-4">
-                    <img
-                      src={imageSrc}
-                      alt={resume.title || "Resume Thumbnail"}
-                      className="w-full h-full object-cover object-top rounded-lg shadow-md border border-gray-600"
-                      onError={(e) => {
-                        e.target.src = "https://via.placeholder.com/250";
-                      }}
-                       />
-                     </div>
+                      <img
+                        src={imageSrc}
+                        alt={resume.title || "Resume Thumbnail"}
+                        className="w-full h-full object-cover object-top rounded-lg shadow-md border border-gray-600"
+                        onError={(e) => {
+                          e.target.src = "https://via.placeholder.com/250";
+                        }}
+                      />
+                    </div>
 
-                    {/* Resume Details */}
                     <div className="text-center">
-                    {editingTitle === resume._id ? (
-                    <input
-                    type="text"
-                    value={newTitle}
-                    onChange={(e) => setNewTitle(e.target.value)}
-                    onBlur={() => updateTitle(resume._id, newTitle)}
-                    onKeyDown={(e) => e.key === "Enter" && updateTitle(resume._id, newTitle)}
-                    className="bg-gray-700 text-white p-2 rounded-md w-full"
-                    autoFocus
-                  />
-                ) : (
-                  <h3
-                    className="text-lg font-semibold text-gray-200 cursor-pointer"
-                    onClick={() => {
-                      setEditingTitle(resume._id);
-                      setNewTitle(resume.title || "");
-                    }}
-                  >
-                    {resume.title || "Untitled Resume"}
-                  </h3>
-                )}
+                      {editingTitle === resume._id ? (
+                        <input
+                          type="text"
+                          value={newTitle}
+                          onChange={(e) => setNewTitle(e.target.value)}
+                          onBlur={() => updateTitle(resume._id, newTitle)}
+                          onKeyDown={(e) =>
+                            e.key === "Enter" && updateTitle(resume._id, newTitle)
+                          }
+                          className="bg-gray-700 text-white p-2 rounded-md w-full"
+                          autoFocus
+                        />
+                      ) : (
+                        <h3
+                          className="text-lg font-semibold text-gray-200 cursor-pointer"
+                          onClick={() => {
+                            setEditingTitle(resume._id);
+                            setNewTitle(resume.title || "");
+                          }}
+                        >
+                          {resume.title || "Untitled Resume"}
+                        </h3>
+                      )}
                       <div className="mt-4 flex justify-center space-x-4">
-                        {/* Open Modal Button */}
                         <button
                           onClick={() => {
                             setSelectedResume(imageSrc);
@@ -187,9 +193,16 @@ const Dashboard = () => {
                         </button>
                         <button
                           onClick={() => navigate(`/template-selection/${resume._id}`)}
-                          className="text-yellow-400 hover:text-yellow-300 font-semibold"
+                          className="px-5 py-2 bg-yellow-600 text-white text-sm font-semibold rounded-lg shadow hover:bg-blue-500 transition-all duration-200"
                         >
                           Edit
+                        </button>
+                        {/* Delete Button */}
+                        <button
+                          onClick={() => deleteResume(resume._id)}
+                          className="px-5 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg shadow hover:bg-blue-500 transition-all duration-200"
+                        >
+                          Delete
                         </button>
                       </div>
                     </div>
@@ -202,37 +215,32 @@ const Dashboard = () => {
 
       <Footer />
 
-      {/* Resume Modal */}
       {selectedResume && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-gray-900 p-6 rounded-lg shadow-lg w-11/12 max-w-4xl max-h-[90vh] overflow-auto relative">
-            
-            {/* Close Button */}
             <button
               onClick={() => {
                 setSelectedResume(null);
-                setIsImageLoading(true); // Reset loading state when closing
+                setIsImageLoading(true);
               }}
               className="absolute top-4 right-4 bg-gray-700 text-white px-3 py-2 rounded-full hover:bg-gray-600"
             >
               ❌
             </button>
 
-            {/* Loading Spinner */}
             {isImageLoading && (
               <div className="flex justify-center items-center min-h-[300px]">
                 <div className="w-10 h-10 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
               </div>
             )}
 
-            {/* Resume Image */}
             <img
               src={selectedResume}
               alt="Resume Preview"
               className={`w-full h-auto rounded-lg shadow transition-opacity duration-500 ${
                 isImageLoading ? "opacity-0" : "opacity-100"
               }`}
-              onLoad={() => setIsImageLoading(false)} // Hide loader once image loads
+              onLoad={() => setIsImageLoading(false)}
             />
           </div>
         </div>

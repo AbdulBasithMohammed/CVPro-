@@ -22,6 +22,7 @@ from bson import ObjectId
 from rest_framework.renderers import JSONRenderer
 from datetime import datetime, timedelta
 from django.utils import timezone
+from datetime import datetime, timedelta, timezone
 
 
 
@@ -237,7 +238,7 @@ class ForgotPasswordView(APIView):
 
             # Generate a 6-digit token
             reset_token = str(random.randint(100000, 999999))
-            expiry_time = datetime.now(timezone.utc) + datetime.timedelta(minutes=5)  # Token expires in 5 min
+            expiry_time = datetime.now(timezone.utc) + timedelta(minutes=5)  # Token expires in 5 min
 
             # Save token and expiry time in MongoDB
             user_collection.update_one({'email': email}, {'$set': {'reset_token': reset_token, 'token_expiry': expiry_time}})
@@ -276,6 +277,8 @@ class VerifyTokenView(APIView):
             # Check if token exists
             stored_token = user.get('reset_token')
             token_expiry = user.get('token_expiry')
+            if token_expiry.tzinfo is None:
+                token_expiry = token_expiry.replace(tzinfo=timezone.utc)
 
             if not stored_token or not token_expiry:
                 return Response({"error": "No token found. Please request a new one."}, status=status.HTTP_400_BAD_REQUEST)
@@ -310,6 +313,8 @@ class ResetPasswordView(APIView):
             # Check if token matches and is not expired
             stored_token = user.get('reset_token')
             token_expiry = user.get('token_expiry')
+            if token_expiry.tzinfo is None:
+                token_expiry = token_expiry.replace(tzinfo=timezone.utc)
 
             if not stored_token or not token_expiry:
                 return Response({"error": "No valid reset token found. Please request a new one."}, status=status.HTTP_400_BAD_REQUEST)
@@ -344,9 +349,8 @@ class ContactUsView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-from datetime import datetime, timezone, timedelta
 
-from datetime import datetime, timezone, timedelta
+
 
 class GoogleLoginView(APIView):
     def post(self, request):
@@ -401,8 +405,8 @@ class GoogleLoginView(APIView):
             # Generate JWT token
             payload = {
                 "email": user["email"],
-                "exp": datetime.utcnow() + timedelta(days=1),
-                "iat": datetime.utcnow(),
+                "exp": datetime.now(timezone.utc) + timedelta(days=1),
+                "iat": datetime.now(timezone.utc),
             }
 
             access_token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
