@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiUpload } from "react-icons/fi";
-import axios from "axios";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
+import { analyzeResume, analyzeResumeFromPDF } from "../components/GeminiService";
 
 // Add CSS for animations
 import "../CSS/RateMyResume.css";
@@ -148,141 +148,6 @@ const RateMyResume = () => {
         }
     };
 
-    // Function to analyze resume with Gemini API
-    const analyzeResumeWithGemini = async (resumeText) => {
-        try {
-            // Define the prompt for Gemini
-            const atsRules = `
-            Evaluate this resume based on the following ATS (Applicant Tracking System) rules:
-
-            1. Contact Information (15 points):
-            - Must have full name, professional email, phone number
-            - Must have address in the format: Street Address, City, State/Province(2 letters)
-            - LinkedIn profile is a plus
-
-            2. Formatting and Structure (10 points):
-            - Basic readability
-            - No major formatting issues that affect readability
-
-            3. Content Organization (30 points):
-            - Work experience with dates
-            - Education with dates
-            - Skills section present
-            - Achievements quantified with metrics
-            - Clear chronological or functional structure
-
-            4. Keywords and Language (25 points):
-            - Industry-specific keywords present
-            - Action verbs at the start of bullets
-            - Technical skills relevant to job market
-            - No jargon or abbreviations
-            - Proper grammar and spelling
-
-            5. Professional Impact (20 points):
-            - Achievements clearly stated
-            - Impact metrics (percentages, numbers)
-            - Leadership or initiative examples
-            - Project outcomes
-            - Awards or recognitions
-
-            Analyze the resume and provide:
-            1. A score out of 100
-            2. A list of strengths (what rules were followed well)
-            3. A list of improvements needed (what rules were violated)
-            4. Brief explanation for each point
-
-            Format the response as a JSON object with the following structure:
-            {
-                "score": number,
-                "strengths": [
-                    {"rule": "string", "explanation": "string"}
-                ],
-                "improvements": [
-                    {"rule": "string", "explanation": "string"}
-                ]
-            }
-            `;
-            
-            const prompt = `
-            Here is the resume content to analyze:
-
-            ${resumeText}
-
-            ${atsRules}
-            `;
-            
-            // Make request to Gemini API
-            const response = await axios.post(
-                `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-                {
-                    contents: [
-                        {
-                            parts: [
-                                {
-                                    text: prompt
-                                }
-                            ]
-                        }
-                    ],
-                    generationConfig: {
-                        temperature: 0.2,
-                        topK: 40,
-                        topP: 0.95,
-                        maxOutputTokens: 8192
-                    }
-                }
-            );
-            
-            // Extract the text from the response
-            const responseText = response.data.candidates[0].content.parts[0].text;
-            
-            // Find the JSON object in the response (it might be wrapped in ```json ```)
-            const jsonStart = responseText.indexOf('{');
-            if (jsonStart === -1) {
-                throw new Error('Invalid response format from AI');
-            }
-            
-            const jsonEnd = responseText.lastIndexOf('}') + 1;
-            const jsonStr = responseText.substring(jsonStart, jsonEnd);
-            
-            // Parse the JSON
-            const result = JSON.parse(jsonStr);
-            
-            // Format the feedback
-            const formattedFeedback = [];
-            
-            // Add strengths with checkmarks
-            if (result.strengths && Array.isArray(result.strengths)) {
-                for (const strength of result.strengths) {
-                    if (typeof strength === 'object' && strength.rule && strength.explanation) {
-                        formattedFeedback.push(`✓ ${strength.rule}: ${strength.explanation}`);
-                    } else if (typeof strength === 'string') {
-                        formattedFeedback.push(`✓ ${strength}`);
-                    }
-                }
-            }
-            
-            // Add improvements with X marks
-            if (result.improvements && Array.isArray(result.improvements)) {
-                for (const improvement of result.improvements) {
-                    if (typeof improvement === 'object' && improvement.rule && improvement.explanation) {
-                        formattedFeedback.push(`✗ ${improvement.rule}: ${improvement.explanation}`);
-                    } else if (typeof improvement === 'string') {
-                        formattedFeedback.push(`✗ ${improvement}`);
-                    }
-                }
-            }
-            
-            return {
-                score: result.score || 0,
-                feedback: formattedFeedback
-            };
-        } catch (error) {
-            console.error('Error analyzing resume with Gemini:', error);
-            throw new Error('Failed to analyze resume. Please try again.');
-        }
-    };
-
     const handleRateResume = async () => {
         if (!file) {
             setError("Please upload a resume first.");
@@ -309,7 +174,7 @@ const RateMyResume = () => {
                 
                 // If text extraction succeeds, analyze with Gemini
                 console.log("Text extraction successful, analyzing with Gemini...");
-                analysisResult = await analyzeResumeWithGemini(pdfText);
+                analysisResult = await analyzeResume(pdfText);
             } catch (textExtractionError) {
                 console.log("Text extraction failed, falling back to direct PDF analysis...");
                 
@@ -327,116 +192,7 @@ const RateMyResume = () => {
                 const base64Data = await base64Promise;
                 
                 // Call Gemini API directly with PDF
-                const response = await axios.post(
-                    `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-                    {
-                        contents: [{
-                            parts: [{
-                                text: `Please analyze this resume and provide feedback based on the following ATS (Applicant Tracking System) rules:
-
-1. Contact Information (15 points):
-- Must have full name, professional email, phone number
-- Must have address in the format: Street Address, City, State/Province(2 letters)
-- LinkedIn profile is a plus
-
-2. Formatting and Structure (10 points):
-- Basic readability
-- No major formatting issues that affect readability
-
-3. Content Organization (30 points):
-- Work experience with dates
-- Education with dates
-- Skills section present
-- Achievements quantified with metrics
-- Clear chronological or functional structure
-
-4. Keywords and Language (25 points):
-- Industry-specific keywords present
-- Action verbs at the start of bullets
-- Technical skills relevant to job market
-- No jargon or abbreviations
-- Proper grammar and spelling
-
-5. Professional Impact (20 points):
-- Achievements clearly stated
-- Impact metrics (percentages, numbers)
-- Leadership or initiative examples
-- Project outcomes
-- Awards or recognitions
-
-Please provide:
-1. A score out of 100
-2. A list of strengths (what rules were followed well)
-3. A list of improvements needed (what rules were violated)
-4. Brief explanation for each point
-
-Format your response as a JSON object with the following structure:
-{
-    "score": number,
-    "strengths": [
-        {"rule": "string", "explanation": "string"}
-    ],
-    "improvements": [
-        {"rule": "string", "explanation": "string"}
-    ]
-}`
-                            }, {
-                                inline_data: {
-                                    mime_type: "application/pdf",
-                                    data: base64Data
-                                }
-                            }]
-                        }]
-                    }
-                );
-
-                if (!response.data || !response.data.candidates || !response.data.candidates[0]) {
-                    throw new Error("Invalid response from API");
-                }
-
-                const responseText = response.data.candidates[0].content.parts[0].text;
-                
-                // Find the JSON object in the response
-                const jsonStart = responseText.indexOf('{');
-                if (jsonStart === -1) {
-                    throw new Error('Invalid response format from AI');
-                }
-                
-                const jsonEnd = responseText.lastIndexOf('}') + 1;
-                const jsonStr = responseText.substring(jsonStart, jsonEnd);
-                
-                // Parse the JSON
-                const result = JSON.parse(jsonStr);
-                
-                // Format the feedback
-                const formattedFeedback = [];
-                
-                // Add strengths with checkmarks
-                if (result.strengths && Array.isArray(result.strengths)) {
-                    for (const strength of result.strengths) {
-                        if (typeof strength === 'object' && strength.rule && strength.explanation) {
-                            formattedFeedback.push(`✓ ${strength.rule}: ${strength.explanation}`);
-                        } else if (typeof strength === 'string') {
-                            formattedFeedback.push(`✓ ${strength}`);
-                        }
-                    }
-                }
-                
-                // Add improvements with X marks
-                if (result.improvements && Array.isArray(result.improvements)) {
-                    for (const improvement of result.improvements) {
-                        if (typeof improvement === 'object' && improvement.rule && improvement.explanation) {
-                            formattedFeedback.push(`✗ ${improvement.rule}: ${improvement.explanation}`);
-                        } else if (typeof improvement === 'string') {
-                            formattedFeedback.push(`✗ ${improvement}`);
-                        }
-                    }
-                }
-
-                analysisResult = {
-                    score: result.score || 0,
-                    feedback: formattedFeedback
-                };
+                analysisResult = await analyzeResumeFromPDF(base64Data);
             }
             
             // Step 2: Update state with results

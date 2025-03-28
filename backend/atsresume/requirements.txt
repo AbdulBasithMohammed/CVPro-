@@ -24,12 +24,14 @@ rsa==4.9
 sqlparse==0.2.4
 typing_extensions==4.12.2
 urllib3==2.3.0
+google-api-python-client
 google-auth==2.38.0
+google-auth-oauthlib
+google-auth-httplib2
+google-generativeai
 pdfplumber
-docx
 python-docx
 spacy
-google-generativeai
+en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.0/en_core_web_sm-3.7.0.tar.gz
 phonenumbers
 PyPDF2
-coverage
