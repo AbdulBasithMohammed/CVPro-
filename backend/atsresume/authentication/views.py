@@ -23,9 +23,9 @@ from rest_framework.renderers import JSONRenderer
 from datetime import datetime, timedelta
 from django.utils import timezone
 from datetime import datetime, timedelta, timezone
-import smtplib
+import logging
 from email.mime.text import MIMEText
-
+from django.core.mail import send_mail
 
 
 def generate_unique_username(first_name, last_name):
@@ -225,6 +225,8 @@ class LoginView(APIView):
         # Store the log entry in the login_logs collection
         login_log_collection.insert_one(log_entry)
 
+logger = logging.getLogger(__name__)
+
 class ForgotPasswordView(APIView):
     """
     Step 1: User enters email to request a password reset.
@@ -246,34 +248,46 @@ class ForgotPasswordView(APIView):
             user_collection.update_one({'email': email}, {'$set': {'reset_token': reset_token, 'token_expiry': expiry_time}})
 
             # Send email with the token
-            self.send_reset_email(email, reset_token)
-
-            return Response({"message": "Password reset token sent to your email."}, status=status.HTTP_200_OK)
+            try:
+                self.send_reset_email(email, reset_token)
+                return Response({"message": "Password reset token sent to your email."}, status=status.HTTP_200_OK)
+            except Exception as e:
+                logger.error(f"Failed to send reset email: {e}")
+                return Response({"error": "Failed to send reset email."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def send_reset_email(self, email, token):
         subject = "Password Reset Request"
         message = f"Your password reset code is: {token}\nThis code is valid for 5 minutes."
-        
         from_email = settings.EMAIL_HOST_USER
         recipient_list = [email]
-        
-        # Manually establish SMTP connection
+
         try:
-            server = smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT)
-            server.starttls()
-            server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
-            msg = MIMEText(message)
-            msg["Subject"] = subject
-            msg["From"] = from_email
-            msg["To"] = email
-            
-            server.sendmail(from_email, recipient_list, msg.as_string())
-            server.quit()
-            print("Email sent successfully")
+            # Using Django's send_mail function (preferred)
+            send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+            logger.info(f"Password reset email sent successfully to {email}")
+
         except Exception as e:
-            print(f"Failed to send email: {e}")
+            logger.error(f"Failed to send email using Django's send_mail. Error: {e}")
+
+            # Fallback to direct SMTP if send_mail fails
+            try:
+                with smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT) as server:
+                    server.starttls()
+                    server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+                    msg = MIMEText(message)
+                    msg["Subject"] = subject
+                    msg["From"] = from_email
+                    msg["To"] = email
+
+                    server.sendmail(from_email, recipient_list, msg.as_string())
+
+                logger.info(f"Password reset email sent successfully (fallback SMTP) to {email}")
+            except Exception as smtp_error:
+                logger.error(f"Failed to send email via SMTP fallback. Error: {smtp_error}")
+                raise smtp_error  # Raise the error so the calling function can handle it properly
+            
 
 class VerifyTokenView(APIView):
     """
