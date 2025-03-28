@@ -56,7 +56,7 @@ function TemplateSelection() {
 
   const fetchResumeDetails = async () => {
     try {
-        const response = await axios.get(`http://localhost:8000/resume/retrieve/?id=${resumeId}`);
+        const response = await axios.get(`http://172.17.3.79:8000/resume/retrieve/?id=${resumeId}`);
         console.log(response.data);
         
         const fetchedData = response.data.resume_details; // Extract resume details
@@ -154,13 +154,13 @@ function TemplateSelection() {
         if (resumeId) {
             // If resume already exists, update it
             //formData.append("resume_id", resumeId);
-            response = await fetch(`http://localhost:8000/resume/update/${resumeId}/`, {
+            response = await fetch(`http://172.17.3.79:8000/resume/update/${resumeId}/`, {
                 method: "PUT",
                 body: formData,
             });
         } else {
             // If no resumeId, create a new one
-            response = await fetch("http://localhost:8000/resume/create/", {
+            response = await fetch("http://172.17.3.79:8000/resume/create/", {
                 method: "POST",
                 body: formData,
             });

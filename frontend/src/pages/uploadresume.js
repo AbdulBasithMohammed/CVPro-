@@ -75,7 +75,7 @@ const ResumeUpload = () => {
         formData.append("file", file);
 
         try {
-            const response = await axios.post("http://localhost:8000/resume/extract/", formData, {
+            const response = await axios.post("http://172.17.3.79:8000/resume/extract/", formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
             console.log("Upload Success:", response.data);
