@@ -19,7 +19,7 @@ const RateMyResume = () => {
     const navigate = useNavigate();
     
     // Gemini API key - in a production app, this should be stored securely
-    const GEMINI_API_KEY = "AIzaSyBZE_RvBLkCDnADNKxstac1uv8VawmGMN8";
+    const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
 
     useEffect(() => {
         // No need to check for authentication since we're using frontend-only approach
@@ -155,24 +155,21 @@ const RateMyResume = () => {
             const atsRules = `
             Evaluate this resume based on the following ATS (Applicant Tracking System) rules:
 
-            1. Contact Information (10 points):
+            1. Contact Information (15 points):
             - Must have full name, professional email, phone number
+            - Must have address in the format: Street Address, City, State/Province(2 letters)
             - LinkedIn profile is a plus
-            - Professional address format
 
-            2. Formatting and Structure (20 points):
-            - Clear section headings
-            - Consistent formatting (fonts, spacing)
-            - Proper use of bullet points
-            - No complex tables or graphics
-            - PDF format compatibility
+            2. Formatting and Structure (10 points):
+            - Basic readability
+            - No major formatting issues that affect readability
 
-            3. Content Organization (25 points):
-            - Clear chronological or functional structure
+            3. Content Organization (30 points):
             - Work experience with dates
             - Education with dates
             - Skills section present
             - Achievements quantified with metrics
+            - Clear chronological or functional structure
 
             4. Keywords and Language (25 points):
             - Industry-specific keywords present
@@ -337,24 +334,21 @@ const RateMyResume = () => {
                             parts: [{
                                 text: `Please analyze this resume and provide feedback based on the following ATS (Applicant Tracking System) rules:
 
-1. Contact Information (10 points):
+1. Contact Information (15 points):
 - Must have full name, professional email, phone number
+- Must have address in the format: Street Address, City, State/Province(2 letters)
 - LinkedIn profile is a plus
-- Professional address format
 
-2. Formatting and Structure (20 points):
-- Clear section headings
-- Consistent formatting (fonts, spacing)
-- Proper use of bullet points
-- No complex tables or graphics
-- PDF format compatibility
+2. Formatting and Structure (10 points):
+- Basic readability
+- No major formatting issues that affect readability
 
-3. Content Organization (25 points):
-- Clear chronological or functional structure
+3. Content Organization (30 points):
 - Work experience with dates
 - Education with dates
 - Skills section present
 - Achievements quantified with metrics
+- Clear chronological or functional structure
 
 4. Keywords and Language (25 points):
 - Industry-specific keywords present

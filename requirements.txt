@@ -25,3 +25,12 @@ sqlparse==0.2.4
 typing_extensions==4.12.2
 urllib3==2.3.0
 PyPDF2
+google-api-python-client
+pdfplumber
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+phonenumbers
+spacy # Users also need to run python -m spacy download en_core_web_sm
+python-docx
+google-generativeai

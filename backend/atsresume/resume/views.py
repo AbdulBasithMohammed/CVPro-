@@ -3,7 +3,7 @@ from bson import ObjectId
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser,MultiPartParser
-from .utils import extract_text_from_pdf, extract_text_from_docx, parse_resume, parse_resume_with_gemini, analyze_resume_with_gemini
+from .utils import extract_text_from_pdf, extract_text_from_docx, parse_resume, parse_resume_with_gemini
 from bson import ObjectId
 from rest_framework.permissions import IsAuthenticated
 from django.views import View   
