@@ -23,6 +23,8 @@ from rest_framework.renderers import JSONRenderer
 from datetime import datetime, timedelta
 from django.utils import timezone
 from datetime import datetime, timedelta, timezone
+import smtplib
+from email.mime.text import MIMEText
 
 
 
@@ -253,11 +255,25 @@ class ForgotPasswordView(APIView):
     def send_reset_email(self, email, token):
         subject = "Password Reset Request"
         message = f"Your password reset code is: {token}\nThis code is valid for 5 minutes."
-        print("flag : ",settings.EMAIL_HOST_USER)
-        from_email =  settings.EMAIL_HOST_USER  # Replace with your email
+        
+        from_email = settings.EMAIL_HOST_USER
         recipient_list = [email]
-
-        send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+        
+        # Manually establish SMTP connection
+        try:
+            server = smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT)
+            server.starttls()
+            server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+            msg = MIMEText(message)
+            msg["Subject"] = subject
+            msg["From"] = from_email
+            msg["To"] = email
+            
+            server.sendmail(from_email, recipient_list, msg.as_string())
+            server.quit()
+            print("Email sent successfully")
+        except Exception as e:
+            print(f"Failed to send email: {e}")
 
 class VerifyTokenView(APIView):
     """
