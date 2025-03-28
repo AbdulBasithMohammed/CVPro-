@@ -11,8 +11,10 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+gemini_api_key = os.getenv("REACT_APP_GEMINI_API_KEY")
+
 # Configure Gemini API with hardcoded key
-genai.configure(api_key="AIzaSyBZE_RvBLkCDnADNKxstac1uv8VawmGMN8")
+genai.configure(api_key=gemini_api_key)
 
 def extract_text_from_pdf(pdf_file):
     """

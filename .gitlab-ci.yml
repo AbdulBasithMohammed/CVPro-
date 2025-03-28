@@ -121,7 +121,7 @@ publish-backend:
   only:
     - main
     - developer
-    - integration/sprint3
+    - finalintegration
 
 publish-frontend:
   stage: publish
@@ -138,7 +138,7 @@ publish-frontend:
   only:
     - main
     - developer
-    - integration/sprint3
+    - finalintegration
 
 # -------------------------- #
 # 🔹 Deploy on VM 🔹 #
@@ -159,14 +159,7 @@ deploy-backend:
   script:
     - IMAGE_TAG="$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
     - CONTAINER_NAME="Backend_Container_app"
-    - |
-      if [ "$CI_COMMIT_REF_NAME" == "main" ]; then
-        SERVER_PORT="8000"
-      elif [ "$CI_COMMIT_REF_NAME" == "developer" ]; then
-        SERVER_PORT="8001"
-      else
-        SERVER_PORT="8080"  # For integration or sprint branches
-      fi
+    - SERVER_PORT="8000"  
     - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "echo \"$DOCKER_HUB_PWD\" | docker login -u \"$DOCKER_HUB_USER\" --password-stdin"
     - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull arshadvhora/projectstream-backend-api:$IMAGE_TAG"
     - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker container rm -f $CONTAINER_NAME || true"
@@ -177,7 +170,7 @@ deploy-backend:
   only:
     - main
     - developer
-    - integration/sprint3
+    - finalintegration
 
 
 deploy-frontend:
@@ -196,14 +189,7 @@ deploy-frontend:
   script:
     - IMAGE_TAG="$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
     - CONTAINER_NAME="projectstream-frontend"
-    - |
-      if [ "$CI_COMMIT_REF_NAME" == "main" ]; then
-        SERVER_PORT="3000"
-      elif [ "$CI_COMMIT_REF_NAME" == "developer" ]; then
-        SERVER_PORT="3001"
-      else
-        SERVER_PORT="3002"  # For integration or sprint branches
-      fi
+    - SERVER_PORT="3000"  
     - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "echo \"$DOCKER_HUB_PWD\" | docker login -u \"$DOCKER_HUB_USER\" --password-stdin"
     - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull arshadvhora/projectstream-frontend:$IMAGE_TAG"
     - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker container rm -f $CONTAINER_NAME || true"
@@ -214,5 +200,5 @@ deploy-frontend:
   only:
     - main
     - developer
-    - integration/sprint3
+    - finalintegration
 

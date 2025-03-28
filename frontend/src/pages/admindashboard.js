@@ -22,7 +22,7 @@ const AdminDashboard = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://localhost:8000/auth/admin/users/', { headers: {} });
+      const response = await fetch('http://172.17.3.79:8000/auth/admin/users/', { headers: {} });
       const data = await response.json();
       
       // Convert lat-long to country for each user
@@ -47,7 +47,7 @@ const AdminDashboard = () => {
 
   const fetchLoginLogs = async () => {
     try {
-      const response = await fetch('http://localhost:8000/auth/admin/login-logs/', { headers: {} });
+      const response = await fetch('http://172.17.3.79:8000/auth/admin/login-logs/', { headers: {} });
       const data = await response.json();
       
       if (Array.isArray(data.login_logs)) {
@@ -154,7 +154,7 @@ const AdminDashboard = () => {
 
   const deleteUser = async (userId) => {
     try {
-      await fetch(`http://localhost:8000/auth/admin/deleteusers/${userId}`, { method: 'DELETE' });
+      await fetch(`http://172.17.3.79:8000/auth/admin/deleteusers/${userId}`, { method: 'DELETE' });
       alert('User deleted');
       fetchUsers();  // Refresh the list after deletion
     } catch (err) {
