@@ -1,64 +1,80 @@
-/* Ensure the resume fully spans A4 width */
-.resume-preview {
-    width: 210mm; /* Exact A4 width */
-    height: 297mm; /* Exact A4 height */
-    background-color: white;
-    padding: 10mm; /* Adjusted padding to fit more content */
-    margin: auto;
+
+.resume-preview-wrapper {
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* Ensures proper alignment */
-    align-items: stretch;
-    text-align: left;
-    font-size: 16px;
+    align-items: center;
+    padding: 20px;
+    background-color: #e5e5e5;
+    overflow-y: auto;
+  }
+  
+  /* Each individual A4-sized page (simulated) */
+  .resume-page {
+    width: 210mm;
+    height: 297mm;
+    padding: 20mm 15mm;
+    margin-bottom: 20px;
+    background: white;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
     box-sizing: border-box;
-    font-family: Arial, sans-serif; /* ATS-friendly font */
-}
-
-/* Styling for clickable contact links */
-.contact-link {
-    color: #1a73e8; /* Google blue color */
+    position: relative;
+    overflow: auto; 
+    break-after: page;
+    break-inside: auto;
+  }
+  
+  /* Prevent trailing space from adding overflow */
+  .resume-page::after {
+    content: "";
+    display: block;
+    height: 0;
+    clear: both;
+  }
+  
+  /* Contact Links */
+  .contact-link {
+    color: #1a73e8;
     text-decoration: none;
     font-weight: 500;
     transition: color 0.3s ease;
-}
-
-.contact-link:hover {
+  }
+  
+  .contact-link:hover {
     text-decoration: underline;
-    color: #07448f; /* Darker blue on hover */
-}
-
-
-/* Ensure header content fully spans width */
-.resume-header {
+    color: #07448f;
+  }
+  
+  /* Resume Header */
+  .resume-header {
     text-align: center;
     width: 100%;
     padding-bottom: 8px;
-    border-bottom: 2px solid #000; /* Adds clear separation */
-}
-
-/* Adjust header styling */
-.resume-header h1 {
+    border-bottom: 2px solid #000;
+    margin-bottom: 10px;
+  }
+  
+  .resume-header h1 {
     font-size: 30px;
     font-weight: bold;
     margin-bottom: 3px;
-}
-
-/* Contact info centered */
-.resume-header p {
+  }
+  
+  .resume-header p {
     font-size: 14px;
     text-align: center;
     margin: 5px 0;
-}
-
-/* Section Styling */
-.resume-section {
+  }
+  
+  /* Section Styling */
+  .resume-section {
     width: 100%;
-    padding: 10px 0;
-}
-
-/* Section Titles */
-.section-lines {
+    margin-bottom: 20px;
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+  
+  /* Section Title with Lines */
+  .section-lines {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -67,114 +83,123 @@
     font-weight: bold;
     font-size: 18px;
     text-transform: uppercase;
-}
-
-/* Section Divider Lines */
-.section-lines::before,
-.section-lines::after {
+  }
+  
+  .section-lines::before,
+  .section-lines::after {
     content: "";
     flex-grow: 1;
     height: 1px;
     background-color: #000;
     margin: 0 12px;
-}
-
-/* Skills Section: Two-column grid alignment */
-.skills-list {
-    list-style-type: disc; /* Bulleted list */
+  }
+  
+  /* Skills List */
+  .skills-list {
+    list-style-type: disc;
     padding-left: 15px;
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /*  Ensures two equal-width columns */
-    gap: 10px; /* Adds space between columns */
-    text-align: left; /* Left-aligned text */
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    text-align: left;
     font-size: 14px;
     line-height: 1.5;
-    margin: 0; /* Remove extra margin */
+    margin: 0;
     width: 100%;
-}
-
-/* Ensure skills text is readable */
-.skills-list li {
+  }
+  
+  .skills-list li {
     font-size: 14px;
     line-height: 1.5;
-}
+  }
 
-/* Projects Section: Display project name with tasks below */
-.project-item {
-    margin-bottom: 15px; /* Space between projects */
-}
-
-.project-name {
+  .skills-columns {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .skills-column {
+    width: 48%;
+  }  
+  
+  /* Projects Section */
+  .project-item {
+    margin-bottom: 15px;
+  }
+  
+  .project-name {
     font-weight: bold;
-    font-size: 20px;
-}
-
-.task-list {
+    font-size: 18px;
+  }
+  
+  .task-list {
     list-style-type: disc;
-    padding-left: 20px; /* Indentation for task list */
+    padding-left: 20px;
     font-size: 14px;
     margin-top: 5px;
-}
-
-.task-list li {
+  }
+  
+  .task-list li {
     font-size: 14px;
     margin-bottom: 5px;
-}
-
-/* Education Section Layout: Name on left, graduation on right */
-.education-header {
+    /* ✅ DO NOT restrict page breaking here */
+  }
+  
+  /* Education Section */
+  .education-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
     font-weight: bold;
-}
-
-.education-name {
+  }
+  
+  .education-name {
     font-weight: bold;
     font-size: 20px;
-}
-
-.graduation-date {
+  }
+  
+  .graduation-date {
     font-size: 14px;
     color: #555;
-}
-
-.education-details {
+  }
+  
+  .education-details {
     display: flex;
     justify-content: space-between;
     font-size: 14px;
     width: 100%;
     margin-top: 5px;
-}
-
-.course-name {
+  }
+  
+  .course-name,
+  .education-location {
     font-style: italic;
-}
-
-.education-location {
-    font-style: italic;
-}
-
-/* Prevent empty space at bottom */
-.resume-preview::after {
-    content: "";
-    flex-grow: 1;
-}
-
-/* Ensures PDF Export is Correctly Aligned */
-@media print {
-    .resume-preview {
-        width: 210mm;
-        height: 297mm;
-        margin: 0;
-        padding: 10mm;
-        text-align: justify;
-        page-break-after: avoid;
-        page-break-inside: avoid;
+  }
+  
+  /* Print optimization */
+  @media print {
+    .resume-preview-wrapper {
+      padding: 0;
+      background: white;
     }
-
+  
+    .resume-page {
+      width: 210mm;
+      height: 297mm;
+      padding: 20mm 15mm;
+      margin: 0;
+      box-shadow: none;
+      page-break-after: always;
+      page-break-inside: auto;
+      break-after: page;
+      break-inside: auto;
+      overflow: visible;
+    }
+  
     .resume-section {
-        page-break-inside: avoid;
+      page-break-inside: auto;
+      break-inside: auto;
     }
-}
+  }
+  
