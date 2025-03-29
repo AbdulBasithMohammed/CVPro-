@@ -14,6 +14,7 @@ const Dashboard = () => {
   const [editingTitle, setEditingTitle] = useState(null);
   const [newTitle, setNewTitle] = useState("");
   const navigate = useNavigate();
+  localStorage.removeItem("selectedTemplate");
 
   const fetchResumes = async (userId) => {
     try {

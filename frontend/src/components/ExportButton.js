@@ -889,14 +889,28 @@ const ExportButton = ({ targetRef, isFormValid, fileName, data, selectedTemplate
     };    
     
     return (
-        <div className="button-controls">
-            <button onClick={generatePDF} className={`export-button`} disabled={!isFormValid}>
-                    Export as PDF
-                </button>
-            <button onClick={generateDOCX} className="export-button" disabled={!isFormValid}>
-                Export as DOCX
-            </button>
-        </div>
+      <div className="flex items-center justify-start gap-4 mt-2">
+      <button 
+        onClick={generatePDF} 
+        className={`w-auto p-3 bg-gray-700 text-white font-semibold rounded-lg 
+          hover:bg-gray-900 transition-transform transform hover:scale-105 
+          focus:outline-none focus:ring-4 focus:ring-gray-500 
+          ${isFormValid ? '' : 'cursor-not-allowed bg-gray-500'}`}
+        disabled={!isFormValid}
+      >
+        Export as PDF
+      </button>
+      <button 
+        onClick={generateDOCX} 
+        className={`w-auto p-3 bg-gray-700 text-white font-semibold rounded-lg 
+          hover:bg-gray-900 transition-transform transform hover:scale-105 
+          focus:outline-none focus:ring-4 focus:ring-gray-500 
+          ${isFormValid ? '' : 'cursor-not-allowed bg-gray-500'}`}
+        disabled={!isFormValid}
+      >
+        Export as DOCX
+      </button>
+    </div>
     );
 };
 

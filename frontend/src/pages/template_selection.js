@@ -42,69 +42,79 @@ function TemplateSelection() {
       },
     ],
     projects: [],
+    selectedTemplate: localStorage.getItem("selectedTemplate") || '', // Set from localStorage initially
   });
 
   const [isFormValid, setIsFormValid] = useState(false);
   const previewRef = useRef();
-  const selectedTemplate = localStorage.getItem("selectedTemplate") || "freshie"; 
-  console.log("Selected Template:", selectedTemplate);
+
   const [resumeTitle, setResumeTitle] = useState("resume"); // Default title
 
 
-  // Choose the appropriate component dynamically
-  const SelectedResumePreview = selectedTemplate === "experienced" ? ProfessionalResumePreview : ResumePreview;
-
   const fetchResumeDetails = async () => {
     try {
-        const response = await axios.get(`http://172.17.3.79:8000/resume/retrieve/?id=${resumeId}`);
-        console.log(response.data);
-        
-        const fetchedData = response.data.resume_details; // Extract resume details
-
-        console.log("Printing fetched data as",fetchedData)
-
-        if (!fetchedData) {
-            console.error("No resume details found.");
-            return;
-        }
-
-        // Set title if available
-        if(response.data.title)
-        {
-          setResumeTitle(response.data.title)
-        }
-
-        // Update each section separately
-        if (fetchedData.personal) {
-            updateSection("personal", {
-                name: fetchedData.personal.name || "",
-                email: fetchedData.personal.email || "",
-                phone: fetchedData.personal.phone || "",
-                address: fetchedData.personal.address || "",
-                summary: fetchedData.personal.summary || "",
-            });
-        }
-
-        if (Array.isArray(fetchedData.skills)) {
-            updateSection("skills", fetchedData.skills.length > 0 ? fetchedData.skills : []);
-        }
-
-        if (Array.isArray(fetchedData.experience)) {
-            updateSection("experience", fetchedData.experience.length > 0 ? fetchedData.experience : []);
-        }
-
-        if (Array.isArray(fetchedData.education)) {
-            updateSection("education", fetchedData.education.length > 0 ? fetchedData.education : []);
-        }
-
-        if (Array.isArray(fetchedData.projects)) {
-            updateSection("projects", fetchedData.projects.length > 0 ? fetchedData.projects : []);
-        }
-
+      const response = await axios.get(`http://172.17.3.79:8000/resume/retrieve/?id=${resumeId}`);
+      console.log(response.data);
+  
+      const fetchedData = response.data.resume_details; // Extract resume details
+  
+      console.log("Printing fetched data as", fetchedData);
+  
+      if (!fetchedData) {
+        console.error("No resume details found.");
+        return;
+      }
+  
+      // Set title if available
+      if (response.data.title) {
+        setResumeTitle(response.data.title);
+      }
+  
+      // Update each section separately
+      if (fetchedData.personal) {
+        updateSection("personal", {
+          name: fetchedData.personal.name || "",
+          email: fetchedData.personal.email || "",
+          phone: fetchedData.personal.phone || "",
+          address: fetchedData.personal.address || "",
+          summary: fetchedData.personal.summary || "",
+        });
+      }
+  
+      if (Array.isArray(fetchedData.skills)) {
+        updateSection("skills", fetchedData.skills.length > 0 ? fetchedData.skills : []);
+      }
+  
+      if (Array.isArray(fetchedData.experience)) {
+        updateSection("experience", fetchedData.experience.length > 0 ? fetchedData.experience : []);
+      }
+  
+      if (Array.isArray(fetchedData.education)) {
+        updateSection("education", fetchedData.education.length > 0 ? fetchedData.education : []);
+      }
+  
+      if (Array.isArray(fetchedData.projects)) {
+        updateSection("projects", fetchedData.projects.length > 0 ? fetchedData.projects : []);
+      }
+  
+      // Update selectedTemplate, prioritizing localStorage but overriding if resumeData has a value
+      if (fetchedData.selectedTemplate) {
+        updateSection("selectedTemplate", fetchedData.selectedTemplate);
+        localStorage.setItem("selectedTemplate", fetchedData.selectedTemplate);
+      }
+  
+      console.log("fetchedData.selectedTemplate:", fetchedData.selectedTemplate);
     } catch (error) {
-        console.error("Error fetching resume details:", error);
+      console.error("Error fetching resume details:", error);
     }
-};
+  };
+  
+  // Use selectedTemplate from state
+  const selectedTemplate = resumeData.selectedTemplate;
+  const SelectedResumePreview = selectedTemplate === "experienced" ? ProfessionalResumePreview : ResumePreview;
+  
+  console.log("Selected Template:", selectedTemplate);
+
   const updateSection = (section, data, index = null) => {
     if (index !== null) {
       setResumeData((prev) => {
@@ -189,23 +199,31 @@ function TemplateSelection() {
     <div className='Navbar'>
       <Navbar />
       <div className="app-container">
-        <div className="editor-section">
+      <div className="editor-section">
           {/* Pass setIsFormValid to EditorSection */}
           <EditorSection 
             data={resumeData} 
             updateSection={updateSection} 
             onValidationChange={setIsFormValid} 
           />
-          <SaveButton handleSave={handleSave} isFormValid={isFormValid} />
-          <ExportButton
-            targetRef={previewRef}
-            isFormValid={isFormValid}
-            data={resumeData}            
-            fileName={resumeTitle}
-            selectedTemplate={selectedTemplate}
-          />
-        </div>
 
+          {/* Flex container for buttons */}
+          <div className="flex items-center justify-start gap-4 mt-4">
+              <SaveButton 
+                handleSave={handleSave} 
+                isFormValid={isFormValid} 
+                className="flex-shrink-0" 
+              />
+              <ExportButton
+                targetRef={previewRef}
+                isFormValid={isFormValid}
+                data={resumeData}            
+                fileName={resumeTitle}
+                selectedTemplate={selectedTemplate}
+                className="flex-shrink-0"
+              />
+            </div>
+        </div>
         {/* Dynamically render the selected resume template with a key */}
         <SelectedResumePreview 
           key={selectedTemplate} // Add key here to force re-render
