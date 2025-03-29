@@ -18,6 +18,8 @@ from bson import ObjectId
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.conf import settings
+import logging
+logger = logging.getLogger(__name__)
 
 
 def generate_unique_username(first_name, last_name):
@@ -103,7 +105,7 @@ class LoginView(APIView):
                 "refresh_token": refresh_token,
                 "user": user_data
             }, status=status.HTTP_200_OK)
-
+            
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def log_login_attempt(self, request, email, success):
@@ -215,7 +217,8 @@ class ResetPasswordView(APIView):
 
             user_collection.update_one(
                 {'email': email}, 
-                {'$set': {'password': hashed_password}, '$unset': {'reset_token': "", 'token_expiry': ""}}
+                {'$set': {'password': hashed_password},
+                '$unset': {'reset_token': "", 'token_expiry': ""}}
             )
 
             return Response({"message": "Password reset successfully."}, status=status.HTTP_200_OK)
@@ -232,77 +235,94 @@ class ContactUsView(APIView):
             return Response({"message": "Your message has been sent successfully!"}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 class GoogleLoginView(APIView):
     def post(self, request):
-        token = request.data.get("token")
-        location = request.data.get("location")
-
-        if not token:
-            return Response({"error": "Token is missing"}, status=status.HTTP_400_BAD_REQUEST)
-
         try:
+            token = request.data.get("token")
+            if not token:
+                logger.warning("Google login attempt with missing token")
+                return Response(
+                    {"error": "Token is missing"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
             google_data = id_token.verify_oauth2_token(
-                token, requests.Request(), settings.GOOGLE_CLIENT_ID, clock_skew_in_seconds=5
+                token, 
+                requests.Request(), 
+                settings.GOOGLE_CLIENT_ID,
+                clock_skew_in_seconds=5
             )
 
             email = google_data.get("email")
-            first_name = google_data.get("given_name", "")
-            last_name = google_data.get("family_name", "")
-
             if not email:
-                return Response({"error": "Email not provided by Google"}, status=status.HTTP_400_BAD_REQUEST)
+                logger.warning("Google login didn't provide email")
+                return Response(
+                    {"error": "Email not provided by Google"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-            user = user_collection.find_one({"email": email})
+            user = self._get_or_create_user(google_data, request.data.get("location"))
+            access_token = self._generate_access_token(user)
+            self._log_login(request, email, True)
 
-            if not user:
-                username = (first_name + last_name).lower()
-                created_at = datetime.now(timezone.utc)
-                location = location or "Unknown"
-            
-                user_data = {
-                    "email": email,
-                    "first_name": first_name,
-                    "last_name": last_name,
-                    "username": username,
-                    "password": make_password(None),
-                    "location": location,
-                    "created_at": created_at,
-                }
-
-                inserted_user = user_collection.insert_one(user_data)
-                user_data["_id"] = str(inserted_user.inserted_id)
-                user = user_data
-            else:
-                user["_id"] = str(user["_id"])
-
-            payload = {
-                "email": user["email"],
-                "exp": datetime.now(timezone.utc) + timedelta(days=1),
-                "iat": datetime.now(timezone.utc),
-            }
-
-            access_token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
-
-            self.log_login_attempt(request, email, success=True)
-
-            return Response({"token": access_token, "user": user}, status=status.HTTP_200_OK)
+            logger.info(f"Successful Google login for {email}")
+            return Response({
+                "token": access_token,
+                "user": user
+            }, status=status.HTTP_200_OK)
 
         except ValueError as e:
-            return Response({"error": "Invalid Google token", "details": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            logger.error(f"Invalid Google token: {str(e)}")
+            return Response(
+                {"error": "Invalid Google token"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
-            return Response({"error": "An error occurred", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            logger.error(f"Google login error: {str(e)}", exc_info=True)
+            return Response(
+                {"error": "Login failed"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def _get_or_create_user(self, google_data, location):
+        email = google_data["email"]
+        user = user_collection.find_one({"email": email})
         
-    def log_login_attempt(self, request, email, success):
-        ip_address = request.META.get('REMOTE_ADDR', '')
-        timestamp = datetime.now(timezone.utc)
+        if not user:
+            user_data = {
+                "email": email,
+                "first_name": google_data.get("given_name", ""),
+                "last_name": google_data.get("family_name", ""),
+                "username": self._generate_username(google_data),
+                "password": make_password(None),
+                "location": location or "Unknown",
+                "created_at": datetime.now(timezone.utc),
+            }
+            result = user_collection.insert_one(user_data)
+            user_data["_id"] = str(result.inserted_id)
+            return user_data
+            
+        user["_id"] = str(user["_id"])
+        return user
 
-        log_entry = {
-            "email": email,
-            "ip_address": ip_address,
-            "success": success,
-            "timestamp": timestamp,
-            "user_agent": request.META.get('HTTP_USER_AGENT', ''),
+    def _generate_username(self, google_data):
+        first = google_data.get("given_name", "").lower()
+        last = google_data.get("family_name", "").lower()
+        return f"{first}{last}"
+
+    def _generate_access_token(self, user):
+        payload = {
+            "email": user["email"],
+            "exp": datetime.now(timezone.utc) + timedelta(days=1),
+            "iat": datetime.now(timezone.utc),
         }
+        return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
-        login_log_collection.insert_one(log_entry)
+    def _log_login(self, request, email, success):
+        login_log_collection.insert_one({
+            "email": email,
+            "ip_address": request.META.get('REMOTE_ADDR', ''),
+            "success": success,
+            "timestamp": datetime.now(timezone.utc),
+            "user_agent": request.META.get('HTTP_USER_AGENT', ''),
+        })

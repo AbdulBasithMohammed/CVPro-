@@ -1,20 +1,16 @@
 # urls.py
 from django.urls import path
-from .views import  RegisterUserView,LoginView,ForgotPasswordView,ResetPasswordView,ContactUsView,VerifyTokenView,GoogleLoginView
+from .views import (
+    RegisterUserView, LoginView, ForgotPasswordView,
+    VerifyTokenView, ResetPasswordView, ContactUsView,
+    GoogleLoginView
+)
 from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-
-# urlpatterns = [
-#     ...
-#     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-#     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-#     ...
-# ]
-
 urlpatterns = [
     path('register/', RegisterUserView.as_view(), name='register_user'),
     path('login/', LoginView.as_view(), name='login_user'),
