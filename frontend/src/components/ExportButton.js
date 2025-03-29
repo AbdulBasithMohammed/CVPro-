@@ -1,11 +1,9 @@
-import { useMemo } from "react";
 import { saveAs } from "file-saver";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+import { jsPDF } from "jspdf"; //for text-based PDF export
 import { Document, Packer, Paragraph, TextRun, AlignmentType, TabStopType, UnderlineType, BorderStyle, Table, WidthType,  TableRow, TableCell, TableLayoutType, ExternalHyperlink} from "docx";
 import "../CSS/Buttons.css";
 
-const ExportButton = ({ targetRef, isFormValid, data, selectedTemplate = "freshie" }) => {    
+const ExportButton = ({ targetRef, isFormValid, fileName, data, selectedTemplate = "freshie" }) => {    
 
     const generateSkillTable = (skills, style = {}) => {
         const rows = [];
@@ -59,49 +57,463 @@ const ExportButton = ({ targetRef, isFormValid, data, selectedTemplate = "freshi
         });
     };
     
+    const generatePDF = () => {
+      if (!data || Object.keys(data).length === 0) {
+        alert("No resume data available for PDF export.");
+        return;
+      }
     
+      const doc = new jsPDF("portrait", "mm", "a4");
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
     
-    const generatePDF = async () => {
-        if (!isFormValid) {
-            alert("Please fix all validation errors before exporting.");
-            return;
+      const isExperienced = selectedTemplate === "experienced";
+    
+      // Margins & Spacing Variables
+      let baseMargin = 10;
+      let topPadding = 15;
+      let bottomPadding = 0;
+      let lineHeight = 6;      
+      let sectionSpacing = 1;  // Minimal extra spacing
+    
+      if (isExperienced) {
+        baseMargin = 20;
+        topPadding = 20;
+        bottomPadding = 0;
+        lineHeight = 6;        
+        sectionSpacing = 1;    
+      }
+    
+      // Current vertical position
+      let y = baseMargin + topPadding;
+      const pageBottom = pageHeight - baseMargin - bottomPadding;
+    
+      // Helper to check if a new page is needed
+      const addPageIfNeeded = (heightNeeded) => {
+        if (y + heightNeeded > pageBottom) {
+          doc.addPage();
+          y = baseMargin + topPadding;
         }
-
-        const input = targetRef.current;
-        if (!input) {
-            alert("Resume preview not found.");
-            return;
-        }
-
-        try {
-            const pdf = new jsPDF({
-                orientation: "portrait",
-                unit: "mm",
-                format: "a4",
+      };
+    
+      // Section Title Functions
+        const drawFreshieSectionTitle = (title) => {
+        const headerLineOffset = y + lineHeight / 2;
+        const headerTextOffset = 3;
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        const upperTitle = title.toUpperCase();
+        const textWidth = doc.getTextWidth(upperTitle);
+        const centerX = pageWidth / 2;
+        const halfText = textWidth / 2;
+        const lineGap = 4;
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.5);
+        doc.line(baseMargin + 1, headerLineOffset, centerX - (halfText + lineGap), headerLineOffset);
+        doc.line(centerX + (halfText + lineGap), headerLineOffset, pageWidth - baseMargin - 1, headerLineOffset);
+        doc.text(upperTitle, centerX - halfText, headerLineOffset + headerTextOffset);
+        y += 10; 
+      };
+    
+      const drawExperiencedSectionTitle = (title) => {
+        // Space before the header 
+        y += 4;
+    
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(16);
+    
+        const upperTitle = title.toUpperCase();
+        doc.text(upperTitle, baseMargin, y);
+    
+        const textWidth = doc.getTextWidth(upperTitle);
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.5);
+        doc.line(baseMargin, y + 2, baseMargin + textWidth, y + 2);
+        y += 10;
+      };
+    
+      // Header & Personal Info
+      if (data.personal) {
+        if (!isExperienced) {
+          if (data.personal.name) {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(20);
+            const nameText = data.personal.name.toUpperCase();
+            const nameWidth = doc.getTextWidth(nameText);
+            const nameX = (pageWidth - nameWidth) / 2;
+            doc.text(nameText, nameX, y);
+            y += 10;
+          }
+          {
+            const emailStr = (data.personal.email || "").trim();
+            const phoneStr = (data.personal.phone || "").trim();
+            const addressStr = (data.personal.address || "").trim();
+            const extraParts = [];
+            if (phoneStr) extraParts.push(phoneStr);
+            if (addressStr) extraParts.push(addressStr);
+            const extraStr = extraParts.join(" | ");
+            const separator = extraStr ? " | " : "";
+            const fullLine = emailStr + separator + extraStr;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(12);
+            const lineWidth = doc.getTextWidth(fullLine);
+            const emailWidth = doc.getTextWidth(emailStr);
+            const startX = (pageWidth - lineWidth) / 2;
+            const baseY = y;
+            doc.setTextColor(0, 0, 0);
+            doc.text(fullLine, startX, baseY);
+            doc.setTextColor(10, 102, 194);
+            doc.text(emailStr, startX, baseY);
+            const linkHeight = 4;
+            doc.link(
+              startX,
+              baseY - linkHeight,
+              emailWidth,
+              linkHeight,
+              { url: `mailto:${emailStr}` }
+            );
+            doc.setTextColor(0, 0, 0);
+            y += 6;
+          }
+          if (data.personal.linkedin) {
+            const linkWidth = doc.getTextWidth(data.personal.linkedin);
+            const linkX = (pageWidth - linkWidth) / 2;
+            doc.setTextColor(10, 102, 194);
+            doc.textWithLink(data.personal.linkedin, linkX, y, {
+              url: data.personal.linkedin,
             });
-
-            console.log("📢 Exporting PDF - Element Dimensions:", input.clientWidth, input.clientHeight);
-
-            const canvas = await html2canvas(input, {
-                scale: 2,
-                useCORS: true,
-                backgroundColor: "#fff",
-                width: 794,
-                height: 1123,
-            });
-
-            const imgData = canvas.toDataURL("image/png");
-
-            pdf.addImage(imgData, "PNG", 0, 0, 210, 297);
+            doc.setTextColor(0, 0, 0);
+            y += 6;
+          }
+          doc.setLineWidth(0.5);
+          doc.setDrawColor(0, 0, 0);
+          doc.line(baseMargin + 1, y, pageWidth - baseMargin - 1, y);
+          y += 8;
+        } else {
+          let yExp = y;
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(24);
+          if (data.personal.name) {
+            doc.text(data.personal.name.toUpperCase(), baseMargin, yExp);
+            yExp += 8;
+          }
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(14);
     
-            pdf.save("resume.pdf");
-            alert("✅Resume successfully exported as PDF!");
-        } catch (error) {
-            console.error("❌ Error generating PDF:", error);
-            alert("Failed to export resume. Please try again.");
+          if (data.personal.email) {
+            doc.setTextColor(26, 115, 232);
+            doc.textWithLink(data.personal.email, baseMargin, yExp, {
+              url: `mailto:${data.personal.email}`,
+            });
+            doc.setTextColor(0, 0, 0);
+            yExp += 5; // smaller than lineHeight for tighter spacing
+          }
+          if (data.personal.phone) {
+            doc.text(data.personal.phone, baseMargin, yExp);
+            yExp += 5;
+          }
+          if (data.personal.address) {
+            doc.text(data.personal.address, baseMargin, yExp);
+            yExp += 5;
+          }
+          if (data.personal.linkedin) {
+            doc.setTextColor(26, 115, 232);
+            doc.textWithLink(data.personal.linkedin, baseMargin, yExp, {
+              url: data.personal.linkedin,
+            });
+            doc.setTextColor(0, 0, 0);
+            yExp += 5;
+          }
+          yExp += 3;
+    
+          // One full-width line
+          doc.setLineWidth(0.5);
+          doc.setDrawColor(0, 0, 0);
+          doc.line(baseMargin, yExp, pageWidth - baseMargin, yExp);
+          yExp += 5;
+    
+          y = yExp;
         }
-    };
+      }
+    
+      // SUMMARY
+      if (data.personal?.summary?.trim()) {
+        addPageIfNeeded(lineHeight * 6);
+    
+        if (isExperienced) {
+          drawExperiencedSectionTitle("Summary");
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(14);
+          const lines = doc.splitTextToSize(
+            data.personal.summary,
+            pageWidth - baseMargin * 2
+          );
+          addPageIfNeeded(lines.length * lineHeight);
+          lines.forEach((line) => {
+            doc.text(line, baseMargin, y);
+            y += lineHeight;
+          });
+        } else {
+          drawFreshieSectionTitle("Summary");
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(12);
+          const indent = baseMargin;
+          const wrapped = doc.splitTextToSize(
+            data.personal.summary,
+            pageWidth - indent * 2
+          );
+          addPageIfNeeded(wrapped.length * lineHeight);
+          wrapped.forEach((line) => {
+            doc.text(line, indent, y);
+            y += lineHeight;
+          });
+          y += sectionSpacing;
+        }
+      }
+    
+      // WORK EXPERIENCE
+      if (isExperienced && data.experience && data.experience.length) {
+        addPageIfNeeded(lineHeight * 6);
+        drawExperiencedSectionTitle("Work Experience");
+    
+        data.experience.forEach((exp) => {
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(15);
+    
+          const companyText = exp.company || "";
+          doc.text(companyText, baseMargin, y);
+    
+          if (exp.startDate && exp.endDate) {
+            const dateStr = `(${exp.startDate} - ${exp.endDate})`;
+            const dateWidth = doc.getTextWidth(dateStr);
+            doc.text(dateStr, pageWidth - baseMargin - dateWidth, y);
+          }
+          y += 5;
+    
+          if (exp.jobTitle || exp.location) {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(14);
+            doc.setTextColor(85, 85, 85);
+            let jobLine = exp.jobTitle || "";
+            if (exp.location) jobLine += " - " + exp.location;
+            const jobSplit = doc.splitTextToSize(jobLine, pageWidth - baseMargin * 2);
+            addPageIfNeeded(jobSplit.length * lineHeight);
+            jobSplit.forEach((txt) => {
+              doc.text(txt, baseMargin + 5, y);
+              y += 5; 
+            });
+            doc.setTextColor(0, 0, 0);
+          }
+    
+          // Tasks
+          if (exp.tasks && exp.tasks.length) {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(14);
+            exp.tasks.forEach((task) => {
+              const bullet = `• ${task}`;
+              const bulletSplit = doc.splitTextToSize(
+                bullet,
+                pageWidth - baseMargin * 2 - 5
+              );
+              addPageIfNeeded(bulletSplit.length * lineHeight);
+              bulletSplit.forEach((txt) => {
+                doc.text(txt, baseMargin + 10, y);
+                y += 7; 
+              });
+            });
+          }
+        });
+      }
+    
+      // SKILLS
+    if (data.skills && data.skills.length) {
+      addPageIfNeeded(lineHeight * 6);
+      if (isExperienced) {
+        drawExperiencedSectionTitle("Skills");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(14);
 
+        const colWidth = (pageWidth - baseMargin * 2) / 2;
+        const col1 = [];
+        const col2 = [];
+        data.skills.forEach((skill, index) => {
+          if (index % 2 === 0) {
+            col1.push(`• ${skill}`);
+          } else {
+            col2.push(`• ${skill}`);
+          }
+        });
+        const maxRows = Math.max(col1.length, col2.length);
+        for (let i = 0; i < maxRows; i++) {
+          const text1 = col1[i] || "";
+          const text2 = col2[i] || "";
+          addPageIfNeeded(lineHeight);
+          doc.text(text1, baseMargin, y);
+          doc.text(text2, baseMargin + colWidth, y);
+          y += 7; 
+        }
+        y += sectionSpacing;
+        } else {
+          drawFreshieSectionTitle("Skills");
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(12);
+          const indent = baseMargin + 10;
+          data.skills.forEach((skill) => {
+            addPageIfNeeded(lineHeight);
+            doc.text(`• ${skill}`, indent, y);
+            y += 7; 
+          });
+          y += sectionSpacing;
+        }
+      }
+    
+      // PROJECTS
+      if (data.projects && data.projects.length) {
+        if (isExperienced) {
+          addPageIfNeeded(lineHeight * 6);
+          drawExperiencedSectionTitle("Projects");
+    
+          data.projects.forEach((project) => {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(15);
+            const projName = project.name || "Untitled Project";
+            const projSplit = doc.splitTextToSize(projName, pageWidth - baseMargin * 2);
+            addPageIfNeeded(projSplit.length * lineHeight);
+            projSplit.forEach((txt) => {
+              doc.text(txt, baseMargin, y);
+              y += 5;
+            });
+    
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(14);
+            if (project.tasks && project.tasks.length) {
+              project.tasks.forEach((task) => {
+                const taskLine = `• ${task}`;
+                const taskLines = doc.splitTextToSize(
+                  taskLine,
+                  pageWidth - baseMargin * 2 - 5
+                );
+                addPageIfNeeded(taskLines.length * lineHeight);
+                taskLines.forEach((txt) => {
+                  doc.text(txt, baseMargin + 10, y);
+                  y += 6; 
+                });
+                y += 1;
+              });
+            }
+          });
+        } else {
+          // Freshie
+          addPageIfNeeded(lineHeight * 6);
+          drawFreshieSectionTitle("Projects");
+          data.projects.forEach((project) => {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(12);
+            const projName = project.name || "Untitled Project";
+            const projSplit = doc.splitTextToSize(projName, pageWidth - baseMargin * 2);
+            addPageIfNeeded(projSplit.length * lineHeight);
+            projSplit.forEach((line) => {
+              doc.text(line, baseMargin, y);
+              y += lineHeight;
+            });
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(12);
+            if (project.tasks && project.tasks.length) {
+              const indent = baseMargin + 10;
+              project.tasks.forEach((task) => {
+                const bullet = `• ${task}`;
+                const bulletSplit = doc.splitTextToSize(bullet, pageWidth - indent * 2);
+                addPageIfNeeded(bulletSplit.length * lineHeight);
+                bulletSplit.forEach((bLine) => {
+                  doc.text(bLine, indent, y);
+                  y += lineHeight;
+                });
+              });
+            }
+          });
+        }
+      }
+    
+      // EDUCATION
+      if (data.education && data.education.length) {
+        if (isExperienced) {
+          addPageIfNeeded(lineHeight * 6);
+          drawExperiencedSectionTitle("Education");
+    
+          data.education.forEach((edu) => {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(20);
+            const institution = edu.institution || "";
+            doc.text(institution, baseMargin, y);
+    
+            if (edu.graduationDate) {
+              doc.setFont("helvetica", "bold");
+              doc.setFontSize(14);
+              doc.setTextColor(85, 85, 85);
+              const gradWidth = doc.getTextWidth(edu.graduationDate);
+              doc.text(edu.graduationDate, pageWidth - baseMargin - gradWidth, y);
+              doc.setTextColor(0, 0, 0);
+            }
+            y += 8;
+    
+            doc.setFont("helvetica", "italic");
+            doc.setFontSize(14);
+            const course = edu.course || "";
+            doc.text(course, baseMargin, y);
+            if (edu.location) {
+              const locWidth = doc.getTextWidth(edu.location);
+              doc.text(edu.location, pageWidth - baseMargin - locWidth, y);
+            }
+            y += 8;
+          });
+        } else {
+          // Freshie
+          addPageIfNeeded(lineHeight * 6);
+          drawFreshieSectionTitle("Education");
+          data.education.forEach((edu) => {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(12);
+            const inst = edu.institution || "";
+            const instSplit = doc.splitTextToSize(
+              inst,
+              pageWidth - baseMargin * 2
+            );
+            addPageIfNeeded(instSplit.length * lineHeight);
+            instSplit.forEach((line) => {
+              doc.text(line, baseMargin, y);
+              y += lineHeight;
+            });
+            if (edu.graduationDate) {
+              doc.setFont("helvetica", "bold");
+              doc.setFontSize(12);
+              doc.setTextColor(85, 85, 85);
+              const dateWidth = doc.getTextWidth(edu.graduationDate);
+              const linesUsed = instSplit.length;
+              const dateY = y - lineHeight * linesUsed;
+              doc.text(edu.graduationDate, pageWidth - baseMargin - dateWidth, dateY);
+              doc.setTextColor(0, 0, 0);
+            }
+            y += 2;
+            doc.setFont("helvetica", "italic");
+            doc.setFontSize(12);
+            const course = edu.course || "";
+            if (course) {
+              doc.text(course, baseMargin, y);
+            }
+            if (edu.location) {
+              doc.setTextColor(85, 85, 85);
+              const locWidth = doc.getTextWidth(edu.location);
+              doc.text(edu.location, pageWidth - baseMargin - locWidth, y);
+              doc.setTextColor(0, 0, 0);
+            }
+            y += lineHeight * 1.5;
+          });
+        }
+      }
+
+      doc.save(`${fileName}.pdf`);
+    };    
+    
     const generateDOCX = async () => {
       const isExperienced = selectedTemplate === "experienced";
 
@@ -232,7 +644,7 @@ const ExportButton = ({ targetRef, isFormValid, data, selectedTemplate = "freshi
                 properties: {
                     page: { margin: { top: 720, right: 720, bottom: 720, left: 720 } },
                 },
-                children: [], // Placeholder for now
+                children: [], 
             },
         ],
     });
@@ -321,7 +733,7 @@ const ExportButton = ({ targetRef, isFormValid, data, selectedTemplate = "freshi
                 sectionHeader("SUMMARY", templateStyles.sectionStyle),
                 new Paragraph({
                   children: [new TextRun({ text: resumeData.personal.summary, ...templateStyles.textStyle })],
-                  alignment: AlignmentType.LEFT, // ✅ Force left alignment
+                  alignment: AlignmentType.LEFT, 
                   indent: { left: 350 },
                   spacing: { after: 150 },
                 }),
@@ -335,7 +747,6 @@ const ExportButton = ({ targetRef, isFormValid, data, selectedTemplate = "freshi
         ...resumeData.experience.flatMap((exp) => {
           const leftIndent = 350;
           return [
-            // Line 1: Company Name — Start - End Dates
             new Paragraph({
               children: [
                 new TextRun({ text: exp.company || "", bold: true, size: 26 }),
@@ -354,7 +765,6 @@ const ExportButton = ({ targetRef, isFormValid, data, selectedTemplate = "freshi
               spacing: { after: 50 },
             }),
   
-            // Line 2: Job Title — Location
             new Paragraph({
               children: [
                 new TextRun({ text: exp.jobTitle || "", size: templateStyles.fontSize }),
@@ -405,7 +815,6 @@ const ExportButton = ({ targetRef, isFormValid, data, selectedTemplate = "freshi
                   ? resumeData.education.flatMap((edu) => {
                       const leftIndent = 350;
                       return [
-                        // Row 1: Institution (left) + Graduation Date (right)
                         new Paragraph({
                           children: [
                             new TextRun({ text: edu.institution || "", bold: true, size: 24 }),
@@ -417,14 +826,13 @@ const ExportButton = ({ targetRef, isFormValid, data, selectedTemplate = "freshi
                           tabStops: [
                             {
                               type: TabStopType.RIGHT,
-                              position: 9350, // Align right (in twips, adjust as needed)
+                              position: 9350, 
                             },
                           ],
                           indent: { left: leftIndent },
                           spacing: { after: 100 },
                         }),
                 
-                        // Row 2: Course (left) + Location (right)
                         new Paragraph({
                           children: [
                             new TextRun({ text: edu.course || "", italics: true, size: 22 }),
@@ -472,7 +880,7 @@ const ExportButton = ({ targetRef, isFormValid, data, selectedTemplate = "freshi
                 throw new Error("Generated DOCX file is empty!");
             }
     
-            saveAs(blob, "resume.docx");
+            saveAs(blob, `${fileName}.docx`);
             alert("✅ Resume successfully exported as DOCX!");
         } catch (error) {
             console.error("❌ Error generating DOCX:", error);

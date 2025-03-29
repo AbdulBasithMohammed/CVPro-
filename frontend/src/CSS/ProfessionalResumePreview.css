@@ -1,23 +1,43 @@
-/* ✅ Resume Container (ATS-Friendly) */
-.resume-preview-prof {
-    width: 210mm;
-    height: 297mm;
-    margin: auto;
-    font-family: Arial, sans-serif;
-    color: #222;
-    padding: 10mm;
-    background: #fff;
-    line-height: 1.5;
-    box-sizing: border-box;
+/* Outer wrapper that centers content and allows vertical scroll */
+.resume-preview-prof-wrapper {
     display: flex;
     flex-direction: column;
-
-    /* ✅ Rounded sheet border */
-    border-radius: 12px;              /* Smooth corner radius */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Optional: soft shadow for better focus */
+    align-items: center;
+    padding: 20px;
+    background-color: #e5e5e5;
+    overflow-y: auto;
 }
 
-/* ✅ Name Styling */
+/* Each individual A4-sized page (simulated) */
+.resume-page-prof {
+    width: 210mm;
+    height: 297mm;
+    padding: 10mm; 
+    margin-bottom: 20px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+    position: relative;
+    overflow: auto; /* Allow content to flow naturally */
+    break-after: page;
+    break-inside: auto;
+}
+
+/* Prevent trailing space from adding overflow */
+.resume-page-prof::after {
+    content: "";
+    display: block;
+    height: 0;
+    clear: both;
+}
+
+.resume-preview-prof {
+    font-family: Arial, sans-serif;
+    color: #222;
+    line-height: 1.5;
+}
+
+/* Name Styling */
 .resume-header-prof h1 {
     font-size: 24px;
     font-weight: bold;
@@ -25,13 +45,14 @@
     margin-bottom: 5px;
 }
 
-/* ✅ Contact Information */
+/* Contact Information */
 .resume-header-prof {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     padding-bottom: 10px;
     border-bottom: 2px solid #ccc;
+    margin-bottom: 10px;
 }
 
 .resume-header-prof p {
@@ -40,7 +61,7 @@
     margin: 3px 0;
 }
 
-/* ✅ Contact Links */
+/* Contact Links */
 .contact-link {
     color: #1a73e8;
     text-decoration: none;
@@ -53,24 +74,24 @@
     color: #0f5bb5;
 }
 
-/* ✅ Section Formatting */
+/* Section Formatting */
 .resume-section-prof {
     margin-bottom: 20px;
     font-size: 15px;
     padding-top: 15px;
 }
 
-/* ✅ Section Titles */
+/* Section Titles */
 .section-title-prof {
     font-size: 16px;
     font-weight: bold;
     text-transform: uppercase;
     padding-bottom: 5px;
     border-bottom: 1px solid #ccc;
-    bottom: -6px;
+    margin-bottom: 10px;
 }
 
-/* ✅ Work Experience Section */
+/* Work Experience Section */
 .work-experience-item-prof {
     margin-bottom: 15px;
 }
@@ -107,7 +128,7 @@
     margin-bottom: 5px;
 }
 
-/* ✅ Skills Section */
+/* Skills Section */
 .skills-list-prof {
     list-style-type: disc;
     padding-left: 20px;
@@ -121,7 +142,7 @@
     padding: 3px 0;
 }
 
-/* ✅ Projects Section */
+/* Projects Section */
 .project-item-prof {
     margin-bottom: 10px;
 }
@@ -132,12 +153,12 @@
 }
 
 .task-list-prof {
-    list-style-type: disc; 
+    list-style-type: disc;
     padding-left: 20px;
     font-size: 14px;
 }
 
-/* ✅ Education Section */
+/* Education Section */
 .education-item-prof {
     margin-bottom: 10px;
 }
@@ -171,47 +192,46 @@
     text-align: right;
 }
 
-/* ✅ Print Handling */
+/* Print Handling */
 @media print {
-    .resume-preview-prof {
+    .resume-preview-prof-wrapper {
+        padding: 20px;
+        background: #fff;
+    }
+    .resume-page-prof {
         width: 210mm;
         height: 297mm;
         margin: 0;
         padding: 10mm;
-        text-align: justify;
-        page-break-after: avoid;
+        box-shadow: none;
+        page-break-after: always;
         page-break-inside: avoid;
+        overflow: visible;
     }
-
     .resume-section-prof {
         page-break-inside: avoid;
     }
 }
 
-/* ✅ RESPONSIVE FIXES */
+/* RESPONSIVE FIXES */
 @media (max-width: 768px) {
-    .resume-preview-prof {
+    .resume-preview-prof-wrapper {
         padding: 15px;
         width: 100%;
         height: auto;
     }
-
     .resume-header-prof {
         align-items: flex-start;
     }
-
     .resume-header-prof h1 {
         font-size: 20px;
     }
-
     .section-title-prof {
         font-size: 14px;
     }
-
     .skills-list-prof {
         grid-template-columns: 1fr;
     }
-
     .education-header-prof,
     .education-details-prof {
         flex-direction: column;
