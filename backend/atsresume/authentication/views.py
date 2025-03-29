@@ -264,29 +264,12 @@ class ForgotPasswordView(APIView):
         recipient_list = [email]
 
         try:
-            # Using Django's send_mail function (preferred)
+            # Attempt to send the email using Django's send_mail function (preferred)
             send_mail(subject, message, from_email, recipient_list, fail_silently=False)
             logger.info(f"Password reset email sent successfully to {email}")
-
         except Exception as e:
             logger.error(f"Failed to send email using Django's send_mail. Error: {e}")
-
-            # Fallback to direct SMTP if send_mail fails
-            try:
-                with smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT) as server:
-                    server.starttls()
-                    server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
-                    msg = MIMEText(message)
-                    msg["Subject"] = subject
-                    msg["From"] = from_email
-                    msg["To"] = email
-
-                    server.sendmail(from_email, recipient_list, msg.as_string())
-
-                logger.info(f"Password reset email sent successfully (fallback SMTP) to {email}")
-            except Exception as smtp_error:
-                logger.error(f"Failed to send email via SMTP fallback. Error: {smtp_error}")
-                raise smtp_error  # Raise the error so the calling function can handle it properly
+            raise e  # Raise the exception so the calling function can handle it properly
             
 
 class VerifyTokenView(APIView):
