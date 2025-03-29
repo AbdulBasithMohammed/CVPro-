@@ -17,10 +17,11 @@ import ProfessionalResumePreview from '../components/ProfessionalResumePreview';
 function TemplateSelection() {
   const { resumeId } = useParams();
   useEffect(() => {
-    if (resumeId) {
+    console.log('ResumeId', resumeId)
+    // if (resumeId) {
       console.log("Fetching details hehehe")
-      fetchResumeDetails();
-    }
+      fetchResumeDetails(resumeId);
+    // }
   }, [resumeId]);
   const [resumeData, setResumeData] = useState({
     personal: {
@@ -54,9 +55,16 @@ function TemplateSelection() {
   // Choose the appropriate component dynamically
   const SelectedResumePreview = selectedTemplate === "experienced" ? ProfessionalResumePreview : ResumePreview;
 
-  const fetchResumeDetails = async () => {
+  const fetchResumeDetails = async (resumeId) => {
     try {
-        const response = await axios.get(`http://localhost:8000/resume/retrieve/?id=${resumeId}`);
+      let response = {}
+      if(resumeId) {
+        response = await axios.get(`http://localhost:8000/resume/retrieve/?id=${resumeId}`);
+      }else {
+        response = {
+          data: { resume_details: JSON.parse(localStorage.getItem('resumeData')) || null }
+        }
+      }
         console.log(response.data);
         
         const fetchedData = response.data.resume_details; // Extract resume details
