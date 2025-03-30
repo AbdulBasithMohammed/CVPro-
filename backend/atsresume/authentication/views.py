@@ -257,10 +257,11 @@ class ContactUsView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def send_contact_email(self, contact_data):
-        subject = "New Contact Us Message"
+        subject = f"""New Contact Us Message : {contact_data.get('subject')}"""
         message = f"""
         Name: {contact_data.get('name', 'N/A')}
         Email: {contact_data.get('email', 'N/A')}
+        Subject: {contact_data.get('subject', 'No Subject provided')}
         Message: {contact_data.get('message', 'No message provided')}
 
         This message was sent from your website's Contact Us form.
