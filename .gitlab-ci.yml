@@ -121,7 +121,7 @@ publish-backend:
   only:
     - main
     - developer
-    - finalintegration
+    - integrationrefactore
 
 publish-frontend:
   stage: publish
@@ -138,7 +138,7 @@ publish-frontend:
   only:
     - main
     - developer
-    - finalintegration
+    - integrationrefactore
 
 # -------------------------- #
 # 🔹 Deploy on VM 🔹 #
@@ -170,7 +170,7 @@ deploy-backend:
   only:
     - main
     - developer
-    - finalintegration
+    - integrationrefactore
 
 
 deploy-frontend:
@@ -200,5 +200,5 @@ deploy-frontend:
   only:
     - main
     - developer
-    - finalintegration
+    - integrationrefactore
 
