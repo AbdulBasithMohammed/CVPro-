@@ -1,18 +1,31 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // for navigation
+import bcrypt from "bcryptjs"; // Import bcrypt for hashing
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
   const navigate = useNavigate(); // Hook for navigation
 
+  // This should be the stored hash in your database or environment
+  const storedUsername = "admingroup6"; // Example username
+  const storedPasswordHash = "$2b$12$qOpb2CnKbQaiHxr7cb/Lg.CmTCZh1KFQwN/mUyMWpBcWCKi8dHRXa"; // Example hashed password
+
   const handleLogin = () => {
-    // Check credentials
-    if (username === "admingroup6" && password === "Admin@1234567890") {
-      // Store the admin role in localStorage
-      localStorage.setItem("adminRole", "true");
-      navigate("/admindashboard"); // Redirect to admin dashboard
+    // Check if the entered username matches the stored username
+    if (username === storedUsername) {
+      // Compare the entered password with the hashed password
+      const isPasswordCorrect = bcrypt.compareSync(password, storedPasswordHash);
+      
+      if (isPasswordCorrect) {
+        // Store the admin role in localStorage
+        localStorage.setItem("adminRole", "true");
+        navigate("/admindashboard"); // Redirect to admin dashboard
+      } else {
+        setError("Invalid username or password.");
+      }
     } else {
       setError("Invalid username or password.");
     }
@@ -33,12 +46,21 @@ const Login = () => {
         </div>
         <div>
           <label className="block text-gray-600 font-medium mb-2">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-600"
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"} // Toggle password visibility
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-600"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)} // Toggle showPassword state
+              className="absolute right-3 top-3 text-gray-600 hover:bg-white"
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
         </div>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         <button

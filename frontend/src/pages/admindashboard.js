@@ -305,7 +305,7 @@ const AdminDashboard = () => {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="userCount" fill="#8884d8" />
+                <Bar dataKey="userCount" fill="#82ca9d" />
               </BarChart>
             </ResponsiveContainer>
           </div>
