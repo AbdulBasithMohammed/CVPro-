@@ -105,6 +105,7 @@ const ResumeUpload = () => {
     };
 
     const handleCreateResume = () => {
+        localStorage.removeItem("resumeData");
         setIsModalOpen(true);
     };
 

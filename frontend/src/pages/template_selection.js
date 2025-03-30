@@ -17,10 +17,11 @@ import ProfessionalResumePreview from '../components/ProfessionalResumePreview';
 function TemplateSelection() {
   const { resumeId } = useParams();
   useEffect(() => {
-    if (resumeId) {
+    console.log('ResumeId', resumeId)
+    // if (resumeId) {
       console.log("Fetching details hehehe")
-      fetchResumeDetails();
-    }
+      fetchResumeDetails(resumeId);
+    // }
   }, [resumeId]);
   const [resumeData, setResumeData] = useState({
     personal: {
@@ -51,59 +52,56 @@ function TemplateSelection() {
   const [resumeTitle, setResumeTitle] = useState("resume"); // Default title
 
 
-  const fetchResumeDetails = async () => {
+  // Choose the appropriate component dynamically
+  const SelectedResumePreview = selectedTemplate === "experienced" ? ProfessionalResumePreview : ResumePreview;
+
+  const fetchResumeDetails = async (resumeId) => {
     try {
-      const response = await axios.get(`http://172.17.3.79:8000/resume/retrieve/?id=${resumeId}`);
-      console.log(response.data);
-  
-      const fetchedData = response.data.resume_details; // Extract resume details
-  
-      console.log("Printing fetched data as", fetchedData);
-  
-      if (!fetchedData) {
-        console.error("No resume details found.");
-        return;
-      }
-  
-      // Set title if available
-      if (response.data.title) {
-        setResumeTitle(response.data.title);
-      }
-  
-      // Update each section separately
-      if (fetchedData.personal) {
-        updateSection("personal", {
-          name: fetchedData.personal.name || "",
-          email: fetchedData.personal.email || "",
-          phone: fetchedData.personal.phone || "",
-          address: fetchedData.personal.address || "",
-          summary: fetchedData.personal.summary || "",
-        });
-      }
-  
-      if (Array.isArray(fetchedData.skills)) {
-        updateSection("skills", fetchedData.skills.length > 0 ? fetchedData.skills : []);
-      }
-  
-      if (Array.isArray(fetchedData.experience)) {
-        updateSection("experience", fetchedData.experience.length > 0 ? fetchedData.experience : []);
-      }
-  
-      if (Array.isArray(fetchedData.education)) {
-        updateSection("education", fetchedData.education.length > 0 ? fetchedData.education : []);
-      }
-  
-      if (Array.isArray(fetchedData.projects)) {
-        updateSection("projects", fetchedData.projects.length > 0 ? fetchedData.projects : []);
-      }
-  
-      // Update selectedTemplate, prioritizing localStorage but overriding if resumeData has a value
-      if (fetchedData.selectedTemplate) {
-        updateSection("selectedTemplate", fetchedData.selectedTemplate);
-        localStorage.setItem("selectedTemplate", fetchedData.selectedTemplate);
-      }
-  
-      console.log("fetchedData.selectedTemplate:", fetchedData.selectedTemplate);
+        const response = await axios.get(`http://localhost:8000/resume/retrieve/?id=${resumeId}`);
+        console.log(response.data);
+        
+        const fetchedData = response.data.resume_details; // Extract resume details
+
+        console.log("Printing fetched data as",fetchedData)
+
+        if (!fetchedData) {
+            console.error("No resume details found.");
+            return;
+        }
+
+        // Set title if available
+        if(response.data.title)
+        {
+          setResumeTitle(response.data.title)
+        }
+
+        // Update each section separately
+        if (fetchedData.personal) {
+            updateSection("personal", {
+                name: fetchedData.personal.name || "",
+                email: fetchedData.personal.email || "",
+                phone: fetchedData.personal.phone || "",
+                address: fetchedData.personal.address || "",
+                summary: fetchedData.personal.summary || "",
+            });
+        }
+
+        if (Array.isArray(fetchedData.skills)) {
+            updateSection("skills", fetchedData.skills.length > 0 ? fetchedData.skills : []);
+        }
+
+        if (Array.isArray(fetchedData.experience)) {
+            updateSection("experience", fetchedData.experience.length > 0 ? fetchedData.experience : []);
+        }
+
+        if (Array.isArray(fetchedData.education)) {
+            updateSection("education", fetchedData.education.length > 0 ? fetchedData.education : []);
+        }
+
+        if (Array.isArray(fetchedData.projects)) {
+            updateSection("projects", fetchedData.projects.length > 0 ? fetchedData.projects : []);
+        }
+
     } catch (error) {
       console.error("Error fetching resume details:", error);
     }

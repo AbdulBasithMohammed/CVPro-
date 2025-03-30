@@ -21,6 +21,7 @@ const ResumeBuilder = () => {
     const [resumeData, setResumeData] = useState(() => {
         try {
             const storedData = localStorage.getItem("resumeData");
+            console.log('Data from local storage', storedData)
             const parsed = storedData ? JSON.parse(storedData) : null;
             return parsed && typeof parsed === "object" && parsed.personal
     ? parsed
@@ -37,6 +38,7 @@ const ResumeBuilder = () => {
 
     useEffect(() => {
         if (resumeData && Object.keys(resumeData).length > 0) {
+            console.log('UseEffect', resumeData)
             localStorage.setItem("resumeData", JSON.stringify(resumeData));
         }
     }, [resumeData]);
