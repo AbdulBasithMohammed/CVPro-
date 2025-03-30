@@ -358,13 +358,32 @@ class ContactUsView(APIView):
             # Insert message into MongoDB
             contact_collection.insert_one(contact_data)
 
-            return Response({"message": "Your message has been sent successfully!"}, status=status.HTTP_201_CREATED)
+            # Send email notification
+            try:
+                self.send_contact_email(contact_data)
+                return Response({"message": "Your message has been sent successfully!"}, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                logger.error(f"Failed to send contact email: {e}")
+                return Response({"error": "Your message was saved but email notification failed."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def send_contact_email(self, contact_data):
+        subject = "New Contact Us Message"
+        message = f"""
+        Name: {contact_data.get('name', 'N/A')}
+        Email: {contact_data.get('email', 'N/A')}
+        Message: {contact_data.get('message', 'No message provided')}
+
+        This message was sent from your website's Contact Us form.
+        """
+        from_email = settings.EMAIL_HOST_USER
+        recipient_list = ["group6asdc@gmail.com"]
+
+        # Send email
+        send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+        logger.info(f"Contact email sent successfully to {recipient_list}")
     
-
-
-
 class GoogleLoginView(APIView):
     def post(self, request):
         token = request.data.get("token")
