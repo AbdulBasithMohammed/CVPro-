@@ -15,7 +15,7 @@ const UserDetails = ({ match }) => {
     // Fetch the resumes for the user by userId
     const fetchResumes = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/admin/resumes/${userId}`);
+        const response = await axios.get(`http://172.17.3.79:8000/admin/resumes/${userId}`);
         setResumes(response.data.resumes);
       } catch (err) {
         setError('Error fetching resumes');
