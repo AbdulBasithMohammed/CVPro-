@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';  // Import Link for routing
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import * as XLSX from 'xlsx';
 import axios from 'axios';
+import { useNavigate } from "react-router-dom";
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
@@ -15,6 +16,23 @@ const AdminDashboard = () => {
   const [countryCounts, setCountryCounts] = useState([]);
   const GEOCODE_API_KEY = "309640c5509c437d9b48f9e37a03653d";  // Use your OpenCage API key
   
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if the user is an admin
+    const isAdmin = localStorage.getItem("adminRole");
+
+    // If the user is not an admin, redirect them to the login page
+    if (isAdmin !== "true") {
+      navigate("/adminlogin"); // Redirect to login page
+    }
+  }, [navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("adminRole");  // Remove the admin role from localStorage
+    navigate("/adminlogin");  // Redirect to login page
+  };
+
   useEffect(() => {
     fetchUsers();
     fetchLoginLogs();
@@ -154,7 +172,7 @@ const AdminDashboard = () => {
 
     // Update the filtered users list
     setFilteredUsers(filtered);
-};
+  };
 
   const exportToExcel = () => {
     const usersToExport = filteredUsers.length > 0 ? filteredUsers : users;
@@ -185,6 +203,13 @@ const AdminDashboard = () => {
   return (
     <div className="p-6 bg-gray-800 text-white min-h-screen">
       <h1 className="text-3xl font-semibold mb-6">Admin Dashboard</h1>
+
+      {/* Logout Button */}
+      <button 
+        onClick={handleLogout} 
+        className="absolute top-4 right-6 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition">
+        Logout
+      </button>
 
       {/* User List Section */}
       <div className="mb-8">
@@ -230,28 +255,24 @@ const AdminDashboard = () => {
                 <th className="px-4 py-2 text-left text-sm font-medium text-white">Email</th>
                 <th className="px-4 py-2 text-left text-sm font-medium text-white">Resume Count</th>
                 <th className="px-4 py-2 text-left text-sm font-medium text-white">Location</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-white">Created at</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-white">Created At</th>
                 <th className="px-4 py-2 text-left text-sm font-medium text-white">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredUsers.map(user => (
                 <tr key={user.id} className="border-t border-gray-600">
-                  <td className="px-4 py-2 text-sm text-gray-300">
-                    <Link to={`/user/${user.id}`} className="text-blue-400 hover:text-blue-600">
-                      {user.first_name} {user.last_name}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-2 text-sm text-gray-300">{user.email}</td>
-                  <td className="px-4 py-2 text-sm text-gray-300">{user.total_resumes}</td>
-                  <td className="px-4 py-2 text-sm text-gray-300">{user.country}</td> {/* Use country here */}
-                  <td className="px-4 py-2 text-sm text-gray-300">{user.created_at}</td>
-                  <td className="px-4 py-2 text-sm text-gray-300">
+                  <td className="px-4 py-2">{user.first_name} {user.last_name}</td>
+                  <td className="px-4 py-2">{user.email}</td>
+                  <td className="px-4 py-2">{user.total_resumes}</td>
+                  <td className="px-4 py-2">{user.country}</td>
+                  <td className="px-4 py-2">{user.created_at}</td>
+                  <td className="px-4 py-2">
                     <button
                       onClick={() => deleteUser(user.id)}
-                      className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+                      className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
                     >
-                      Remove
+                      Delete
                     </button>
                   </td>
                 </tr>
@@ -261,38 +282,43 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Software Usage Chart */}
+      {/* Software Usage Section */}
       <div className="mb-8">
-        <h2 className="text-xl font-medium mb-4">Software Usage</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={softwareUsage}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-            <XAxis dataKey="hour" stroke="#fff" />
-            <YAxis stroke="#fff" />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="loginCount" stroke="#8884d8" />
-          </LineChart>
-        </ResponsiveContainer>
-        <div>
-          <p><strong>Peak Hour in UTC timezone:</strong> {peakHour}</p>
-          <p><strong>Lowest Hour in UTC timezone:</strong> {lowestHour}</p>
+        <h2 className="text-xl font-medium mb-4">Software Usage Statistics</h2>
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+          <div className="w-full h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={softwareUsage}>
+                <XAxis dataKey="hour" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="loginCount" stroke="#82ca9d" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="w-full h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={countryCounts}>
+                <XAxis dataKey="country" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="userCount" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 
-      {/* User Count by Country Bar Chart */}
-      <div className="mb-8">
-        <h2 className="text-xl font-medium mb-4">User Count by Country</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={countryCounts}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-            <XAxis dataKey="country" stroke="#fff" />
-            <YAxis stroke="#fff" />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="userCount" fill="#8884d8" />
-          </BarChart>
-        </ResponsiveContainer>
+      {/* Summary of Peak/Lowest Hour */}
+      <div className="mt-8">
+        <h2 className="text-xl font-medium mb-4">Peak and Lowest Usage Hour</h2>
+        <div className="text-lg text-white">
+          <p>Peak Hour: {peakHour}</p>
+          <p>Lowest Hour: {lowestHour}</p>
+        </div>
       </div>
     </div>
   );

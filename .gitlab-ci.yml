@@ -49,7 +49,7 @@ build-backend:
 #     - pip install -r requirements.txt
 #     - python -m spacy download en_core_web_sm
 #   script:
-#     - python manage.py test
+#     - python manage.py test --buffer
 
 # -------------------------- #
 # 🔹 Frontend: Build & Test 🔹 #
