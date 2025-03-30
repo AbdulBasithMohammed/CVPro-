@@ -262,7 +262,14 @@ const AdminDashboard = () => {
             <tbody>
               {filteredUsers.map(user => (
                 <tr key={user.id} className="border-t border-gray-600">
-                  <td className="px-4 py-2">{user.first_name} {user.last_name}</td>
+                  <td className="px-4 py-2">
+                    <Link
+                      to={`/user/${user.id}/resumes?username=${user.first_name} ${user.last_name}`}  // Pass the username in the query parameter
+                      className="text-blue-500 hover:underline"
+                    >
+                      {user.first_name} {user.last_name}
+                    </Link>
+                  </td>
                   <td className="px-4 py-2">{user.email}</td>
                   <td className="px-4 py-2">{user.total_resumes}</td>
                   <td className="px-4 py-2">{user.country}</td>

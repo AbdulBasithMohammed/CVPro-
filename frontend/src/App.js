@@ -12,8 +12,9 @@ import Uploadresume from "./pages/uploadresume"
 import TemplateSelection from "./pages/template_selection";
 import RateMyResume from "./pages/RateMyResume";
 import AdminDashboard from "./pages/admindashboard";
-import UserDetailsPage from "./pages/userDetailspage";
+import UserResumesPage from "./pages/UserResumesPage";
 import Adminlogin from "./pages/adminlogin"
+
 
 const App = () => {
   return (
@@ -33,7 +34,7 @@ const App = () => {
         <Route path="/rate-my-resume" element={<RateMyResume />} />
         <Route path="/adminlogin" element={<Adminlogin />} />
         <Route path="/admindashboard" element={<AdminDashboard />} />
-        <Route path="/user/:userId" element={<UserDetailsPage />} />
+        <Route path="/user/:userId/resumes" element={<UserResumesPage />} /> {/* New route */}
       </Routes>
     </Router>
   );
