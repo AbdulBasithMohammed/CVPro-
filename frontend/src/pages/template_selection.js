@@ -17,12 +17,10 @@ import ProfessionalResumePreview from '../components/ProfessionalResumePreview';
 function TemplateSelection() {
   const { resumeId } = useParams();
   useEffect(() => {
-    console.log('ResumeId', resumeId)
-    // if (resumeId) {
-      console.log("Fetching details hehehe")
-      fetchResumeDetails(resumeId);
-    // }
-  }, [resumeId]);
+    console.log('ResumeId', resumeId);
+    fetchResumeDetails(resumeId);
+}, [resumeId]);
+
   const [resumeData, setResumeData] = useState({
     personal: {
       name: '',
@@ -54,20 +52,19 @@ function TemplateSelection() {
 
   const fetchResumeDetails = async (resumeId) => {
     try {
-      let response = {}
-      if(resumeId) {
-        response = await axios.get(`http://localhost:8000/resume/retrieve/?id=${resumeId}`);
-      }else {
-        response = {
-          data: { resume_details: JSON.parse(localStorage.getItem('resumeData')) || null }
+        let response = {};
+        if (resumeId) {
+            response = await axios.get(`http://localhost:8000/resume/retrieve/?id=${resumeId}`);
+        } else {
+            response = {
+                data: { resume_details: JSON.parse(localStorage.getItem("resumeData")) || null }
+            };
         }
-      }
 
         console.log(response.data);
-        
-        const fetchedData = response.data.resume_details; // Extract resume details
 
-        console.log("Printing fetched data as",fetchedData)
+        const fetchedData = response.data.resume_details; // Extract resume details
+        console.log("Printing fetched data as", fetchedData);
 
         if (!fetchedData) {
             console.error("No resume details found.");
@@ -75,10 +72,18 @@ function TemplateSelection() {
         }
 
         // Set title if available
-        if(response.data.title)
-        {
-          setResumeTitle(response.data.title)
+        if (response.data.title) {
+            setResumeTitle(response.data.title);
         }
+
+        // Set selectedTemplate from local storage or fetched data
+        const storedTemplate = localStorage.getItem("selectedTemplate");
+        const fetchedTemplate = fetchedData.selectedTemplate || "";
+
+        setResumeData((prevData) => ({
+            ...prevData,
+            selectedTemplate: storedTemplate || fetchedTemplate || "default", // Fallback to 'default' if nothing is found
+        }));
 
         // Update each section separately
         if (fetchedData.personal) {
@@ -108,15 +113,15 @@ function TemplateSelection() {
         }
 
     } catch (error) {
-      console.error("Error fetching resume details:", error);
+        console.error("Error fetching resume details:", error);
     }
-  };
-  
-  // Use selectedTemplate from state
-  const selectedTemplate = resumeData.selectedTemplate;
-  const SelectedResumePreview = selectedTemplate === "experienced" ? ProfessionalResumePreview : ResumePreview;
-  
-  console.log("Selected Template:", selectedTemplate);
+};
+
+// Use selectedTemplate from state
+const selectedTemplate = resumeData.selectedTemplate;
+const SelectedResumePreview = selectedTemplate === "experienced" ? ProfessionalResumePreview : ResumePreview;
+
+console.log("Selected Template:", selectedTemplate);
 
   const updateSection = (section, data, index = null) => {
     if (index !== null) {
