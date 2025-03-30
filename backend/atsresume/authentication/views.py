@@ -19,10 +19,10 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from django.conf import settings
 import logging
-logger = logging.getLogger(__name__)import logging
 from email.mime.text import MIMEText
 from django.core.mail import send_mail
 
+logger = logging.getLogger(__name__)
 
 def generate_unique_username(first_name, last_name):
     base_username = f"{first_name.lower()}{last_name.lower()}"

@@ -52,12 +52,17 @@ function TemplateSelection() {
   const [resumeTitle, setResumeTitle] = useState("resume"); // Default title
 
 
-  // Choose the appropriate component dynamically
-  const SelectedResumePreview = selectedTemplate === "experienced" ? ProfessionalResumePreview : ResumePreview;
-
   const fetchResumeDetails = async (resumeId) => {
     try {
-        const response = await axios.get(`http://localhost:8000/resume/retrieve/?id=${resumeId}`);
+      let response = {}
+      if(resumeId) {
+        response = await axios.get(`http://172.17.3.79:8000/resume/retrieve/?id=${resumeId}`);
+      }else {
+        response = {
+          data: { resume_details: JSON.parse(localStorage.getItem('resumeData')) || null }
+        }
+      }
+
         console.log(response.data);
         
         const fetchedData = response.data.resume_details; // Extract resume details

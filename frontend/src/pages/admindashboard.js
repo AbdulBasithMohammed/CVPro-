@@ -22,17 +22,20 @@ const AdminDashboard = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://172.17.3.79:8000/auth/admin/users/', { headers: {} });
+      const response = await fetch('http://172.17.3.79:8000/admins/users/', { headers: {} });
       const data = await response.json();
       
       // Convert lat-long to country for each user
       const usersWithCountry = await Promise.all(data.users.map(async user => {
         let country = "Unknown";  // Default value if location is not available
 
-        if (user.location) {
+        if (typeof user.location === 'string' && user.location) {
           const [lat, lon] = user.location.split(',').map(coord => parseFloat(coord.trim()));
           country = await convertLatLongToCountry(lat, lon);
-        }
+      } else {
+          // Handle cases where user.location is not a string or is empty
+          console.error('user.location is not a valid string:', user.location);
+      } 
         
         return { ...user, country };  // Add country to user data
       }));
@@ -47,7 +50,7 @@ const AdminDashboard = () => {
 
   const fetchLoginLogs = async () => {
     try {
-      const response = await fetch('http://172.17.3.79:8000/auth/admin/login-logs/', { headers: {} });
+      const response = await fetch('http://172.17.3.79:8000/admins/login-logs/', { headers: {} });
       const data = await response.json();
       
       if (Array.isArray(data.login_logs)) {
@@ -129,12 +132,29 @@ const AdminDashboard = () => {
   const handleDateFilter = () => {
     const filtered = users.filter(user => {
       const createdAt = new Date(user.created_at);
+
+      // Convert fromDate and toDate to UTC time
       const from = fromDate ? new Date(fromDate) : null;
-      const to = toDate ? new Date(toDate) : null;
-      return (!from || createdAt >= from) && (!to || createdAt <= to);
+      let to = toDate ? new Date(toDate) : null;
+
+      // Set the time to the end of the day (23:59:59.999) in UTC
+      if (to) {
+          to.setUTCHours(23, 59, 59, 999); // Set time to 23:59:59.999 (end of the day) in UTC
+      }
+
+      // Log the UTC 'to' date
+      console.log(to); 
+
+      // Return true if the user's created_at falls within the filtered date range
+      return (
+          (!from || createdAt >= from) && 
+          (!to || createdAt <= to)
+      );
     });
+
+    // Update the filtered users list
     setFilteredUsers(filtered);
-  };
+};
 
   const exportToExcel = () => {
     const usersToExport = filteredUsers.length > 0 ? filteredUsers : users;
@@ -154,7 +174,7 @@ const AdminDashboard = () => {
 
   const deleteUser = async (userId) => {
     try {
-      await fetch(`http://172.17.3.79:8000/auth/admin/deleteusers/${userId}`, { method: 'DELETE' });
+      await fetch(`http://172.17.3.79:8000/admins/deleteusers/${userId}`, { method: 'DELETE' });
       alert('User deleted');
       fetchUsers();  // Refresh the list after deletion
     } catch (err) {
