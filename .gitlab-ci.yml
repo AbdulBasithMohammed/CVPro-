@@ -101,21 +101,40 @@ build-backend:
 # -------------------------- #
 # 🔹 Backend: codquality 🔹 #
 # -------------------------- #
+The error you're encountering in your GitLab CI/CD pipeline indicates that the DPy executable requires GLIBC (GNU C Library) version 2.38 or higher, but the python:3.11 Docker image you're using is based on a version of Debian (likely Bullseye, with GLIBC 2.31) that doesn't meet this requirement. This causes DPy to fail, preventing it from generating the dpy-output file.
+
+To resolve this, you need to use a base image that includes GLIBC 2.38 or higher while still supporting Python 3.11 and your virtual environment setup. The ubuntu:24.04 image is a good candidate because it includes GLIBC 2.38 and can support Python 3.11 with some additional setup. Below is the corrected configuration.
+
+Updated GitLab CI/CD Configuration
+Here’s the revised analyze-codesmells job using ubuntu:24.04 with Python 3.11 installed via the deadsnakes PPA:
+
+yaml
+
+Collapse
+
+Wrap
+
+Copy
 analyze-codesmells:
   stage: codequality
-  image: python:3.11  
+  image: ubuntu:24.04  # Includes GLIBC 2.38
   tags:
     - cvpro-runner
   before_script:
+    - apt-get update -y
+    - apt-get install -y software-properties-common  # Required for add-apt-repository
+    - add-apt-repository ppa:deadsnakes/ppa -y  # Adds PPA for Python 3.11
+    - apt-get update -y
+    - apt-get install -y python3.11 python3.11-venv python3.11-distutils  # Install Python 3.11 and venv support
     - cd backend/atsresume
-    - python -m venv venv
-    - source venv/bin/activate
+    - python3.11 -m venv venv  # Create virtual environment with Python 3.11
+    - . venv/bin/activate  # Activate virtual environment (source doesn’t work in some shells)
     - pip install --upgrade pip
     - pip install -r requirements.txt
     - chmod +x DPy  # Make DPy executable
   script:
     - ./DPy analyze -i . -o ./dpy-output -f csv  # Run DPy analysis
-    # - cat ./dpy-output  # Display output in CI logs
+    # - cat ./dpy-output  # Uncomment to display output in CI logs
   only:
     - main
     - developer
@@ -125,7 +144,6 @@ analyze-codesmells:
     paths:
       - backend/atsresume/dpy-output  # Store the CSV output
     expire_in: 1 week
-
 # -------------------------- #
 # 🔹 Publish Docker Images 🔹 #
 # -------------------------- #
