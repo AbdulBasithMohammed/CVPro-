@@ -103,15 +103,16 @@ test-backend:
 # -------------------------- #
 analyze-codesmells:
   stage: codequality
-  image: python:3.11
+  image: ubuntu:24.04  # Includes GLIBC 2.38
   tags:
     - cvpro-runner
   before_script:
+    - apt-get update -y && apt-get install -y python3.11 python3-pip  # Install Python 3.11 and pip
     - cd backend/atsresume
-    - chmod +x DPy  # Make it executable
+    - chmod +x DPy  # Make DPy executable
   script:
-    - ./DPy analyze -i . -o ./dpy-output -f csv || true  # Run DPy analysis
-    - cat ./dpy-output  # Optional: Display output in CI logs
+    - ./DPy analyze -i . -o ./dpy-output -f csv  # Run DPy analysis (removed || true for debugging)
+    - cat ./dpy-output  # Display output in CI logs
   only:
     - main
     - developer
