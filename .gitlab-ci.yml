@@ -1,8 +1,8 @@
 stages:
   - build
   - test
+  - codequality
   - publish
-  - deliver
   - deploy
 
 variables:
@@ -36,23 +36,8 @@ build-backend:
       - backend/atsresume/staticfiles
   timeout: 1hr 30min  # Reduced timeout to optimize efficiency
 
-# test-backend:
-#   stage: test
-#   image: python:3.11
-#   tags:
-#     - cvpro-runner
-#   before_script:
-#     - cd backend/atsresume
-#     - python -m venv venv
-#     - source venv/bin/activate
-#     - pip install --upgrade pip
-#     - pip install -r requirements.txt
-#     - python -m spacy download en_core_web_sm
-#   script:
-#     - python manage.py test --buffer
-
 # -------------------------- #
-# 🔹 Frontend: Build & Test 🔹 #
+# 🔹 Frontend: Build 🔹 #
 # -------------------------- #
 build-frontend:
   stage: build
@@ -81,28 +66,64 @@ build-frontend:
       - frontend/build
   timeout: 20m
 
-# test-frontend:
-#   stage: test
-#   image: node:18-alpine
-#   tags:
-#     - cvpro-runner
-#   cache:
-#     key: npm-cache
-#     paths:
-#       - frontend/node_modules
-#   before_script:  
-#     - export NODE_OPTIONS=--openssl-legacy-provider
-#     - rm -rf node_modules
-#     - npm install webpack@4.42.0
-#     - npm install
-#   script:
-#     - cd frontend
-#     - npm install
-#     - export REACT_BACKEND_BASE_URL=$REACT_BACKEND_BASE_URL
-#     - export NODE_OPTIONS=--openssl-legacy-provider
-#     - export CI=false
-#     - npm run test -- --passWithNoTests
+# -------------------------- #
+# 🔹 Backend: Test 🔹 #
+# -------------------------- #
 
+test-backend:
+  stage: test
+  image: python:3.11
+  tags:
+    - cvpro-runner
+  before_script:
+    - cd backend/atsresume
+    - python -m venv venv
+    - source venv/bin/activate
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+    - pip install coverage
+    - python -m spacy download en_core_web_sm
+  script:
+    - coverage run manage.py test --buffer
+    - coverage xml
+    - coverage html
+  only:
+    - main
+    - developer
+    - integrationrefactore
+  artifacts:
+    when: always
+    paths:
+      - backend/atsresume/htmlcov/
+      - backend/atsresume/coverage.xml
+    expire_in: 1 week
+
+# -------------------------- #
+# 🔹 Backend: codquality 🔹 #
+# -------------------------- #
+analyze-codesmells:
+  stage: codequality
+  image: python:3.11
+  tags:
+    - cvpro-runner
+  before_script:
+    - cd backend/atsresume
+    # Hypothetical DPy installation - adjust based on actual source
+    # - curl -o DPy https://example.com/DPy-linux  # Replace with actual download URL
+    # - chmod +x DPy  # Make it executable
+  script:
+    - ./DPy analyze -i . -o ./dpy-output -f csv || true  # Run DPy analysis
+    - cat ./dpy-output  # Optional: Display output in CI logs
+  only:
+    - main
+    - developer
+    - integrationrefactore
+  artifacts:
+    when: always
+    paths:
+      - backend/atsresume/dpy-output  # Store the CSV output
+    expire_in: 1 week
+    
 # -------------------------- #
 # 🔹 Publish Docker Images 🔹 #
 # -------------------------- #
