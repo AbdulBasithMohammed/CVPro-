@@ -112,7 +112,6 @@ analyze-codesmells:
     - add-apt-repository ppa:deadsnakes/ppa -y  # Adds PPA with Python 3.11
     - apt-get update -y
     - apt-get install -y python3.11 python3.11-distutils  # Install Python 3.11 and pip support
-    - python3.11 -m ensurepip --upgrade  # Ensure pip is installed
     - python3.11 -m pip install --upgrade pip  # Upgrade pip
     - cd backend/atsresume
     - chmod +x DPy  # Make DPy executable
