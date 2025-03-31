@@ -39,64 +39,64 @@ build-backend:
 # -------------------------- #
 # 🔹 Frontend: Build 🔹 #
 # -------------------------- #
-# build-frontend:
-#   stage: build
-#   image: node:18-alpine
-#   tags:
-#     - cvpro-runner
-#   cache:
-#     key: npm-cache
-#     paths:
-#       - frontend/node_modules
-#   before_script:  
-#     - export NODE_OPTIONS=--openssl-legacy-provider
-#     - rm -rf node_modules
-#     - npm install webpack@4.42.0
-#     - npm install
-#   script:
-#     - cd frontend
-#     - npm install
-#     - echo $REACT_BACKEND_BASE_URL
-#     - export REACT_BACKEND_BASE_URL=$REACT_BACKEND_BASE_URL
-#     - echo $REACT_BACKEND_BASE_URL
-#     - export CI=false
-#     - npm run build
-#   artifacts:
-#     paths:
-#       - frontend/build
-#   timeout: 20m
+build-frontend:
+  stage: build
+  image: node:18-alpine
+  tags:
+    - cvpro-runner
+  cache:
+    key: npm-cache
+    paths:
+      - frontend/node_modules
+  before_script:  
+    - export NODE_OPTIONS=--openssl-legacy-provider
+    - rm -rf node_modules
+    - npm install webpack@4.42.0
+    - npm install
+  script:
+    - cd frontend
+    - npm install
+    - echo $REACT_BACKEND_BASE_URL
+    - export REACT_BACKEND_BASE_URL=$REACT_BACKEND_BASE_URL
+    - echo $REACT_BACKEND_BASE_URL
+    - export CI=false
+    - npm run build
+  artifacts:
+    paths:
+      - frontend/build
+  timeout: 1hr
 
 # -------------------------- #
 # 🔹 Backend: Test 🔹 #
 # -------------------------- #
 
-# test-backend:
-#   stage: test
-#   image: python:3.11
-#   tags:
-#     - cvpro-runner
-#   before_script:
-#     - cd backend/atsresume
-#     - python -m venv venv
-#     - source venv/bin/activate
-#     - pip install --upgrade pip
-#     - pip install -r requirements.txt
-#     - pip install coverage
-#     - python -m spacy download en_core_web_sm
-#   script:
-#     - coverage run manage.py test --buffer
-#     - coverage xml
-#     - coverage html
-#   only:
-#     - main
-#     - developer
-#     - integrationrefactore
-#   artifacts:
-#     when: always
-#     paths:
-#       - backend/atsresume/htmlcov/
-#       - backend/atsresume/coverage.xml
-#     expire_in: 1 week
+test-backend:
+  stage: test
+  image: python:3.11
+  tags:
+    - cvpro-runner
+  before_script:
+    - cd backend/atsresume
+    - python -m venv venv
+    - source venv/bin/activate
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+    - pip install coverage
+    - python -m spacy download en_core_web_sm
+  script:
+    - coverage run manage.py test --buffer
+    - coverage xml
+    - coverage html
+  only:
+    - main
+    - developer
+    - integrationrefactore
+  artifacts:
+    when: always
+    paths:
+      - backend/atsresume/htmlcov/
+      - backend/atsresume/coverage.xml
+    expire_in: 1 week
 
 # -------------------------- #
 # 🔹 Backend: codquality 🔹 #
@@ -104,24 +104,23 @@ build-backend:
 
 analyze-codesmells:
   stage: codequality
-  image: ubuntu:24.04  # Includes GLIBC 2.38
+  image: ubuntu:24.04  
   tags:
     - cvpro-runner
   before_script:
     - cd backend/atsresume
     - apt-get update -y
-    - apt-get install -y software-properties-common  # Required for add-apt-repository
-    - add-apt-repository ppa:deadsnakes/ppa -y  # Adds PPA for Python 3.11
+    - apt-get install -y software-properties-common  
+    - add-apt-repository ppa:deadsnakes/ppa -y  
     - apt-get update -y
-    - apt-get install -y python3.11 python3.11-venv python3.11-distutils git  # Install Python 3.11 and git
-    - python3.11 -m venv venv  # Create virtual environment with Python 3.11
-    - . venv/bin/activate  # Activate virtual environment
+    - apt-get install -y python3.11 python3.11-venv python3.11-distutils git  
+    - python3.11 -m venv venv  
+    - . venv/bin/activate  
     - pip install --upgrade pip
     - pip install -r requirements.txt
-    - chmod +x DPy  # Make DPy executable
+    - chmod +x DPy  
   script:
-    - ./DPy analyze -i . -o ./dpy-output -f csv  # Run DPy analysis
-    # - cat ./dpy-output  # Uncomment to display output in CI logs
+    - ./DPy analyze -i . -o ./dpy-output -f csv  
   only:
     - main
     - developer
