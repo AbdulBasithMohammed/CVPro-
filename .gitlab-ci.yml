@@ -108,9 +108,7 @@ analyze-codesmells:
     - cvpro-runner
   before_script:
     - cd backend/atsresume
-    # Hypothetical DPy installation - adjust based on actual source
-    # - curl -o DPy https://example.com/DPy-linux  # Replace with actual download URL
-    # - chmod +x DPy  # Make it executable
+    - chmod +x DPy  # Make it executable
   script:
     - ./DPy analyze -i . -o ./dpy-output -f csv || true  # Run DPy analysis
     - cat ./dpy-output  # Optional: Display output in CI logs
@@ -123,7 +121,7 @@ analyze-codesmells:
     paths:
       - backend/atsresume/dpy-output  # Store the CSV output
     expire_in: 1 week
-    
+
 # -------------------------- #
 # 🔹 Publish Docker Images 🔹 #
 # -------------------------- #
