@@ -108,6 +108,7 @@ analyze-codesmells:
   tags:
     - cvpro-runner
   before_script:
+    - cd backend/atsresume
     - apt-get update -y
     - apt-get install -y software-properties-common  # Required for add-apt-repository
     - add-apt-repository ppa:deadsnakes/ppa -y  # Adds PPA for Python 3.11
