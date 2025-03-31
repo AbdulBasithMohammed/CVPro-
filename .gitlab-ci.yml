@@ -101,20 +101,7 @@ build-backend:
 # -------------------------- #
 # 🔹 Backend: codquality 🔹 #
 # -------------------------- #
-The error you're encountering in your GitLab CI/CD pipeline indicates that the DPy executable requires GLIBC (GNU C Library) version 2.38 or higher, but the python:3.11 Docker image you're using is based on a version of Debian (likely Bullseye, with GLIBC 2.31) that doesn't meet this requirement. This causes DPy to fail, preventing it from generating the dpy-output file.
 
-To resolve this, you need to use a base image that includes GLIBC 2.38 or higher while still supporting Python 3.11 and your virtual environment setup. The ubuntu:24.04 image is a good candidate because it includes GLIBC 2.38 and can support Python 3.11 with some additional setup. Below is the corrected configuration.
-
-Updated GitLab CI/CD Configuration
-Here’s the revised analyze-codesmells job using ubuntu:24.04 with Python 3.11 installed via the deadsnakes PPA:
-
-yaml
-
-Collapse
-
-Wrap
-
-Copy
 analyze-codesmells:
   stage: codequality
   image: ubuntu:24.04  # Includes GLIBC 2.38
