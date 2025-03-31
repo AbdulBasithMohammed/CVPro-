@@ -104,19 +104,23 @@ build-backend:
 
 analyze-codesmells:
   stage: codequality
-  image: my-python-3.11:ubuntu24.04
+  image: ubuntu:24.04  # Includes GLIBC 2.38
   tags:
     - cvpro-runner
   before_script:
-    - cd backend/atsresume
-    - python3.11 -m venv venv
-    - . venv/bin/activate
+    - apt-get update -y
+    - apt-get install -y software-properties-common  # Required for add-apt-repository
+    - add-apt-repository ppa:deadsnakes/ppa -y  # Adds PPA for Python 3.11
+    - apt-get update -y
+    - apt-get install -y python3.11 python3.11-venv python3.11-distutils git  # Install Python 3.11 and git
+    - python3.11 -m venv venv  # Create virtual environment with Python 3.11
+    - . venv/bin/activate  # Activate virtual environment
     - pip install --upgrade pip
     - pip install -r requirements.txt
-    - chmod +x DPy
+    - chmod +x DPy  # Make DPy executable
   script:
-    - ./DPy analyze -i . -o ./dpy-output -f csv
-    # - cat ./dpy-output
+    - ./DPy analyze -i . -o ./dpy-output -f csv  # Run DPy analysis
+    # - cat ./dpy-output  # Uncomment to display output in CI logs
   only:
     - main
     - developer
@@ -124,9 +128,9 @@ analyze-codesmells:
   artifacts:
     when: always
     paths:
-      - backend/atsresume/dpy-output
+      - backend/atsresume/dpy-output  # Store the CSV output
     expire_in: 1 week
-    
+
 # -------------------------- #
 # 🔹 Publish Docker Images 🔹 #
 # -------------------------- #
