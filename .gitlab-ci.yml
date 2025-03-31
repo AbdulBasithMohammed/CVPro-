@@ -112,7 +112,6 @@ analyze-codesmells:
     - source venv/bin/activate
     - pip install --upgrade pip
     - pip install -r requirements.txt
-    - cd backend/atsresume
     - chmod +x DPy  # Make DPy executable
   script:
     - ./DPy analyze -i . -o ./dpy-output -f csv  # Run DPy analysis
