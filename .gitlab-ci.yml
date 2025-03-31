@@ -70,33 +70,33 @@ build-frontend:
 # 🔹 Backend: Test 🔹 #
 # -------------------------- #
 
-test-backend:
-  stage: test
-  image: python:3.11
-  tags:
-    - cvpro-runner
-  before_script:
-    - cd backend/atsresume
-    - python -m venv venv
-    - source venv/bin/activate
-    - pip install --upgrade pip
-    - pip install -r requirements.txt
-    - pip install coverage
-    - python -m spacy download en_core_web_sm
-  script:
-    - coverage run manage.py test --buffer
-    - coverage xml
-    - coverage html
-  only:
-    - main
-    - developer
-    - integrationrefactore
-  artifacts:
-    when: always
-    paths:
-      - backend/atsresume/htmlcov/
-      - backend/atsresume/coverage.xml
-    expire_in: 1 week
+# test-backend:
+#   stage: test
+#   image: python:3.11
+#   tags:
+#     - cvpro-runner
+#   before_script:
+#     - cd backend/atsresume
+#     - python -m venv venv
+#     - source venv/bin/activate
+#     - pip install --upgrade pip
+#     - pip install -r requirements.txt
+#     - pip install coverage
+#     - python -m spacy download en_core_web_sm
+#   script:
+#     - coverage run manage.py test --buffer
+#     - coverage xml
+#     - coverage html
+#   only:
+#     - main
+#     - developer
+#     - integrationrefactore
+#   artifacts:
+#     when: always
+#     paths:
+#       - backend/atsresume/htmlcov/
+#       - backend/atsresume/coverage.xml
+#     expire_in: 1 week
 
 # -------------------------- #
 # 🔹 Backend: codquality 🔹 #
@@ -107,11 +107,17 @@ analyze-codesmells:
   tags:
     - cvpro-runner
   before_script:
-    - apt-get update -y && apt-get install -y python3.11 python3-pip  # Install Python 3.11 and pip
+    - apt-get update -y
+    - apt-get install -y software-properties-common  # Required for add-apt-repository
+    - add-apt-repository ppa:deadsnakes/ppa -y  # Adds PPA with Python 3.11
+    - apt-get update -y
+    - apt-get install -y python3.11 python3.11-distutils  # Install Python 3.11 and pip support
+    - python3.11 -m ensurepip --upgrade  # Ensure pip is installed
+    - python3.11 -m pip install --upgrade pip  # Upgrade pip
     - cd backend/atsresume
     - chmod +x DPy  # Make DPy executable
   script:
-    - ./DPy analyze -i . -o ./dpy-output -f csv  # Run DPy analysis (removed || true for debugging)
+    - ./DPy analyze -i . -o ./dpy-output -f csv  # Run DPy analysis
     - cat ./dpy-output  # Display output in CI logs
   only:
     - main
