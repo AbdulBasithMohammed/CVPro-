@@ -107,17 +107,17 @@ analyze-codesmells:
   tags:
     - cvpro-runner
   before_script:
-    # - apt-get update -y
-    # - apt-get install -y software-properties-common  # Required for add-apt-repository
-    # - add-apt-repository ppa:deadsnakes/ppa -y  # Adds PPA with Python 3.11
-    # - apt-get update -y
-    # - apt-get install -y python3.11 python3.11-distutils  # Install Python 3.11 and pip support
-    # - python3.11 -m pip install --upgrade pip  # Upgrade pip
+    - apt-get update -y
+    - apt-get install -y software-properties-common  # Required for add-apt-repository
+    - add-apt-repository ppa:deadsnakes/ppa -y  # Adds PPA with Python 3.11
+    - apt-get update -y
+    - apt-get install -y python3.11 python3.11-distutils  # Install Python 3.11 and pip support
+    - python3.11 -m pip install --upgrade pip  # Upgrade pip
     - cd backend/atsresume
     - chmod +x DPy  # Make DPy executable
   script:
     - ./DPy analyze -i . -o ./dpy-output -f csv  # Run DPy analysis
-    - cat ./dpy-output  # Display output in CI logs
+    # - cat ./dpy-output  # Display output in CI logs
   only:
     - main
     - developer
